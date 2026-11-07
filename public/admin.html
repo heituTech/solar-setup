@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#f59e0b" />
+  <title data-i18n="admin">Admin</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="lang-switcher" id="langSwitcher">
+      <button data-lang="en">EN</button>
+      <button data-lang="zh">中文</button>
+      <button data-lang="km">ខ្មែរ</button>
+    </div>
+    <h1 data-i18n="admin">Admin</h1>
+    <p style="margin-top:6px"><a href="/" style="color:#fff;font-size:13px;opacity:0.9">← Home</a></p>
+  </header>
+
+  <div class="container">
+    <!-- Login -->
+    <div id="loginBox" class="card">
+      <div class="field">
+        <label data-i18n="admin_login">Admin Login</label>
+        <input type="password" id="adminPwd" data-i18n-placeholder="password" placeholder="Password" />
+      </div>
+      <button class="btn btn-primary" id="loginBtn" data-i18n="login">Login</button>
+    </div>
+
+    <!-- Admin panel -->
+    <div id="adminPanel" style="display:none">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="inverters" data-i18n="inverter_tab">Inverters</button>
+        <button class="tab-btn" data-tab="panels" data-i18n="panel_tab">Solar Panels</button>
+        <button class="tab-btn" data-tab="batteries" data-i18n="battery_tab">Batteries</button>
+        <button class="tab-btn" data-tab="settings" data-i18n="settings">Settings</button>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <button class="btn btn-primary btn-sm" id="addBtn" style="width:auto" data-i18n="add_product">+ Add Product</button>
+        <button class="btn btn-secondary btn-sm" id="logoutBtn" style="width:auto;margin-left:8px" data-i18n="logout">Logout</button>
+      </div>
+
+      <div id="productList"></div>
+      <div id="settingsPanel" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2 id="modalTitle" data-i18n="add_product">Add Product</h2>
+      <div id="modalBody"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="modalCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary" id="modalSave" data-i18n="save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

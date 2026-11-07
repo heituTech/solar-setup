@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#f59e0b" />
+  <title data-i18n="app_title">Solar System Configurator</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="lang-switcher" id="langSwitcher">
+      <button data-lang="en">EN</button>
+      <button data-lang="zh">中文</button>
+      <button data-lang="km">ខ្មែរ</button>
+    </div>
+    <h1 data-i18n="app_title">Solar System Configurator</h1>
+    <p data-i18n="app_subtitle">Get your customized solar power system</p>
+  </header>
+
+  <div class="container">
+    <!-- Input form -->
+    <div class="card">
+      <div class="field">
+        <label data-i18n="load_power">Load Power (W)</label>
+        <input type="number" id="loadPower" min="0" step="1" data-i18n-placeholder="load_power_ph" placeholder="e.g. 1500" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label data-i18n="daily_hours">Daily Usage Hours</label>
+          <input type="number" id="dailyHours" min="0" step="0.5" data-i18n-placeholder="daily_hours_ph" placeholder="e.g. 8" />
+        </div>
+        <div class="field">
+          <label data-i18n="autonomy_days">Backup Days</label>
+          <input type="number" id="autonomyDays" min="0" step="0.5" value="1" data-i18n-placeholder="autonomy_days_ph" placeholder="e.g. 1" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label data-i18n="battery_type">Battery Type</label>
+          <select id="batteryType">
+            <option value="" data-i18n="battery_any">Any</option>
+            <option value="lead-acid" data-i18n="battery_lead_acid">Lead-acid</option>
+            <option value="lfp" data-i18n="battery_lfp">LiFePO4</option>
+            <option value="lithium-ternary" data-i18n="battery_ternary">Ternary Lithium</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="system_voltage">System Voltage</label>
+          <select id="systemVoltage">
+            <option value="" data-i18n="voltage_any">Any</option>
+            <option value="24V">24V</option>
+            <option value="48V">48V</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="calcBtn" data-i18n="calculate">Get Recommendation</button>
+    </div>
+
+    <!-- Results -->
+    <div id="results"></div>
+
+    <div class="admin-link">
+      <a href="/admin" data-i18n="admin">Admin</a>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

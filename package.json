@@ -1,0 +1,16 @@
+{
+  "name": "solar-setup",
+  "version": "1.0.0",
+  "description": "Solar system configurator with multi-language support (EN/ZH/KM)",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "init-db": "node server/init-db.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.11.0"
+  }
+}

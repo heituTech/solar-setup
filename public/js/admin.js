@@ -1,164 +1,331 @@
-// Admin page logic
+// Role-based admin console
 (function () {
-  let adminToken = localStorage.getItem('admin_token') === '1';
-  let currentTab = 'inverters';
-  let editingId = null;
+  const TOKEN_KEY = 'staff_token';
+  let token = localStorage.getItem(TOKEN_KEY) || '';
+  let me = null;
 
-  const TAB_ENDPOINT = {
-    inverters: '/api/products/inverters',
-    panels: '/api/products/panels',
-    batteries: '/api/products/batteries',
-  };
+  let currentTab = 'products';
+  let currentCategory = 'inverters';
+  let approvalScope = 'to_review';
+
+  let productsCache = {};
+  let accountsCache = [];
+  let editingProductId = null;
+  let editingAccountId = null;
+  let rejectApprovalId = null;
 
   const TECH_OPTIONS = ['N type', 'P type', 'Topcon', 'HTJ', 'BC'];
+  const CATEGORIES = ['inverters', 'panels', 'batteries'];
+  const DIRECT_ROLES = ['super_admin', 'sales_manager'];
+
+  /* ===================== Helpers ===================== */
+
+  function errMsg(e) {
+    const key = e && e.error;
+    if (!key) return t('error');
+    const value = t(key);
+    return value === key ? key : value;
+  }
+
+  async function api(path, { method = 'GET', body, auth = true } = {}) {
+    const headers = {};
+    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    if (auth && token) headers['Authorization'] = 'Bearer ' + token;
+    const r = await fetch(path, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    let data = null;
+    try { data = await r.json(); } catch {}
+    if (r.status === 401) {
+      logout(true);
+      throw { status: 401, error: 'unauthorized' };
+    }
+    if (!r.ok && r.status !== 202) {
+      throw { status: r.status, error: (data && data.error) || 'error' };
+    }
+    return { status: r.status, data };
+  }
+
+  function showToast(msg, isError) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = isError ? 'var(--danger)' : 'var(--success)';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  function money(p) {
+    const usd = Number(p.price_usd || 0);
+    const khr = Number(p.price_khr || 0);
+    const usdText = '$' + usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return khr > 0 ? usdText + ' / ' + khr.toLocaleString() + ' KHR' : usdText;
+  }
+
+  function payload(a) {
+    if (!a.payload) return {};
+    if (typeof a.payload === 'string') {
+      try { return JSON.parse(a.payload) || {}; } catch { return {}; }
+    }
+    return a.payload;
+  }
+
+  function requestTypeLabel(type) {
+    const map = {
+      product_create: 'req_product_create',
+      product_update: 'req_product_update',
+      product_delete: 'req_product_delete',
+      account_create: 'req_account_create',
+      account_update: 'req_account_update',
+      account_delete: 'req_account_delete',
+    };
+    return map[type] ? t(map[type]) : type;
+  }
+
+  function statusLabel(status) {
+    const map = {
+      pending: 'pending',
+      approved: 'approved',
+      rejected: 'rejected',
+      cancelled: 'cancelled',
+    };
+    return map[status] ? t(map[status]) : status;
+  }
 
   /* ===================== Auth ===================== */
-  document.getElementById('loginBtn').addEventListener('click', async () => {
-    const pwd = document.getElementById('adminPwd').value;
-    try {
-      const r = await fetch('/api/config/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pwd }),
-      });
-      if (r.ok) {
-        adminToken = true;
-        localStorage.setItem('admin_token', '1');
-        showPanel();
-      } else {
-        showToast(t('error'), true);
-      }
-    } catch (e) {
-      showToast(t('error'), true);
-    }
+
+  document.getElementById('loginBtn').addEventListener('click', login);
+  document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') login();
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    adminToken = false;
-    localStorage.removeItem('admin_token');
-    document.getElementById('loginBox').style.display = 'block';
+  async function login() {
+    const identifier = document.getElementById('loginIdentifier').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    if (!identifier || !password) {
+      showToast(t('required'), true);
+      return;
+    }
+    try {
+      const { data } = await api('/api/auth/login', {
+        method: 'POST',
+        body: { identifier, password },
+        auth: false,
+      });
+      if (data.user.role === 'member') {
+        showToast(t('staff_only'), true);
+        return;
+      }
+      token = data.token;
+      me = data.user;
+      localStorage.setItem(TOKEN_KEY, token);
+      showPanel();
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
+  function logout(silent) {
+    token = '';
+    me = null;
+    localStorage.removeItem(TOKEN_KEY);
+    document.getElementById('loginBox').style.display = '';
     document.getElementById('adminPanel').style.display = 'none';
-  });
+    document.getElementById('loginPassword').value = '';
+    if (!silent) showToast(t('logged_out'));
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', () => logout());
+
+  async function loadMe() {
+    if (!token) return null;
+    try {
+      const { data } = await api('/api/auth/me');
+      if (!data.user || data.user.role === 'member') {
+        logout(true);
+        return null;
+      }
+      me = data.user;
+      return me;
+    } catch (e) {
+      return null;
+    }
+  }
 
   function showPanel() {
     document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    loadTab(currentTab);
+    document.getElementById('adminPanel').style.display = '';
+    document.getElementById('userName').textContent = me.username || me.email || '';
+    const badge = document.getElementById('userRoleBadge');
+    badge.textContent = t('role_' + me.role);
+    badge.className = 'role-badge role-' + me.role;
+
+    toggleTab('accounts', me.role === 'super_admin' || me.role === 'sales_manager');
+    toggleTab('settings', me.role === 'super_admin' || me.role === 'sales_manager');
+    toggleTab('approvals', true);
+
+    document.querySelectorAll('#mainTabs .tab-btn').forEach((b) => b.classList.remove('active'));
+    document.querySelector('#mainTabs .tab-btn[data-tab="products"]').classList.add('active');
+    switchTab('products');
+  }
+
+  function toggleTab(name, visible) {
+    const btn = document.querySelector(`#mainTabs .tab-btn[data-tab="${name}"]`);
+    if (btn) btn.style.display = visible ? '' : 'none';
   }
 
   /* ===================== Tabs ===================== */
-  document.querySelectorAll('.tab-btn').forEach((btn) => {
+
+  document.querySelectorAll('#mainTabs .tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      if (btn.style.display === 'none') return;
+      document.querySelectorAll('#mainTabs .tab-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
-      currentTab = btn.dataset.tab;
-      if (currentTab === 'settings') {
-        document.getElementById('productList').style.display = 'none';
-        document.getElementById('settingsPanel').style.display = 'block';
-        document.getElementById('addBtn').style.display = 'none';
-        loadSettings();
-      } else {
-        document.getElementById('productList').style.display = 'block';
-        document.getElementById('settingsPanel').style.display = 'none';
-        document.getElementById('addBtn').style.display = 'inline-flex';
-        loadTab(currentTab);
-      }
+      switchTab(btn.dataset.tab);
     });
   });
 
-  /* ===================== Product list ===================== */
-  async function loadTab(tab) {
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('productsPanel').style.display = tab === 'products' ? '' : 'none';
+    document.getElementById('accountsPanel').style.display = tab === 'accounts' ? '' : 'none';
+    document.getElementById('approvalsPanel').style.display = tab === 'approvals' ? '' : 'none';
+    document.getElementById('settingsPanel').style.display = tab === 'settings' ? '' : 'none';
+    if (tab === 'products') loadProducts();
+    if (tab === 'accounts') loadAccounts();
+    if (tab === 'approvals') loadApprovals();
+    if (tab === 'settings') loadSettings();
+  }
+
+  /* ===================== Products ===================== */
+
+  document.querySelectorAll('#productsPanel .sub-tabs .tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#productsPanel .sub-tabs .tab-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCategory = btn.dataset.cat;
+      loadProducts();
+    });
+  });
+
+  function updateProductHint() {
+    const hint = document.getElementById('productHint');
+    if (me.role === 'salesperson') {
+      hint.textContent = t('product_needs_approval');
+      hint.style.display = '';
+    } else {
+      hint.textContent = '';
+      hint.style.display = 'none';
+    }
+    document.getElementById('addProductBtn').style.display = '';
+  }
+
+  async function loadProducts() {
+    updateProductHint();
     const list = document.getElementById('productList');
-    list.innerHTML = '<div class="empty-state">...</div>';
+    list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
     try {
-      const r = await fetch(TAB_ENDPOINT[tab]);
-      const data = await r.json();
+      const { data } = await api('/api/products/admin/' + currentCategory + '?status=all');
+      productsCache[currentCategory] = data;
       if (!data.length) {
         list.innerHTML = `<div class="card empty-state">${t('no_data')}</div>`;
         return;
       }
-      list.innerHTML = data.map(renderItem).join('');
-      bindItemActions();
+      list.innerHTML = data.map(renderProduct).join('');
+      bindProductActions();
     } catch (e) {
-      list.innerHTML = `<div class="card empty-state">${t('error')}</div>`;
+      list.innerHTML = `<div class="card empty-state">${errMsg(e)}</div>`;
     }
   }
 
-  function renderItem(p) {
+  function renderProduct(p) {
     let meta = '';
-    if (currentTab === 'inverters') {
-      meta = `${t('power')}: ${p.rated_power}W · ${p.type} · ${p.battery_voltage} · MPPT×${p.mppt_channels} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
-    } else if (currentTab === 'panels') {
+    if (currentCategory === 'inverters') {
+      const mpptSpec = p.mppt_max_current_a || p.mppt_max_voltage_v
+        ? ` · ${p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '-'}/${p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '-'}`
+        : '';
+      meta = `${t('power')}: ${p.rated_power}W · ${p.type} · ${p.battery_voltage} · MPPT×${p.mppt_channels}${mpptSpec} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
+    } else if (currentCategory === 'panels') {
       const tech = Array.isArray(p.technology) ? p.technology.join('/') : '';
-      meta = `${t('power')}: ${p.rated_power}W · ${p.glass_type === 'double' ? t('double_glass') : t('single_glass')}${tech ? ' · ' + tech : ''} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
+      const elSpec = `${p.voc_v ? ` · Voc ${fmtDec1(p.voc_v)}V` : ''}${p.isc_a ? ` · Isc ${fmtDec1(p.isc_a)}A` : ''}`;
+      meta = `${t('power')}: ${p.rated_power}W · ${p.glass_type === 'double' ? t('double_glass') : t('single_glass')}${tech ? ' · ' + tech : ''}${elSpec} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
     } else {
-      meta = `${t('capacity')}: ${p.capacity_kwh}kWh · ${p.type} · ${p.nominal_voltage}V · ${p.discharge_rate}C · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
+      meta = `${t('capacity')}: ${p.capacity_kwh}kWh · ${p.type} · ${fmtDec1(p.nominal_voltage)}V · ${p.discharge_rate}C · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
     }
-    const price = p.price_khr > 0
-      ? `$${Number(p.price_usd).toLocaleString()} / ${Number(p.price_khr).toLocaleString()}KHR`
-      : `$${Number(p.price_usd).toLocaleString()}`;
-    return `<div class="product-item" data-id="${p.id}">
-      <h4>${p.brand}</h4>
+    const status = p.sales_status === 'discontinued' ? 'discontinued' : 'on_sale';
+    return `<div class="product-item">
+      <h4>${p.brand}<span class="status-badge ${status}">${t(status)}</span></h4>
       <div class="meta">${meta}</div>
-      <div class="meta" style="color:var(--primary-dark);font-weight:600;margin-top:4px">${price}</div>
+      <div class="meta price-line">${money(p)}</div>
       <div class="row-actions">
-        <button class="btn btn-secondary btn-sm edit-btn" data-id="${p.id}" data-i18n="edit_product">${t('edit_product')}</button>
-        <button class="btn btn-danger del-btn" data-id="${p.id}" data-i18n="delete">${t('delete')}</button>
+        <button class="btn btn-secondary btn-sm edit-product" data-id="${p.id}">${t('edit_product')}</button>
+        <button class="btn btn-danger del-product" data-id="${p.id}">${t('delete')}</button>
       </div>
     </div>`;
   }
 
-  function bindItemActions() {
-    document.querySelectorAll('.edit-btn').forEach((b) => {
-      b.addEventListener('click', () => openModal(Number(b.dataset.id)));
+  function bindProductActions() {
+    document.querySelectorAll('#productList .edit-product').forEach((b) => {
+      b.addEventListener('click', () => openProductModal(Number(b.dataset.id)));
     });
-    document.querySelectorAll('.del-btn').forEach((b) => {
-      b.addEventListener('click', () => deleteItem(Number(b.dataset.id)));
+    document.querySelectorAll('#productList .del-product').forEach((b) => {
+      b.addEventListener('click', () => deleteProduct(Number(b.dataset.id)));
     });
   }
 
-  async function deleteItem(id) {
+  async function deleteProduct(id) {
     if (!confirm(t('confirm_delete'))) return;
     try {
-      await fetch(`${TAB_ENDPOINT[currentTab]}/${id}`, { method: 'DELETE' });
-      loadTab(currentTab);
-      showToast(t('saved'));
+      const { status } = await api(`/api/products/${currentCategory}/${id}`, { method: 'DELETE' });
+      showToast(status === 202 ? t('submitted_for_approval') : t('saved'));
+      loadProducts();
     } catch (e) {
-      showToast(t('error'), true);
+      showToast(errMsg(e), true);
     }
   }
 
-  /* ===================== Modal / Form ===================== */
-  document.getElementById('addBtn').addEventListener('click', () => openModal(null));
-  document.getElementById('modalCancel').addEventListener('click', closeModal);
-  document.getElementById('modalSave').addEventListener('click', saveItem);
+  document.getElementById('addProductBtn').addEventListener('click', () => openProductModal(null));
+  document.getElementById('productCancel').addEventListener('click', closeProductModal);
+  document.getElementById('productSave').addEventListener('click', saveProduct);
 
-  function openModal(id) {
-    editingId = id;
-    document.getElementById('modalTitle').textContent = id ? t('edit_product') : t('add_product');
-    const body = document.getElementById('modalBody');
-    body.innerHTML = buildForm();
-    if (id) loadItemForEdit(id);
-    document.getElementById('modal').classList.add('active');
+  function openProductModal(id) {
+    editingProductId = id;
+    document.getElementById('productModalTitle').textContent = id ? t('edit_product') : t('add_product');
+    document.getElementById('productModalBody').innerHTML = buildProductForm();
+    if (id) fillProductForm(id);
+    document.getElementById('productModal').classList.add('active');
   }
 
-  function closeModal() {
-    document.getElementById('modal').classList.remove('active');
-    editingId = null;
+  function closeProductModal() {
+    document.getElementById('productModal').classList.remove('active');
+    editingProductId = null;
   }
 
-  function buildForm() {
-    if (currentTab === 'inverters') return inverterForm();
-    if (currentTab === 'panels') return panelForm();
-    return batteryForm();
+  function buildProductForm() {
+    let form = '';
+    if (currentCategory === 'inverters') form = inverterForm();
+    else if (currentCategory === 'panels') form = panelForm();
+    else form = batteryForm();
+    return form + `
+      <div class="field"><label>${t('sales_status')}</label>
+        <select id="f_sales_status">
+          <option value="on_sale">${t('on_sale')}</option>
+          <option value="discontinued">${t('discontinued')}</option>
+        </select>
+      </div>`;
   }
 
   function inverterForm() {
     return `
-      <div class="field"><label>${t('brand')}</label><input id="f_brand" required /></div>
+      <div class="field"><label>${t('brand')}</label><input id="f_brand" /></div>
       <div class="row">
-        <div class="field"><label>${t('power')} (W)</label><input id="f_rated_power" type="number" required /></div>
-        <div class="field"><label>${t('mppt')}</label><input id="f_mppt" type="number" value="1" /></div>
+        <div class="field"><label>${t('power')} (W)</label><input id="f_rated_power" type="number" min="1" step="1" /></div>
+        <div class="field"><label>${t('mppt')}</label><input id="f_mppt" type="number" min="1" step="1" value="1" /></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>${t('mppt_max_current')} (A)</label><input id="f_mppt_current" type="number" min="0" step="0.1" /></div>
+        <div class="field"><label>${t('mppt_max_voltage')} (V)</label><input id="f_mppt_voltage" type="number" min="0" step="1" /></div>
       </div>
       <div class="row">
         <div class="field"><label>${t('type')}</label>
@@ -168,17 +335,22 @@
           <select id="f_battery_voltage"><option value="12V">12V</option><option value="24V">24V</option><option value="48V">48V</option></select>
         </div>
       </div>
+      <div class="row">
+        <div class="field"><label>${t('grid_parallel_max')}</label><input id="f_grid_parallel_max" type="number" min="1" value="1" /></div>
+        <div class="field"><label>${t('offgrid_parallel_max')}</label><input id="f_offgrid_parallel_max" type="number" min="1" value="1" /></div>
+      </div>
+      <div class="select-note">${t('parallel_hint')}</div>
       <div class="field"><label>${t('warranty')} (${t('months')})</label><input id="f_warranty" type="number" value="24" /></div>
       <div class="row">
-        <div class="field"><label>${t('price_usd')}</label><input id="f_price_usd" type="number" step="0.01" required /></div>
+        <div class="field"><label>${t('price_usd')}</label><input id="f_price_usd" type="number" step="0.01" /></div>
         <div class="field"><label>${t('price_khr')}</label><input id="f_price_khr" type="number" value="0" /></div>
       </div>`;
   }
 
   function panelForm() {
     return `
-      <div class="field"><label>${t('brand')}</label><input id="f_brand" required /></div>
-      <div class="field"><label>${t('power')} (W)</label><input id="f_rated_power" type="number" required /></div>
+      <div class="field"><label>${t('brand')}</label><input id="f_brand" /></div>
+      <div class="field"><label>${t('power')} (W)</label><input id="f_rated_power" type="number" /></div>
       <div class="field"><label>${t('dimensions')}</label>
         <div class="row">
           <input id="f_length" type="number" placeholder="${t('length')}" />
@@ -190,6 +362,10 @@
         <div class="field"><label>${t('voltage')} min</label><input id="f_vmin" type="number" step="0.1" /></div>
         <div class="field"><label>${t('voltage')} max</label><input id="f_vmax" type="number" step="0.1" /></div>
       </div>
+      <div class="row">
+        <div class="field"><label>${t('open_circuit_voltage')} Voc (V)</label><input id="f_voc" type="number" min="0" step="0.1" /></div>
+        <div class="field"><label>${t('short_circuit_current')} Isc (A)</label><input id="f_isc" type="number" min="0" step="0.1" /></div>
+      </div>
       <div class="field"><label>${t('type')}</label>
         <select id="f_glass"><option value="single">${t('single_glass')}</option><option value="double">${t('double_glass')}</option></select>
       </div>
@@ -200,17 +376,17 @@
       </div>
       <div class="field"><label>${t('warranty')} (${t('months')})</label><input id="f_warranty" type="number" value="240" /></div>
       <div class="row">
-        <div class="field"><label>${t('price_usd')}</label><input id="f_price_usd" type="number" step="0.01" required /></div>
+        <div class="field"><label>${t('price_usd')}</label><input id="f_price_usd" type="number" step="0.01" /></div>
         <div class="field"><label>${t('price_khr')}</label><input id="f_price_khr" type="number" value="0" /></div>
       </div>`;
   }
 
   function batteryForm() {
     return `
-      <div class="field"><label>${t('brand')}</label><input id="f_brand" required /></div>
+      <div class="field"><label>${t('brand')}</label><input id="f_brand" /></div>
       <div class="row">
-        <div class="field"><label>${t('capacity')} (kWh)</label><input id="f_capacity" type="number" step="0.01" required /></div>
-        <div class="field"><label>${t('voltage')} (V)</label><input id="f_voltage" type="number" value="48" /></div>
+        <div class="field"><label>${t('capacity')} (kWh)</label><input id="f_capacity" type="number" step="0.01" /></div>
+        <div class="field"><label>${t('voltage')} (V)</label><input id="f_voltage" type="number" step="0.1" value="48" /></div>
       </div>
       <div class="row">
         <div class="field"><label>${t('type')}</label>
@@ -224,67 +400,87 @@
       </div>
       <div class="field"><label>${t('warranty')} (${t('months')})</label><input id="f_warranty" type="number" value="36" /></div>
       <div class="row">
-        <div class="field"><label>${t('price_usd')}</label><input id="f_price_usd" type="number" step="0.01" required /></div>
+        <div class="field"><label>${t('price_usd')}</label><input id="f_price_usd" type="number" step="0.01" /></div>
         <div class="field"><label>${t('price_khr')}</label><input id="f_price_khr" type="number" value="0" /></div>
       </div>`;
   }
 
-  async function loadItemForEdit(id) {
-    try {
-      const r = await fetch(`${TAB_ENDPOINT[currentTab]}/${id}`.replace(`/${id}`, ''));
-      const data = await r.json();
-      const p = data.find((x) => x.id === id);
-      if (!p) return;
-      document.getElementById('f_brand').value = p.brand || '';
-      document.getElementById('f_price_usd').value = p.price_usd || 0;
-      document.getElementById('f_price_khr').value = p.price_khr || 0;
-      document.getElementById('f_warranty').value = p.warranty_months || 0;
-      if (currentTab === 'inverters') {
-        document.getElementById('f_rated_power').value = p.rated_power || 0;
-        document.getElementById('f_mppt').value = p.mppt_channels || 1;
-        document.getElementById('f_type').value = p.type;
-        document.getElementById('f_battery_voltage').value = p.battery_voltage;
-      } else if (currentTab === 'panels') {
-        document.getElementById('f_rated_power').value = p.rated_power || 0;
-        document.getElementById('f_length').value = p.length_mm || '';
-        document.getElementById('f_width').value = p.width_mm || '';
-        document.getElementById('f_height').value = p.height_mm || '';
-        document.getElementById('f_vmin').value = p.voltage_min || '';
-        document.getElementById('f_vmax').value = p.voltage_max || '';
-        document.getElementById('f_glass').value = p.glass_type;
-        const tech = Array.isArray(p.technology) ? p.technology : [];
-        document.querySelectorAll('#techChips .chip').forEach((c) => {
-          if (tech.includes(c.dataset.tech)) c.classList.add('selected');
-        });
-      } else {
-        document.getElementById('f_capacity').value = p.capacity_kwh || 0;
-        document.getElementById('f_voltage').value = p.nominal_voltage || 48;
-        document.getElementById('f_type').value = p.type;
-        document.getElementById('f_discharge').value = p.discharge_rate || 0.5;
-      }
-    } catch (e) {}
+  function fillProductForm(id) {
+    const p = (productsCache[currentCategory] || []).find((x) => x.id === id);
+    if (!p) return;
+    const set = (fieldId, value) => {
+      const el = document.getElementById(fieldId);
+      if (el !== null && value !== undefined && value !== null) el.value = value;
+    };
+    set('f_brand', p.brand);
+    set('f_price_usd', p.price_usd);
+    set('f_price_khr', p.price_khr);
+    set('f_warranty', p.warranty_months);
+    set('f_sales_status', p.sales_status || 'on_sale');
+    if (currentCategory === 'inverters') {
+      set('f_rated_power', p.rated_power);
+      set('f_mppt', p.mppt_channels);
+      set('f_mppt_current', p.mppt_max_current_a === null || p.mppt_max_current_a === undefined ? null : fmtDec1(p.mppt_max_current_a));
+      set('f_mppt_voltage', p.mppt_max_voltage_v === null || p.mppt_max_voltage_v === undefined ? null : fmtDec1(p.mppt_max_voltage_v));
+      set('f_type', p.type);
+      set('f_battery_voltage', p.battery_voltage);
+      set('f_grid_parallel_max', p.grid_parallel_max || 1);
+      set('f_offgrid_parallel_max', p.offgrid_parallel_max || 1);
+    } else if (currentCategory === 'panels') {
+      set('f_rated_power', p.rated_power);
+      set('f_length', p.length_mm);
+      set('f_width', p.width_mm);
+      set('f_height', p.height_mm);
+      set('f_vmin', p.voltage_min === null || p.voltage_min === undefined ? null : fmtDec1(p.voltage_min));
+      set('f_vmax', p.voltage_max === null || p.voltage_max === undefined ? null : fmtDec1(p.voltage_max));
+      set('f_voc', p.voc_v === null || p.voc_v === undefined ? null : fmtDec1(p.voc_v));
+      set('f_isc', p.isc_a === null || p.isc_a === undefined ? null : fmtDec1(p.isc_a));
+      set('f_glass', p.glass_type);
+      const tech = Array.isArray(p.technology) ? p.technology : [];
+      document.querySelectorAll('#techChips .chip').forEach((c) => {
+        if (tech.includes(c.dataset.tech)) c.classList.add('selected');
+      });
+    } else {
+      set('f_capacity', p.capacity_kwh);
+      set('f_voltage', fmtDec1(p.nominal_voltage));
+      set('f_type', p.type);
+      set('f_discharge', p.discharge_rate);
+    }
   }
 
-  function collectForm() {
+  document.getElementById('productModalBody').addEventListener('click', (e) => {
+    if (e.target.classList && e.target.classList.contains('chip')) {
+      e.target.classList.toggle('selected');
+    }
+  });
+
+  function collectProduct() {
     const get = (id) => document.getElementById(id).value;
     const body = {
-      brand: get('f_brand'),
+      brand: get('f_brand').trim(),
       warranty_months: Number(get('f_warranty')) || 0,
       price_usd: Number(get('f_price_usd')) || 0,
       price_khr: Number(get('f_price_khr')) || 0,
+      sales_status: get('f_sales_status'),
     };
-    if (currentTab === 'inverters') {
+    if (currentCategory === 'inverters') {
       body.rated_power = Number(get('f_rated_power'));
       body.mppt_channels = Number(get('f_mppt')) || 1;
+      body.mppt_max_current_a = get('f_mppt_current') === '' ? null : Number(get('f_mppt_current'));
+      body.mppt_max_voltage_v = get('f_mppt_voltage') === '' ? null : Number(get('f_mppt_voltage'));
       body.type = get('f_type');
       body.battery_voltage = get('f_battery_voltage');
-    } else if (currentTab === 'panels') {
+      body.grid_parallel_max = Math.max(1, Number(get('f_grid_parallel_max')) || 1);
+      body.offgrid_parallel_max = Math.max(1, Number(get('f_offgrid_parallel_max')) || 1);
+    } else if (currentCategory === 'panels') {
       body.rated_power = Number(get('f_rated_power'));
-      body.length_mm = Number(get('f_length')) || null;
-      body.width_mm = Number(get('f_width')) || null;
-      body.height_mm = Number(get('f_height')) || null;
-      body.voltage_min = Number(get('f_vmin')) || null;
-      body.voltage_max = Number(get('f_vmax')) || null;
+      body.length_mm = get('f_length') === '' ? null : Number(get('f_length'));
+      body.width_mm = get('f_width') === '' ? null : Number(get('f_width'));
+      body.height_mm = get('f_height') === '' ? null : Number(get('f_height'));
+      body.voltage_min = get('f_vmin') === '' ? null : Number(get('f_vmin'));
+      body.voltage_max = get('f_vmax') === '' ? null : Number(get('f_vmax'));
+      body.voc_v = get('f_voc') === '' ? null : Number(get('f_voc'));
+      body.isc_a = get('f_isc') === '' ? null : Number(get('f_isc'));
       body.glass_type = get('f_glass');
       body.technology = Array.from(document.querySelectorAll('#techChips .chip.selected')).map((c) => c.dataset.tech);
     } else {
@@ -296,53 +492,391 @@
     return body;
   }
 
-  async function saveItem() {
-    const body = collectForm();
-    if (!body.brand || body.price_usd === undefined) {
+  async function saveProduct() {
+    const body = collectProduct();
+    if (!body.brand) {
       showToast(t('required'), true);
       return;
     }
-    const url = TAB_ENDPOINT[currentTab] + (editingId ? `/${editingId}` : '');
-    const method = editingId ? 'PUT' : 'POST';
+    const path = '/api/products/' + currentCategory + (editingProductId ? '/' + editingProductId : '');
+    const method = editingProductId ? 'PUT' : 'POST';
     try {
-      await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      closeModal();
-      loadTab(currentTab);
-      showToast(t('saved'));
+      const { status } = await api(path, { method, body });
+      closeProductModal();
+      showToast(status === 202 ? t('submitted_for_approval') : t('saved'));
+      loadProducts();
     } catch (e) {
-      showToast(t('error'), true);
+      showToast(errMsg(e), true);
     }
   }
 
-  // Tech chips toggle (event delegation)
-  document.getElementById('modalBody').addEventListener('click', (e) => {
-    if (e.target.classList.contains('chip')) {
-      e.target.classList.toggle('selected');
+  /* ===================== Accounts ===================== */
+
+  document.getElementById('addAccountBtn').addEventListener('click', () => openAccountModal(null));
+  document.getElementById('accountCancel').addEventListener('click', closeAccountModal);
+  document.getElementById('accountSave').addEventListener('click', saveAccount);
+
+  async function loadAccounts() {
+    const hint = document.getElementById('accountHint');
+    if (me.role === 'sales_manager') {
+      hint.textContent = t('account_needs_approval');
+      hint.style.display = '';
+    } else {
+      hint.textContent = '';
+      hint.style.display = 'none';
+    }
+    const list = document.getElementById('accountList');
+    list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
+    try {
+      const path = me.role === 'super_admin' ? '/api/admin/users' : '/api/admin/users/subordinates';
+      const { data } = await api(path);
+      accountsCache = data;
+      if (!data.length) {
+        list.innerHTML = `<div class="card empty-state">${t('no_accounts')}</div>`;
+        return;
+      }
+      list.innerHTML = data.map(renderAccount).join('');
+      bindAccountActions();
+    } catch (e) {
+      list.innerHTML = `<div class="card empty-state">${errMsg(e)}</div>`;
+    }
+  }
+
+  function renderAccount(u) {
+    const metaParts = [];
+    if (u.email) metaParts.push(u.email);
+    if (u.phone) metaParts.push(u.phone);
+    if (u.role === 'salesperson') {
+      metaParts.push(t('manager') + ': ' + (u.manager_username || t('super_admin_default')));
+    }
+    const status = u.status === 'disabled' ? 'disabled' : 'active';
+    return `<div class="product-item account-item">
+      <h4>${u.username}<span class="role-badge role-${u.role}">${t('role_' + u.role)}</span>
+        <span class="status-badge ${status === 'disabled' ? 'discontinued' : 'on_sale'}">${t(status === 'disabled' ? 'status_disabled' : 'status_active')}</span>
+      </h4>
+      <div class="meta">${metaParts.join(' · ') || '-'}</div>
+      <div class="row-actions">
+        <button class="btn btn-secondary btn-sm edit-account" data-id="${u.id}">${t('edit_account')}</button>
+        <button class="btn btn-danger del-account" data-id="${u.id}">${t('delete')}</button>
+      </div>
+    </div>`;
+  }
+
+  function bindAccountActions() {
+    document.querySelectorAll('#accountList .edit-account').forEach((b) => {
+      b.addEventListener('click', () => openAccountModal(Number(b.dataset.id)));
+    });
+    document.querySelectorAll('#accountList .del-account').forEach((b) => {
+      b.addEventListener('click', () => deleteAccount(Number(b.dataset.id)));
+    });
+  }
+
+  async function deleteAccount(id) {
+    if (!confirm(t('confirm_delete_account'))) return;
+    const isSuper = me.role === 'super_admin';
+    const path = isSuper ? '/api/admin/users/' + id : '/api/admin/users/subordinates/' + id;
+    try {
+      const { status } = await api(path, { method: 'DELETE' });
+      showToast(status === 202 ? t('submitted_for_approval') : t('saved'));
+      loadAccounts();
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
+  function openAccountModal(id) {
+    editingAccountId = id;
+    const isSuper = me.role === 'super_admin';
+    document.getElementById('accountModalTitle').textContent = id ? t('edit_account') : t('add_account');
+
+    const user = id ? accountsCache.find((u) => u.id === id) : null;
+    const managers = accountsCache.filter((u) => u.role === 'sales_manager');
+
+    let roleControl = '';
+    if (isSuper && !id) {
+      roleControl = `
+        <div class="field"><label>${t('role')}</label>
+          <select id="a_role" data-onchange="role">
+            <option value="salesperson">${t('role_salesperson')}</option>
+            <option value="sales_manager">${t('role_sales_manager')}</option>
+          </select>
+        </div>`;
+    }
+
+    let managerControl = '';
+    if (isSuper) {
+      managerControl = `
+        <div class="field" id="managerField"><label>${t('manager')}</label>
+          <select id="a_manager">
+            <option value="">${t('super_admin_default')}</option>
+            ${managers.map((m) => `<option value="${m.id}">${m.username}</option>`).join('')}
+          </select>
+        </div>`;
+    }
+
+    let statusControl = '';
+    if (id) {
+      statusControl = `
+        <div class="field"><label>${t('status')}</label>
+          <select id="a_status">
+            <option value="active">${t('status_active')}</option>
+            <option value="disabled">${t('status_disabled')}</option>
+          </select>
+        </div>`;
+    }
+
+    document.getElementById('accountModalBody').innerHTML = `
+      <div class="field"><label>${t('username')}</label><input id="a_username" value="${user ? user.username : ''}" /></div>
+      <div class="field"><label>${t('email')}</label><input id="a_email" type="email" value="${user && user.email ? user.email : ''}" /></div>
+      <div class="field"><label>${t('phone')}</label><input id="a_phone" value="${user && user.phone ? user.phone : ''}" /></div>
+      ${roleControl}
+      ${managerControl}
+      ${statusControl}
+      <div class="field"><label>${id ? t('password_optional') : t('password')}</label><input id="a_password" type="password" /></div>
+    `;
+
+    if (user) {
+      if (isSuper && document.getElementById('a_manager')) {
+        document.getElementById('a_manager').value = user.manager_id ? String(user.manager_id) : '';
+      }
+      if (document.getElementById('a_status')) {
+        document.getElementById('a_status').value = user.status === 'disabled' ? 'disabled' : 'active';
+      }
+      if (isSuper && document.getElementById('managerField')) {
+        document.getElementById('managerField').style.display = user.role === 'salesperson' ? '' : 'none';
+      }
+    }
+
+    const roleSelect = document.getElementById('a_role');
+    if (roleSelect) {
+      roleSelect.addEventListener('change', () => {
+        const managerField = document.getElementById('managerField');
+        if (managerField) managerField.style.display = roleSelect.value === 'salesperson' ? '' : 'none';
+      });
+    }
+
+    document.getElementById('accountModal').classList.add('active');
+  }
+
+  function closeAccountModal() {
+    document.getElementById('accountModal').classList.remove('active');
+    editingAccountId = null;
+  }
+
+  async function saveAccount() {
+    const get = (id) => {
+      const el = document.getElementById(id);
+      return el ? el.value : '';
+    };
+    const username = get('a_username').trim();
+    const email = get('a_email').trim();
+    const phone = get('a_phone').trim();
+    const password = get('a_password');
+    const role = get('a_role') || (editingAccountId ? (accountsCache.find((u) => u.id === editingAccountId) || {}).role : null) || 'salesperson';
+    const managerId = get('a_manager');
+    const status = get('a_status');
+
+    if (!username) {
+      showToast(t('required'), true);
+      return;
+    }
+    if (!editingAccountId && !password) {
+      showToast(t('password'), true);
+      return;
+    }
+
+    const isSuper = me.role === 'super_admin';
+    const body = { username, email, phone };
+    if (password) body.password = password;
+    if (status) body.status = status;
+
+    let path;
+    let method;
+    if (isSuper) {
+      if (editingAccountId) {
+        path = '/api/admin/users/' + editingAccountId;
+        method = 'PUT';
+      } else {
+        path = '/api/admin/users';
+        method = 'POST';
+        body.role = role;
+      }
+      if (role === 'salesperson') body.manager_id = managerId ? Number(managerId) : null;
+    } else {
+      path = editingAccountId
+        ? '/api/admin/users/subordinates/' + editingAccountId
+        : '/api/admin/users/subordinates';
+      method = editingAccountId ? 'PUT' : 'POST';
+    }
+
+    try {
+      const { status: httpStatus } = await api(path, { method, body });
+      closeAccountModal();
+      showToast(httpStatus === 202 ? t('submitted_for_approval') : t('saved'));
+      loadAccounts();
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
+  /* ===================== Approvals ===================== */
+
+  document.querySelectorAll('#approvalScopeTabs .tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#approvalScopeTabs .tab-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      approvalScope = btn.dataset.scope;
+      loadApprovals();
+    });
+  });
+
+  function canReview(a) {
+    if (a.status !== 'pending') return false;
+    if (me.role === 'super_admin') return true;
+    if (me.role === 'sales_manager') {
+      return a.approver_role === 'sales_manager'
+        && String(a.request_type).startsWith('product_')
+        && Number(a.requester_id) !== Number(me.id);
+    }
+    return false;
+  }
+
+  async function loadApprovals() {
+    const tabs = document.getElementById('approvalScopeTabs');
+    tabs.style.display = me.role === 'salesperson' ? 'none' : '';
+    const scope = me.role === 'salesperson' ? 'mine' : approvalScope;
+    const list = document.getElementById('approvalList');
+    list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
+    try {
+      const { data } = await api('/api/approvals?scope=' + scope);
+      if (!data.length) {
+        list.innerHTML = `<div class="card empty-state">${t('no_approvals')}</div>`;
+        return;
+      }
+      list.innerHTML = data.map(renderApproval).join('');
+      bindApprovalActions();
+    } catch (e) {
+      list.innerHTML = `<div class="card empty-state">${errMsg(e)}</div>`;
+    }
+  }
+
+  function renderApproval(a) {
+    const p = payload(a);
+    let detail = '';
+    if (String(a.request_type).startsWith('product_')) {
+      detail = [p.brand, p.rated_power ? p.rated_power + 'W' : '', p.mppt_channels ? 'MPPT×' + p.mppt_channels : '', p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '', p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '', p.voc_v ? 'Voc ' + fmtDec1(p.voc_v) + 'V' : '', p.isc_a ? 'Isc ' + fmtDec1(p.isc_a) + 'A' : '', p.capacity_kwh ? p.capacity_kwh + 'kWh' : '', p.price_usd ? '$' + p.price_usd : '']
+        .filter(Boolean).join(' · ');
+    } else {
+      detail = [p.username, p.email, p.phone].filter(Boolean).join(' · ');
+    }
+    const canAct = canReview(a);
+    const isMine = Number(a.requester_id) === Number(me.id) && a.status === 'pending';
+    return `<div class="product-item approval-item approval-${a.status}">
+      <h4>${requestTypeLabel(a.request_type)}
+        <span class="status-badge approval-badge ${a.status}">${statusLabel(a.status)}</span>
+      </h4>
+      <div class="meta">${t('requester')}: ${a.requester_username} · ${new Date(a.created_at).toLocaleString()}</div>
+      ${detail ? `<div class="meta">${detail}</div>` : ''}
+      ${a.reason ? `<div class="meta">${t('request_reason')}: ${a.reason}</div>` : ''}
+      ${a.review_note ? `<div class="meta">${t('review_note')}: ${a.review_note}</div>` : ''}
+      ${a.approver_username ? `<div class="meta">${t('reviewer')}: ${a.approver_username}</div>` : ''}
+      <div class="row-actions">
+        ${canAct ? `<button class="btn btn-primary btn-sm approve-btn" data-id="${a.id}">${t('approve')}</button>` : ''}
+        ${canAct ? `<button class="btn btn-danger reject-btn" data-id="${a.id}">${t('reject')}</button>` : ''}
+        ${isMine ? `<button class="btn btn-secondary btn-sm cancel-btn" data-id="${a.id}">${t('cancel_request')}</button>` : ''}
+      </div>
+    </div>`;
+  }
+
+  function bindApprovalActions() {
+    document.querySelectorAll('#approvalList .approve-btn').forEach((b) => {
+      b.addEventListener('click', () => approveRequest(Number(b.dataset.id)));
+    });
+    document.querySelectorAll('#approvalList .reject-btn').forEach((b) => {
+      b.addEventListener('click', () => openReviewModal(Number(b.dataset.id)));
+    });
+    document.querySelectorAll('#approvalList .cancel-btn').forEach((b) => {
+      b.addEventListener('click', () => cancelRequest(Number(b.dataset.id)));
+    });
+  }
+
+  async function approveRequest(id) {
+    try {
+      await api('/api/approvals/' + id + '/approve', { method: 'POST' });
+      showToast(t('approved'));
+      loadApprovals();
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
+  async function cancelRequest(id) {
+    if (!confirm(t('confirm_cancel_request'))) return;
+    try {
+      await api('/api/approvals/' + id + '/cancel', { method: 'POST' });
+      showToast(t('cancelled'));
+      loadApprovals();
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
+  function openReviewModal(id) {
+    rejectApprovalId = id;
+    document.getElementById('reviewNote').value = '';
+    document.getElementById('reviewModal').classList.add('active');
+  }
+
+  document.getElementById('reviewCancel').addEventListener('click', () => {
+    document.getElementById('reviewModal').classList.remove('active');
+    rejectApprovalId = null;
+  });
+
+  document.getElementById('reviewConfirm').addEventListener('click', async () => {
+    const note = document.getElementById('reviewNote').value.trim();
+    if (!note) {
+      showToast(t('review_note_required'), true);
+      return;
+    }
+    try {
+      await api('/api/approvals/' + rejectApprovalId + '/reject', {
+        method: 'POST',
+        body: { review_note: note },
+      });
+      document.getElementById('reviewModal').classList.remove('active');
+      rejectApprovalId = null;
+      showToast(t('rejected'));
+      loadApprovals();
+    } catch (e) {
+      showToast(errMsg(e), true);
     }
   });
 
   /* ===================== Settings ===================== */
+
   async function loadSettings() {
     const panel = document.getElementById('settingsPanel');
-    panel.innerHTML = '<div class="empty-state">...</div>';
+    panel.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
     try {
-      const r = await fetch('/api/config');
-      const cfg = await r.json();
+      const { data } = await api('/api/config', { auth: false });
       panel.innerHTML = `
         <div class="card">
-          <div class="field"><label>${t('admin_password')}</label><input id="s_password" type="text" placeholder="••••••" /></div>
-          <div class="field"><label>${t('peak_sun_hours')}</label><input id="s_psh" type="number" step="0.1" value="${cfg.default_peak_sun_hours || 5}" /></div>
+          <div class="field"><label>${t('peak_sun_hours')}</label>
+            <input id="s_psh" type="number" step="0.1" value="${data.default_peak_sun_hours || 5}" /></div>
           <div class="field"><label>${t('default_currency')}</label>
             <select id="s_currency">
-              <option value="USD" ${cfg.default_currency === 'USD' ? 'selected' : ''}>USD</option>
-              <option value="KHR" ${cfg.default_currency === 'KHR' ? 'selected' : ''}>KHR</option>
+              <option value="USD" ${data.default_currency === 'USD' ? 'selected' : ''}>USD</option>
+              <option value="KHR" ${data.default_currency === 'KHR' ? 'selected' : ''}>KHR</option>
             </select>
           </div>
-          <div class="field"><label>${t('usd_to_khr')}</label><input id="s_rate" type="number" value="${cfg.usd_to_khr || 4100}" /></div>
+          <div class="field"><label>${t('usd_to_khr')}</label>
+            <input id="s_rate" type="number" value="${data.usd_to_khr || 4100}" /></div>
+          <div class="row">
+            <div class="field"><label>${t('installation_fee_percent')}</label>
+              <input id="s_install_pct" type="number" step="0.1" value="${data.installation_fee_percent || 20}" /></div>
+            <div class="field"><label>${t('installation_fee_min_usd')}</label>
+              <input id="s_install_min" type="number" step="1" value="${data.installation_fee_min_usd || 500}" /></div>
+          </div>
           <button class="btn btn-primary" id="saveSettings">${t('save_settings')}</button>
         </div>`;
       document.getElementById('saveSettings').addEventListener('click', saveSettings);
@@ -352,54 +886,53 @@
   }
 
   async function saveSettings() {
-    const pwd = prompt(t('admin_password'));
-    if (!pwd) return;
     const updates = {
       default_peak_sun_hours: document.getElementById('s_psh').value,
       default_currency: document.getElementById('s_currency').value,
       usd_to_khr: document.getElementById('s_rate').value,
+      installation_fee_percent: document.getElementById('s_install_pct').value,
+      installation_fee_min_usd: document.getElementById('s_install_min').value,
     };
-    const newPwd = document.getElementById('s_password').value;
-    if (newPwd) updates.admin_password = newPwd;
     try {
-      const r = await fetch('/api/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pwd, updates }),
-      });
-      if (r.ok) showToast(t('saved'));
-      else showToast(t('error'), true);
+      await api('/api/config', { method: 'PUT', body: { updates } });
+      showToast(t('saved'));
     } catch (e) {
-      showToast(t('error'), true);
+      showToast(errMsg(e), true);
     }
   }
 
-  /* ===================== Utils ===================== */
-  function showToast(msg, isError) {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.style.background = isError ? 'var(--danger)' : 'var(--success)';
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2000);
-  }
+  /* ===================== Language / bootstrap ===================== */
 
   function initLang() {
     const lang = getCurrentLang();
     document.querySelectorAll('#langSwitcher button').forEach((b) => {
       b.classList.toggle('active', b.dataset.lang === lang);
-      b.addEventListener('click', () => {
-        setLang(b.dataset.lang);
-        initLang();
-        if (!document.getElementById('adminPanel').style.display) loadTab(currentTab);
-      });
     });
     applyLang();
   }
 
-  function bootstrap() {
+  document.querySelectorAll('#langSwitcher button').forEach((b) => {
+    b.addEventListener('click', () => {
+      setLang(b.dataset.lang);
+      initLang();
+      if (me) {
+        document.getElementById('userRoleBadge').textContent = t('role_' + me.role);
+        if (currentTab === 'products') {
+          updateProductHint();
+          loadProducts();
+        } else {
+          switchTab(currentTab);
+        }
+      }
+    });
+  });
+
+  async function bootstrap() {
     initLang();
-    if (adminToken) showPanel();
+    const user = await loadMe();
+    if (user) showPanel();
   }
+
   if (document.readyState === 'complete') {
     bootstrap();
   } else {

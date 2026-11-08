@@ -15,7 +15,7 @@ async function initDb() {
       await pool.query(stmt);
     }
     console.log('Database initialized successfully.');
-    console.log('Default admin password: admin123');
+    console.log('Create the first super admin with: npm run create-super-admin -- <username> <password>');
   } catch (err) {
     console.error('Failed to initialize database:', err.message);
     process.exit(1);

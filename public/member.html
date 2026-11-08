@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#f59e0b" />
+  <title data-i18n="member_portal">Member Portal</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="lang-switcher" id="langSwitcher">
+      <button data-lang="km" title="ខ្មែរ"><img src="https://flagcdn.com/24x18/kh.png" alt="ខ្មែរ" /></button>
+      <button data-lang="en" title="English"><img src="https://flagcdn.com/24x18/gb.png" alt="English" /></button>
+      <button data-lang="zh" title="中文"><img src="https://flagcdn.com/24x18/cn.png" alt="中文" /></button>
+    </div>
+    <h1 data-i18n="member_portal">Member Portal</h1>
+    <p class="header-links">
+      <a href="/"><span data-i18n="home">Home</span></a>
+      <span>·</span>
+      <a href="/admin"><span data-i18n="admin">Admin</span></a>
+    </p>
+  </header>
+
+  <div class="container container-wide">
+    <!-- Auth -->
+    <div id="authBox" style="display:none">
+      <div class="auth-card card">
+        <div class="segment" id="authTabs">
+          <button class="active" data-mode="login" data-i18n="member_login">Member Login</button>
+          <button data-mode="register" data-i18n="register">Register</button>
+        </div>
+
+        <div id="loginForm">
+          <div class="field">
+            <label data-i18n="login_method">Login method</label>
+            <select id="loginMethod">
+              <option value="password" data-i18n="login_method_password">Password login</option>
+              <option value="code" data-i18n="login_method_code">Email code login</option>
+            </select>
+          </div>
+
+          <div id="loginPasswordFields">
+            <div class="field">
+              <label data-i18n="login_identifier">Username / Email / Phone</label>
+              <input id="m_identifier" autocomplete="username" />
+            </div>
+            <div class="field">
+              <label data-i18n="password">Password</label>
+              <input id="m_password" type="password" autocomplete="current-password" />
+            </div>
+            <button class="btn btn-primary" id="memberLoginBtn" data-i18n="login">Login</button>
+          </div>
+
+          <div id="loginCodeFields" style="display:none">
+            <div class="field">
+              <label data-i18n="email">Email</label>
+              <div class="row">
+                <input id="cl_email" type="email" autocomplete="email" />
+                <button class="btn btn-secondary btn-sm" id="sendLoginCodeBtn" style="width:auto" data-i18n="send_code">Send Code</button>
+              </div>
+            </div>
+            <div class="field">
+              <label data-i18n="verification_code">Verification Code</label>
+              <input id="cl_code" inputmode="numeric" maxlength="6" />
+            </div>
+            <div class="select-note" id="devHintLogin" style="display:none" data-i18n="dev_mode_hint"></div>
+            <button class="btn btn-primary" id="codeLoginBtn" data-i18n="login">Login</button>
+          </div>
+        </div>
+
+        <div id="registerForm" style="display:none">
+          <div class="field">
+            <label data-i18n="account_type">Account Type</label>
+            <select id="r_role">
+              <option value="member" data-i18n="role_member">Member</option>
+              <option value="salesperson" data-i18n="role_salesperson">Salesperson</option>
+            </select>
+          </div>
+          <div class="field">
+            <label data-i18n="full_name">Name</label>
+            <input id="r_name" maxlength="100" autocomplete="name" />
+          </div>
+          <div class="field">
+            <label data-i18n="username">Username</label>
+            <input id="r_username" autocomplete="username" />
+            <div class="select-note" data-i18n="username_hint"></div>
+          </div>
+          <div class="field">
+            <label data-i18n="phone">Phone</label>
+            <div class="phone-row">
+              <select id="r_phone_country"></select>
+              <input id="r_phone" autocomplete="tel" />
+            </div>
+            <div class="select-note" id="r_phone_display"></div>
+          </div>
+          <div class="field">
+            <label data-i18n="email">Email</label>
+            <div class="row">
+              <input id="r_email" type="email" autocomplete="email" />
+              <button class="btn btn-secondary btn-sm" id="sendCodeBtn" style="width:auto" data-i18n="send_code">Send Code</button>
+            </div>
+          </div>
+          <div class="field">
+            <label data-i18n="verification_code">Verification Code</label>
+            <input id="r_code" inputmode="numeric" maxlength="6" />
+          </div>
+          <div class="field">
+            <label data-i18n="password">Password</label>
+            <input id="r_password" type="password" autocomplete="new-password" />
+            <div class="select-note" data-i18n="password_hint">At least 8 characters</div>
+          </div>
+          <div class="select-note" id="devHint" style="display:none" data-i18n="dev_mode_hint"></div>
+          <button class="btn btn-primary" id="registerBtn" data-i18n="register">Register</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member panel -->
+    <div id="memberPanel" style="display:none">
+      <div class="user-bar card">
+        <div class="user-info">
+          <span id="memberName" class="user-name"></span>
+          <span class="role-badge role-member" data-i18n="role_member">Member</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" id="toggleProfileBtn" style="width:auto" data-i18n="profile">Profile</button>
+          <button class="btn btn-secondary btn-sm" id="memberLogoutBtn" style="width:auto" data-i18n="logout">Logout</button>
+        </div>
+      </div>
+
+      <div id="profileCard" class="card" style="display:none">
+        <h2 class="card-title" data-i18n="profile">Profile</h2>
+        <div class="field">
+          <label data-i18n="full_name">Name</label>
+          <input id="p_name" maxlength="100" />
+        </div>
+        <div class="field">
+          <label data-i18n="phone">Phone</label>
+          <input id="p_phone" />
+        </div>
+        <div class="field">
+          <label data-i18n="email">Email</label>
+          <input id="p_email" type="email" disabled />
+        </div>
+        <button class="btn btn-primary" id="saveProfileBtn" data-i18n="save_profile">Save Profile</button>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 class="card-title" style="margin:0" data-i18n="my_cases">My Cases</h2>
+          <button class="btn btn-secondary btn-sm" id="addCaseBtn" style="width:auto" data-i18n="add_case">+ Add Case</button>
+        </div>
+        <div id="caseList"></div>
+      </div>
+
+      <div class="card" id="configuratorCard" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+          <h2 class="card-title" style="margin:0" data-i18n="app_title">Solar System Configurator</h2>
+          <button class="btn btn-secondary btn-sm" id="closeConfigurator" style="width:auto" data-i18n="cancel">Cancel</button>
+        </div>
+        <div class="select-note" id="activeCaseLabel" style="margin-bottom:12px"></div>
+        <div class="scope-notice" data-i18n="scope_notice"></div>
+
+        <div id="loadBuilderCard" class="load-builder" style="display:none">
+          <div class="load-builder-head">
+            <h3 data-i18n="load_builder_title">Scenario Load Checklist</h3>
+            <div class="load-builder-tools">
+              <span class="select-note" id="loadSaveStatus" style="margin:0"></span>
+              <button type="button" class="btn btn-secondary btn-sm" id="addLoadRow" style="width:auto" data-i18n="add_device">+ Add device</button>
+            </div>
+          </div>
+          <div class="select-note" id="scenarioGuide"></div>
+          <div id="loadRows"></div>
+          <div class="select-note" id="loadSummary"></div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label><span data-i18n="day_peak_power">Day Peak Power (W)</span> <button type="button" class="info-btn" data-tip="load" title="?">?</button></label>
+            <input type="number" id="dayPower" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label data-i18n="day_hours">Day Usage Hours (sunlight)</label>
+            <input type="number" id="dayHours" min="0" max="24" step="0.1" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label><span data-i18n="night_peak_power">Night Peak Power (W)</span> <button type="button" class="info-btn" data-tip="load" title="?">?</button></label>
+            <input type="number" id="nightPower" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label data-i18n="night_hours">Night Usage Hours (no sunlight)</label>
+            <input type="number" id="nightHours" min="0" max="24" step="0.1" />
+          </div>
+        </div>
+        <div class="select-note" id="hybridLoadNote" style="display:none;margin-bottom:10px" data-i18n="hybrid_load_note"></div>
+        <div class="row" id="backupLoadRow" style="display:none">
+          <div class="field">
+            <label><span data-i18n="backup_peak_power">Backup Critical Load Peak (W)</span> <button type="button" class="info-btn" data-tip="backup" title="?">?</button></label>
+            <input type="number" id="backupPower" min="0" step="1" />
+            <div class="select-note" data-i18n="backup_load_note"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label data-i18n="autonomy_days">Backup Days</label>
+            <input type="number" id="autonomyDays" min="0" step="0.5" value="1" />
+            <div class="select-note" id="autonomyWarn"></div>
+          </div>
+          <div class="field">
+            <label data-i18n="battery_type">Battery Type</label>
+            <select id="batteryType">
+              <option value="" data-i18n="battery_any">Any</option>
+              <option value="lead-acid" data-i18n="battery_lead_acid">Lead-acid</option>
+              <option value="lfp" data-i18n="battery_lfp">LiFePO4</option>
+              <option value="lithium-ternary" data-i18n="battery_ternary">Ternary Lithium</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label><span data-i18n="strategy">Configuration Strategy</span> <button type="button" class="info-btn" data-tip="strategy" title="?">?</button></label>
+          <select id="strategy">
+            <option value="1" data-i18n="strategy_1">High ROI, low generation guarantee</option>
+            <option value="2" selected data-i18n="strategy_2">Medium ROI, medium generation (recommended)</option>
+            <option value="3" data-i18n="strategy_3">Low ROI, high generation guarantee</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="quoteBtn" data-i18n="calculate">Get Recommendation</button>
+      </div>
+
+      <div id="quoteResults"></div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h2 class="card-title" style="margin:0" data-i18n="product_catalog">On-sale Products</h2>
+          <button class="btn btn-secondary btn-sm" id="catalogToggle" style="width:auto" data-i18n="browse_products">Browse Products</button>
+        </div>
+        <div id="catalogBody" style="display:none;margin-top:12px">
+          <div class="tabs sub-tabs" id="catalogTabs">
+            <button class="tab-btn active" data-cat="inverters" data-i18n="inverter_tab">Inverters</button>
+            <button class="tab-btn" data-cat="panels" data-i18n="panel_tab">Solar Panels</button>
+            <button class="tab-btn" data-cat="batteries" data-i18n="battery_tab">Batteries</button>
+          </div>
+          <div id="catalogList" class="catalog-grid" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Case modal -->
+  <div class="modal-overlay" id="caseModal">
+    <div class="modal">
+      <h2 id="caseModalTitle" data-i18n="add_case">Add Case</h2>
+      <div class="field"><label data-i18n="usage_scenario">Where is the solar system used?</label>
+        <select id="c_scenario">
+          <option value="" data-i18n="scenario_none">Choose later</option>
+          <option value="house" data-i18n="scenario_house">Household</option>
+          <option value="supermarket" data-i18n="scenario_supermarket">Supermarket / Shop</option>
+          <option value="resort" data-i18n="scenario_resort">Resort / Hotel</option>
+          <option value="cafe" data-i18n="scenario_cafe">Coffee shop / Restaurant</option>
+        </select>
+        <div class="select-note" id="c_scenario_hint" style="display:none"></div>
+      </div>
+      <div class="field"><label><span data-i18n="case_name">Case Name</span> (<span data-i18n="optional">Optional</span>)</label><input id="c_name" maxlength="100" /></div>
+      <div class="field"><label data-i18n="project_address">Project Address</label><input id="c_address" maxlength="255" /></div>
+      <div class="field"><label data-i18n="has_grid">Grid Power Available</label>
+        <select id="c_has_grid">
+          <option value="1" data-i18n="has_grid_yes">Yes</option>
+          <option value="0" data-i18n="has_grid_no">No</option>
+        </select>
+      </div>
+      <div class="field"><label data-i18n="install_type">Installation Type</label>
+        <select id="c_install_type">
+          <option value="rooftop" data-i18n="install_rooftop">Rooftop PV (installation ~20%)</option>
+          <option value="ground" data-i18n="install_ground">Ground-mounted (installation ~15%)</option>
+        </select>
+        <div class="select-note" data-i18n="install_fee_survey_note">Final installation cost depends on on-site survey.</div>
+      </div>
+      <div class="field"><label data-i18n="system_mode">System Mode</label>
+        <select id="c_system_mode">
+          <option value="hybrid" data-i18n="hybrid">Hybrid</option>
+          <option value="off-grid" data-i18n="off_grid">Off-grid</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="field"><label><span data-i18n="electricity_price">Electricity Price</span> (<span data-i18n="optional">Optional</span>)</label>
+          <input id="c_price" type="number" step="0.0001" min="0" />
+        </div>
+        <div class="field"><label data-i18n="currency">Currency</label>
+          <select id="c_currency">
+            <option value="USD">USD</option>
+            <option value="KHR">KHR</option>
+          </select>
+        </div>
+      </div>
+      <div class="select-note" data-i18n="electricity_price_hint">Optional. Used for installation cost and PBP.</div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="caseCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary" id="caseSave" data-i18n="save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tip modal -->
+  <div class="modal-overlay" id="tipModal">
+    <div class="modal">
+      <h2 id="tipTitle"></h2>
+      <div id="tipBody" class="tip-body"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="tipClose" data-i18n="got_it">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phone ambiguity modal -->
+  <div class="modal-overlay" id="phonePickModal">
+    <div class="modal">
+      <h2 data-i18n="phone_ambiguous_title">Choose the phone region</h2>
+      <div class="select-note" data-i18n="phone_ambiguous_note"></div>
+      <div id="phonePickOptions" class="phone-pick-list"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="phonePickCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary" id="phonePickConfirm" data-i18n="confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/member.js"></script>
+</body>
+</html>

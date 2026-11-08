@@ -58,7 +58,7 @@ router.post('/', async (req, res) => {
     const solar_power_needed = daily_energy_wh / (psh * panel_eff * charge_eff);
 
     // ---- Fetch candidate products ----
-    let invSql = 'SELECT * FROM inverters WHERE rated_power >= ?';
+    let invSql = "SELECT * FROM inverters WHERE rated_power >= ? AND sales_status = 'on_sale'";
     const invParams = [inverter_power_needed];
     if (system_voltage) {
       invSql += ' AND battery_voltage = ?';
@@ -71,7 +71,7 @@ router.post('/', async (req, res) => {
     // Batteries - filter by type if specified, match voltage if possible
     let batSql = 'SELECT * FROM batteries';
     const batParams = [];
-    const batConds = [];
+    const batConds = ["sales_status = 'on_sale'"];
     if (battery_type) {
       batConds.push('type = ?');
       batParams.push(battery_type);
@@ -89,10 +89,10 @@ router.post('/', async (req, res) => {
     // If no matching battery, relax voltage constraint
     let battery_candidates = batRows;
     if (battery_candidates.length === 0 && inverter) {
-      let relaxed = 'SELECT * FROM batteries';
+      let relaxed = "SELECT * FROM batteries WHERE sales_status = 'on_sale'";
       const rp = [];
       if (battery_type) {
-        relaxed += ' WHERE type = ?';
+        relaxed += ' AND type = ?';
         rp.push(battery_type);
       }
       relaxed += ' ORDER BY capacity_kwh ASC';
@@ -101,7 +101,7 @@ router.post('/', async (req, res) => {
     }
     // If still none, try all
     if (battery_candidates.length === 0) {
-      const [all] = await pool.query('SELECT * FROM batteries ORDER BY capacity_kwh ASC');
+      const [all] = await pool.query("SELECT * FROM batteries WHERE sales_status = 'on_sale' ORDER BY capacity_kwh ASC");
       battery_candidates = all;
     }
 
@@ -121,7 +121,7 @@ router.post('/', async (req, res) => {
     }
 
     // Solar panels - pick smallest panel that is reasonable, count needed
-    const [panelRows] = await pool.query('SELECT * FROM solar_panels ORDER BY rated_power ASC');
+    const [panelRows] = await pool.query("SELECT * FROM solar_panels WHERE sales_status = 'on_sale' ORDER BY rated_power ASC");
     let panel = null;
     let panel_count = 0;
     if (panelRows.length) {

@@ -10,9 +10,9 @@
 <body>
   <header class="app-header">
     <div class="lang-switcher" id="langSwitcher">
-      <button data-lang="en">EN</button>
-      <button data-lang="zh">中文</button>
-      <button data-lang="km">ខ្មែរ</button>
+      <button data-lang="km" title="ខ្មែរ"><img src="https://flagcdn.com/24x18/kh.png" alt="ខ្មែរ" /></button>
+      <button data-lang="en" title="English"><img src="https://flagcdn.com/24x18/gb.png" alt="English" /></button>
+      <button data-lang="zh" title="中文"><img src="https://flagcdn.com/24x18/cn.png" alt="中文" /></button>
     </div>
     <h1 data-i18n="app_title">Solar System Configurator</h1>
     <p data-i18n="app_subtitle">Get your customized solar power system</p>
@@ -21,21 +21,33 @@
   <div class="container">
     <!-- Input form -->
     <div class="card">
-      <div class="field">
-        <label data-i18n="load_power">Load Power (W)</label>
-        <input type="number" id="loadPower" min="0" step="1" data-i18n-placeholder="load_power_ph" placeholder="e.g. 1500" />
+      <div class="scope-notice" data-i18n="scope_notice"></div>
+      <div class="row">
+        <div class="field">
+          <label><span data-i18n="day_peak_power">Day Peak Power (W)</span> <button type="button" class="info-btn" data-tip="load" title="?">?</button></label>
+          <input type="number" id="dayPower" min="0" step="1" placeholder="e.g. 1500" />
+        </div>
+        <div class="field">
+          <label data-i18n="day_hours">Day Usage Hours (sunlight)</label>
+          <input type="number" id="dayHours" min="0" max="24" step="0.5" placeholder="e.g. 6" />
+        </div>
       </div>
       <div class="row">
         <div class="field">
-          <label data-i18n="daily_hours">Daily Usage Hours</label>
-          <input type="number" id="dailyHours" min="0" step="0.5" data-i18n-placeholder="daily_hours_ph" placeholder="e.g. 8" />
+          <label><span data-i18n="night_peak_power">Night Peak Power (W)</span> <button type="button" class="info-btn" data-tip="load" title="?">?</button></label>
+          <input type="number" id="nightPower" min="0" step="1" placeholder="e.g. 500" />
         </div>
+        <div class="field">
+          <label data-i18n="night_hours">Night Usage Hours (no sunlight)</label>
+          <input type="number" id="nightHours" min="0" max="24" step="0.5" placeholder="e.g. 4" />
+        </div>
+      </div>
+      <div class="row">
         <div class="field">
           <label data-i18n="autonomy_days">Backup Days</label>
           <input type="number" id="autonomyDays" min="0" step="0.5" value="1" data-i18n-placeholder="autonomy_days_ph" placeholder="e.g. 1" />
+          <div class="select-note" id="autonomyWarn"></div>
         </div>
-      </div>
-      <div class="row">
         <div class="field">
           <label data-i18n="battery_type">Battery Type</label>
           <select id="batteryType">
@@ -45,14 +57,14 @@
             <option value="lithium-ternary" data-i18n="battery_ternary">Ternary Lithium</option>
           </select>
         </div>
-        <div class="field">
-          <label data-i18n="system_voltage">System Voltage</label>
-          <select id="systemVoltage">
-            <option value="" data-i18n="voltage_any">Any</option>
-            <option value="24V">24V</option>
-            <option value="48V">48V</option>
-          </select>
-        </div>
+      </div>
+      <div class="field">
+        <label><span data-i18n="strategy">Configuration Strategy</span> <button type="button" class="info-btn" data-tip="strategy" title="?">?</button></label>
+        <select id="strategy">
+          <option value="1" data-i18n="strategy_1">High ROI, low generation guarantee</option>
+          <option value="2" selected data-i18n="strategy_2">Medium ROI, medium generation (recommended)</option>
+          <option value="3" data-i18n="strategy_3">Low ROI, high generation guarantee</option>
+        </select>
       </div>
       <button class="btn btn-primary" id="calcBtn" data-i18n="calculate">Get Recommendation</button>
     </div>
@@ -61,11 +73,24 @@
     <div id="results"></div>
 
     <div class="admin-link">
+      <a href="/member" data-i18n="register_for_exact">Register for an exact quote</a>
+      &nbsp;·&nbsp;
       <a href="/admin" data-i18n="admin">Admin</a>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- Tip modal -->
+  <div class="modal-overlay" id="tipModal">
+    <div class="modal">
+      <h2 id="tipTitle"></h2>
+      <div id="tipBody" class="tip-body"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="tipClose" data-i18n="got_it">Got it</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/i18n.js"></script>
   <script src="js/app.js"></script>

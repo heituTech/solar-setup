@@ -10,51 +10,126 @@
 <body>
   <header class="app-header">
     <div class="lang-switcher" id="langSwitcher">
-      <button data-lang="en">EN</button>
-      <button data-lang="zh">中文</button>
-      <button data-lang="km">ខ្មែរ</button>
+      <button data-lang="km" title="ខ្មែរ"><img src="https://flagcdn.com/24x18/kh.png" alt="ខ្មែរ" /></button>
+      <button data-lang="en" title="English"><img src="https://flagcdn.com/24x18/gb.png" alt="English" /></button>
+      <button data-lang="zh" title="中文"><img src="https://flagcdn.com/24x18/cn.png" alt="中文" /></button>
     </div>
     <h1 data-i18n="admin">Admin</h1>
-    <p style="margin-top:6px"><a href="/" style="color:#fff;font-size:13px;opacity:0.9">← Home</a></p>
+    <p class="header-links">
+      <a href="/"><span data-i18n="home">Home</span></a>
+      <span>·</span>
+      <a href="/member"><span data-i18n="member_portal">Member Portal</span></a>
+    </p>
   </header>
 
-  <div class="container">
+  <div class="container container-wide">
     <!-- Login -->
-    <div id="loginBox" class="card">
+    <div id="loginBox" class="card auth-card">
+      <h2 class="card-title" data-i18n="staff_login">Staff Login</h2>
       <div class="field">
-        <label data-i18n="admin_login">Admin Login</label>
-        <input type="password" id="adminPwd" data-i18n-placeholder="password" placeholder="Password" />
+        <label data-i18n="login_identifier">Username / Email</label>
+        <input type="text" id="loginIdentifier" autocomplete="username" data-i18n-placeholder="login_identifier_ph" placeholder="username or email" />
+      </div>
+      <div class="field">
+        <label data-i18n="password">Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" data-i18n-placeholder="password" placeholder="Password" />
       </div>
       <button class="btn btn-primary" id="loginBtn" data-i18n="login">Login</button>
     </div>
 
-    <!-- Admin panel -->
+    <!-- Panels -->
     <div id="adminPanel" style="display:none">
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="inverters" data-i18n="inverter_tab">Inverters</button>
-        <button class="tab-btn" data-tab="panels" data-i18n="panel_tab">Solar Panels</button>
-        <button class="tab-btn" data-tab="batteries" data-i18n="battery_tab">Batteries</button>
+      <div class="user-bar card">
+        <div class="user-info">
+          <span id="userName" class="user-name"></span>
+          <span id="userRoleBadge" class="role-badge"></span>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="logoutBtn" style="width:auto" data-i18n="logout">Logout</button>
+      </div>
+
+      <div class="tabs" id="mainTabs">
+        <button class="tab-btn active" data-tab="products" data-i18n="products">Products</button>
+        <button class="tab-btn" data-tab="accounts" data-i18n="tab_accounts">Accounts</button>
+        <button class="tab-btn" data-tab="approvals" data-i18n="tab_approvals">Approvals</button>
         <button class="tab-btn" data-tab="settings" data-i18n="settings">Settings</button>
       </div>
 
-      <div class="card" style="margin-bottom:14px">
-        <button class="btn btn-primary btn-sm" id="addBtn" style="width:auto" data-i18n="add_product">+ Add Product</button>
-        <button class="btn btn-secondary btn-sm" id="logoutBtn" style="width:auto;margin-left:8px" data-i18n="logout">Logout</button>
+      <!-- Products -->
+      <div id="productsPanel" style="display:none">
+        <div class="card toolbar">
+          <div class="tabs sub-tabs">
+            <button class="tab-btn active" data-cat="inverters" data-i18n="inverter_tab">Inverters</button>
+            <button class="tab-btn" data-cat="panels" data-i18n="panel_tab">Solar Panels</button>
+            <button class="tab-btn" data-cat="batteries" data-i18n="battery_tab">Batteries</button>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary btn-sm" id="addProductBtn" style="width:auto" data-i18n="add_product">+ Add Product</button>
+            <span class="inline-hint" id="productHint"></span>
+          </div>
+        </div>
+        <div id="productList"></div>
       </div>
 
-      <div id="productList"></div>
+      <!-- Accounts -->
+      <div id="accountsPanel" style="display:none">
+        <div class="card toolbar">
+          <span class="inline-hint" id="accountHint"></span>
+          <button class="btn btn-primary btn-sm" id="addAccountBtn" style="width:auto" data-i18n="add_account">+ Add Account</button>
+        </div>
+        <div id="accountList"></div>
+      </div>
+
+      <!-- Approvals -->
+      <div id="approvalsPanel" style="display:none">
+        <div class="card toolbar">
+          <div class="tabs sub-tabs" id="approvalScopeTabs">
+            <button class="tab-btn active" data-scope="to_review" data-i18n="scope_to_review">To Review</button>
+            <button class="tab-btn" data-scope="mine" data-i18n="scope_mine">My Requests</button>
+          </div>
+        </div>
+        <div id="approvalList"></div>
+      </div>
+
+      <!-- Settings -->
       <div id="settingsPanel" style="display:none"></div>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div class="modal-overlay" id="modal">
+  <!-- Product modal -->
+  <div class="modal-overlay" id="productModal">
     <div class="modal">
-      <h2 id="modalTitle" data-i18n="add_product">Add Product</h2>
-      <div id="modalBody"></div>
+      <h2 id="productModalTitle" data-i18n="add_product">Add Product</h2>
+      <div id="productModalBody"></div>
       <div class="actions">
-        <button class="btn btn-secondary" id="modalCancel" data-i18n="cancel">Cancel</button>
-        <button class="btn btn-primary" id="modalSave" data-i18n="save">Save</button>
+        <button class="btn btn-secondary" id="productCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary" id="productSave" data-i18n="save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account modal -->
+  <div class="modal-overlay" id="accountModal">
+    <div class="modal">
+      <h2 id="accountModalTitle" data-i18n="add_account">Add Account</h2>
+      <div id="accountModalBody"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="accountCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary" id="accountSave" data-i18n="save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject modal -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal">
+      <h2 data-i18n="reject_reason">Reject Reason</h2>
+      <div class="field">
+        <label data-i18n="review_note">Note</label>
+        <textarea id="reviewNote" rows="3" data-i18n-placeholder="review_note_ph" placeholder="Explain why this request is rejected"></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="reviewCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-danger" id="reviewConfirm" style="width:auto" data-i18n="reject">Reject</button>
       </div>
     </div>
   </div>

@@ -1,183 +1,124 @@
 const express = require('express');
-const pool = require('../db');
 const router = express.Router();
+const { requireAuth, requireRole } = require('../middleware/auth');
+const catalog = require('../services/catalog');
+const approvals = require('../services/approvals');
 
-// Helper to parse tech JSON
-const parseTech = (row) => {
-  if (row && row.technology) {
-    try {
-      row.technology = JSON.parse(row.technology);
-    } catch {
-      row.technology = [];
+const STAFF_ROLES = ['super_admin', 'sales_manager', 'salesperson'];
+const DIRECT_ROLES = ['super_admin', 'sales_manager'];
+
+function sendError(res, e) {
+  res.status(e.status || 500).json({ error: e.message });
+}
+
+function pickProductFields(category, body) {
+  const cfg = catalog.CATEGORY_CONFIG[category];
+  const out = {};
+  for (const field of cfg.fields) {
+    if (field in (body || {})) out[field] = body[field];
+  }
+  return out;
+}
+
+/* Public catalog: on-sale products only */
+router.get('/:category', async (req, res) => {
+  try {
+    res.json(await catalog.listPublic(req.params.category));
+  } catch (e) {
+    sendError(res, e);
+  }
+});
+
+/* Admin catalog: includes discontinued products */
+router.get('/admin/:category', requireAuth, requireRole(...STAFF_ROLES), async (req, res) => {
+  try {
+    res.json(await catalog.listAdmin(req.params.category, req.query.status));
+  } catch (e) {
+    sendError(res, e);
+  }
+});
+
+/* Create */
+router.post('/:category', requireAuth, async (req, res) => {
+  const category = req.params.category;
+  try {
+    const data = pickProductFields(category, req.body);
+    catalog.normalizeProductPayload(category, data, { partial: false });
+
+    if (DIRECT_ROLES.includes(req.user.role)) {
+      const id = await catalog.createProduct(category, data);
+      return res.json({ id });
     }
-  }
-  return row;
-};
 
-/* ============================ INVERTERS ============================ */
-router.get('/inverters', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT * FROM inverters ORDER BY rated_power ASC');
-    res.json(rows);
+    const approvalId = await approvals.createRequest({
+      requesterId: req.user.id,
+      requestType: 'product_create',
+      approverRole: 'sales_manager',
+      targetTable: catalog.tableForCategory(category),
+      payload: data,
+      reason: req.body.reason || null,
+    });
+    res.status(202).json({ approval_id: approvalId, status: 'pending' });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    sendError(res, e);
   }
 });
 
-router.post('/inverters', async (req, res) => {
-  const { brand, rated_power, type, battery_voltage, mppt_channels, warranty_months, price_usd, price_khr } = req.body;
+/* Update */
+router.put('/:category/:id', requireAuth, async (req, res) => {
+  const category = req.params.category;
+  const id = Number(req.params.id);
   try {
-    const [r] = await pool.query(
-      `INSERT INTO inverters (brand, rated_power, type, battery_voltage, mppt_channels, warranty_months, price_usd, price_khr)
-       VALUES (?,?,?,?,?,?,?,?)`,
-      [brand, rated_power, type, battery_voltage || '48V', mppt_channels || 1, warranty_months || 24, price_usd, price_khr || 0]
-    );
-    res.json({ id: r.insertId });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
+    const data = pickProductFields(category, req.body);
+    catalog.normalizeProductPayload(category, data, { partial: true });
+    const existing = await catalog.getProduct(category, id);
+    if (!existing) return res.status(404).json({ error: 'product_not_found' });
 
-router.put('/inverters/:id', async (req, res) => {
-  const { id } = req.params;
-  const fields = ['brand', 'rated_power', 'type', 'battery_voltage', 'mppt_channels', 'warranty_months', 'price_usd', 'price_khr'];
-  const sets = [];
-  const vals = [];
-  for (const f of fields) {
-    if (req.body[f] !== undefined) {
-      sets.push(`${f}=?`);
-      vals.push(req.body[f]);
+    if (DIRECT_ROLES.includes(req.user.role)) {
+      await catalog.updateProduct(category, id, data);
+      return res.json({ ok: true });
     }
-  }
-  if (!sets.length) return res.status(400).json({ error: 'No fields' });
-  vals.push(id);
-  try {
-    await pool.query(`UPDATE inverters SET ${sets.join(',')} WHERE id=?`, vals);
-    res.json({ ok: true });
+
+    const approvalId = await approvals.createRequest({
+      requesterId: req.user.id,
+      requestType: 'product_update',
+      approverRole: 'sales_manager',
+      targetTable: catalog.tableForCategory(category),
+      targetId: id,
+      payload: data,
+      reason: req.body.reason || null,
+    });
+    res.status(202).json({ approval_id: approvalId, status: 'pending' });
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    sendError(res, e);
   }
 });
 
-router.delete('/inverters/:id', async (req, res) => {
+/* Delete */
+router.delete('/:category/:id', requireAuth, async (req, res) => {
+  const category = req.params.category;
+  const id = Number(req.params.id);
   try {
-    await pool.query('DELETE FROM inverters WHERE id=?', [req.params.id]);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
+    const existing = await catalog.getProduct(category, id);
+    if (!existing) return res.status(404).json({ error: 'product_not_found' });
 
-/* ============================ SOLAR PANELS ============================ */
-router.get('/panels', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT * FROM solar_panels ORDER BY rated_power ASC');
-    res.json(rows.map(parseTech));
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-router.post('/panels', async (req, res) => {
-  const { brand, rated_power, length_mm, width_mm, height_mm, voltage_min, voltage_max, glass_type, technology, warranty_months, price_usd, price_khr } = req.body;
-  try {
-    const tech = technology ? JSON.stringify(technology) : '[]';
-    const [r] = await pool.query(
-      `INSERT INTO solar_panels (brand, rated_power, length_mm, width_mm, height_mm, voltage_min, voltage_max, glass_type, technology, warranty_months, price_usd, price_khr)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [brand, rated_power, length_mm || null, width_mm || null, height_mm || null, voltage_min || null, voltage_max || null, glass_type || 'single', tech, warranty_months || 240, price_usd, price_khr || 0]
-    );
-    res.json({ id: r.insertId });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-router.put('/panels/:id', async (req, res) => {
-  const { id } = req.params;
-  const fields = ['brand', 'rated_power', 'length_mm', 'width_mm', 'height_mm', 'voltage_min', 'voltage_max', 'glass_type', 'warranty_months', 'price_usd', 'price_khr'];
-  const sets = [];
-  const vals = [];
-  for (const f of fields) {
-    if (req.body[f] !== undefined) {
-      sets.push(`${f}=?`);
-      vals.push(req.body[f]);
+    if (DIRECT_ROLES.includes(req.user.role)) {
+      await catalog.deleteProduct(category, id);
+      return res.json({ ok: true });
     }
-  }
-  if (req.body.technology !== undefined) {
-    sets.push('technology=?');
-    vals.push(JSON.stringify(req.body.technology));
-  }
-  if (!sets.length) return res.status(400).json({ error: 'No fields' });
-  vals.push(id);
-  try {
-    await pool.query(`UPDATE solar_panels SET ${sets.join(',')} WHERE id=?`, vals);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
 
-router.delete('/panels/:id', async (req, res) => {
-  try {
-    await pool.query('DELETE FROM solar_panels WHERE id=?', [req.params.id]);
-    res.json({ ok: true });
+    const approvalId = await approvals.createRequest({
+      requesterId: req.user.id,
+      requestType: 'product_delete',
+      approverRole: 'sales_manager',
+      targetTable: catalog.tableForCategory(category),
+      targetId: id,
+      payload: { id, brand: existing.brand },
+      reason: req.body.reason || null,
+    });
+    res.status(202).json({ approval_id: approvalId, status: 'pending' });
   } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-/* ============================ BATTERIES ============================ */
-router.get('/batteries', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT * FROM batteries ORDER BY capacity_kwh ASC');
-    res.json(rows);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-router.post('/batteries', async (req, res) => {
-  const { brand, capacity_kwh, nominal_voltage, type, discharge_rate, warranty_months, price_usd, price_khr } = req.body;
-  try {
-    const [r] = await pool.query(
-      `INSERT INTO batteries (brand, capacity_kwh, nominal_voltage, type, discharge_rate, warranty_months, price_usd, price_khr)
-       VALUES (?,?,?,?,?,?,?,?)`,
-      [brand, capacity_kwh, nominal_voltage || 48, type, discharge_rate || 0.5, warranty_months || 36, price_usd, price_khr || 0]
-    );
-    res.json({ id: r.insertId });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-router.put('/batteries/:id', async (req, res) => {
-  const { id } = req.params;
-  const fields = ['brand', 'capacity_kwh', 'nominal_voltage', 'type', 'discharge_rate', 'warranty_months', 'price_usd', 'price_khr'];
-  const sets = [];
-  const vals = [];
-  for (const f of fields) {
-    if (req.body[f] !== undefined) {
-      sets.push(`${f}=?`);
-      vals.push(req.body[f]);
-    }
-  }
-  if (!sets.length) return res.status(400).json({ error: 'No fields' });
-  vals.push(id);
-  try {
-    await pool.query(`UPDATE batteries SET ${sets.join(',')} WHERE id=?`, vals);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-router.delete('/batteries/:id', async (req, res) => {
-  try {
-    await pool.query('DELETE FROM batteries WHERE id=?', [req.params.id]);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
+    sendError(res, e);
   }
 });
 

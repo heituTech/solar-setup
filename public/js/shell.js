@@ -51,7 +51,7 @@
   // menu options stay text-only.
   window.updateLangPicker = function (lang) {
     if (langFlag) {
-      langFlag.src = 'img/flags/' + lang + '.svg';
+      langFlag.src = '/pv/img/flags/' + lang + '.svg';
       langFlag.alt = LANG_NAMES[lang] || LANG_NAMES.en;
       langFlag.title = LANG_NAMES[lang] || LANG_NAMES.en;
     }

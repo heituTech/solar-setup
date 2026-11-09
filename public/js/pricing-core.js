@@ -82,14 +82,24 @@
     return Math.max(g, o);
   }
 
-  function inverterUnitsNeeded(inv, needW, gridTie = false) {
+  function inverterUnitsNeeded(inv, needW, gridTie = false, hosting = null) {
     if (gridTie) {
       // Grid-side pass-through is still capped by the inverter's own output.
       const gridMax = Number(inv.grid_output_max_w) > 0 ? Number(inv.grid_output_max_w) : Number(inv.rated_power);
       if (!gridMax) return 1;
-      return Math.max(1, Math.ceil(needW / gridMax));
+      let qty = Math.max(1, Math.ceil(needW / gridMax));
+      // If the daily energy requires more PV modules than one inverter's MPPT
+      // inputs can host, add parallel inverters until the array fits.
+      if (hosting && hosting.perInverter > 0 && hosting.required > 0) {
+        qty = Math.max(qty, Math.ceil(hosting.required / hosting.perInverter));
+      }
+      return qty;
     }
-    return Math.max(1, Math.ceil(needW / Number(inv.rated_power)));
+    let qty = Math.max(1, Math.ceil(needW / Number(inv.rated_power)));
+    if (hosting && hosting.perInverter > 0 && hosting.required > 0) {
+      qty = Math.max(qty, Math.ceil(hosting.required / hosting.perInverter));
+    }
+    return qty;
   }
 
   // Night consumption is covered with a 20% margin; lead-acid batteries are
@@ -261,9 +271,16 @@
   }
 
   function buildCombo(inv, bat, panel, ctx, panelQty) {
-    const inverterQty = inverterUnitsNeeded(inv, ctx.inverterNeedW, ctx.gridTieSizing);
-    const batteryQty = batteryQtyNeeded(bat, ctx);
     const quantity = panelQty || ctx.panelQtyOverride || panelQtyNeeded(panel, ctx.solarNeedW);
+    // The inverter count must also host the full PV array. When daily energy
+    // demands more modules than one inverter's MPPT inputs accept, parallel
+    // inverters are added so the array can actually be wired up.
+    const perInverterLimits = panelStringLimits(panel, inv, 1);
+    const hosting = perInverterLimits && perInverterLimits.maxQty > 0
+      ? { perInverter: perInverterLimits.maxQty, required: quantity }
+      : null;
+    const inverterQty = inverterUnitsNeeded(inv, ctx.inverterNeedW, ctx.gridTieSizing, hosting);
+    const batteryQty = batteryQtyNeeded(bat, ctx);
 
     const invPrice = priceOf(inv, ctx.rate);
     const batPrice = ctx.guestBatteryPricing ? batteryPriceOf(bat, ctx) : priceOf(bat, ctx.rate);
@@ -519,15 +536,16 @@
     panels = panels.filter((p) => panelQtyNeeded(p, solarNeedW) <= MAX_PANEL_QTY);
     if (!panels.length) throw httpError('no_panel_fit', 400, { need_kw: round2(solarNeedW / 1000), max_qty: MAX_PANEL_QTY });
 
-    // When the energy target needs more panels than any single inverter's MPPT
-    // inputs can host, still quote the fullest array available instead of the
-    // cheapest (and smallest) one.
+    // When the energy target needs more panels than an inverter's MPPT inputs
+    // can host, parallel inverters are added. maxHostableKwp records the
+    // largest array that any inverter can host at its maximum parallel count,
+    // so a capped (under-sized) array is only quoted when no larger one exists.
     let maxHostableKwp = 0;
     if (!panelQtyOverride) {
       for (const inv of inverters) {
-        const inverterQty = inverterUnitsNeeded(inv, inverterNeedW, gridTieSizing);
+        const maxInv = inverterMaxUnits(inv, systemMode);
         for (const panel of panels) {
-          const limits = panelStringLimits(panel, inv, inverterQty);
+          const limits = panelStringLimits(panel, inv, maxInv);
           if (limits) {
             maxHostableKwp = Math.max(maxHostableKwp, (limits.maxQty * Number(panel.rated_power)) / 1000);
           }
@@ -577,6 +595,15 @@
     let pbpGenerationMax = null;
 
     let stringRejected = false;
+    // Business rule: never recommend more than 2 parallel/paralleled inverters
+    // (并联 for hybrid, 并机 for off-grid). Combos needing more are filtered out;
+    // if nothing survives, the customer is told to split the load into cases.
+    let overParallelLimit = false;
+    // Best-ROI combo (shortest generation payback). Falls back to the cheapest
+    // combo when no electricity price is set, so the "recommended" pin always
+    // points at a concrete configuration.
+    let bestRoiCombo = null;
+    let bestRoiYears = null;
 
     for (const inv of inverters) {
       const inverterQty = inverterUnitsNeeded(inv, inverterNeedW, gridTieSizing);
@@ -584,21 +611,40 @@
         if (!bat._no_battery && Number(bat.nominal_voltage) !== Number(parseFloat(inv.battery_voltage))) continue;
         for (const panel of panels) {
           const minQty = panelQtyNeeded(panel, solarNeedW);
+          // Effective inverter count covers peak power AND the MPPT hosting
+          // capacity needed for the energy target. Without this, an inverter
+          // sized for peak power could be quoted with an array too small to
+          // supply the daily energy.
+          const perInverter = panelStringLimits(panel, inv, 1);
+          const hosting = perInverter && perInverter.maxQty > 0 && !panelQtyOverride
+            ? { perInverter: perInverter.maxQty, required: minQty }
+            : null;
+          const effInverterQty = inverterUnitsNeeded(inv, inverterNeedW, gridTieSizing, hosting);
+          // Filter out any combo that requires more than 2 parallel inverters.
+          if (effInverterQty > 2) {
+            overParallelLimit = true;
+            continue;
+          }
+          // Skip when even the maximum parallel count cannot host the array.
+          if (effInverterQty > inverterMaxUnits(inv, systemMode)) {
+            stringRejected = true;
+            continue;
+          }
           let panelQty;
           let arrayCapped = false;
           if (panelQtyOverride) {
-            if (!findStringSplit(panelQtyOverride, panelStringLimits(panel, inv, inverterQty))) {
+            if (!findStringSplit(panelQtyOverride, panelStringLimits(panel, inv, effInverterQty))) {
               stringRejected = true;
               continue;
             }
             panelQty = panelQtyOverride;
           } else {
-            panelQty = recommendedPanelQty(panel, inv, inverterQty, minQty);
+            panelQty = recommendedPanelQty(panel, inv, effInverterQty, minQty);
             if (!panelQty) {
               // The energy target exceeds what this inverter's MPPT inputs can host.
               // Quote the widest valid array instead, but only if it is the largest
               // array any inverter can host, so a cheaper small array never wins.
-              const limits = panelStringLimits(panel, inv, inverterQty);
+              const limits = panelStringLimits(panel, inv, effInverterQty);
               const kwp = limits ? (limits.maxQty * Number(panel.rated_power)) / 1000 : 0;
               if (!limits || limits.maxQty < 1 || kwp < maxHostableKwp - 1e-6) {
                 stringRejected = true;
@@ -622,6 +668,10 @@
           if (pbp && pbp.generationYears !== null) {
             pbpGenerationMin = pbpGenerationMin === null ? pbp.generationYears : Math.min(pbpGenerationMin, pbp.generationYears);
             pbpGenerationMax = pbpGenerationMax === null ? pbp.generationYears : Math.max(pbpGenerationMax, pbp.generationYears);
+            if (bestRoiYears === null || pbp.generationYears < bestRoiYears) {
+              bestRoiYears = pbp.generationYears;
+              bestRoiCombo = combo;
+            }
           }
           if (comboCount >= MAX_COMBOS) { truncated = true; break; }
         }
@@ -631,6 +681,14 @@
     }
 
     if (!minCombo) {
+      // Every viable combo needed more than 2 parallel inverters. Recommend
+      // splitting the load into separate cases so each zone stays within limit.
+      if (overParallelLimit) {
+        throw httpError('no_combo_within_parallel_limit', 400, {
+          need_kw: round2(inverterNeedW / 1000),
+          daily_kwh: round2(dailyKwh),
+        });
+      }
       if (stringRejected) {
         // With a fixed panel count but no inverter selected, explain the widest
         // limits among the available inverters so the customer knows the ceiling.
@@ -655,6 +713,13 @@
     const comboStringLimits = panelStringLimits(minCombo.panel, minCombo.inverter, minCombo.quantities.inverter);
     const comboStringSplit = comboStringLimits
       ? findStringSplit(minCombo.quantities.panel, comboStringLimits) : null;
+
+    // Recommended configuration: highest-ROI combo when electricity price is
+    // available (shortest payback), otherwise the cheapest combo. Its products
+    // are pinned to the top of each candidate list so the customer can pick them.
+    const recommendedCombo = bestRoiCombo || minCombo;
+    const recommendedPbp = paybackForCombo(recommendedCombo, pricingCtx);
+    const recommendedReason = bestRoiCombo ? 'best_roi' : 'lowest_cost';
 
     const result = {
       mode: isMember ? 'member' : 'guest',
@@ -697,6 +762,15 @@
       combo_count: comboCount,
       truncated,
       is_exact: isExact,
+      recommended: (() => {
+        const rec = comboSummary(recommendedCombo, cfg.usdToKhr);
+        return {
+          ...rec,
+          payback_years: recommendedPbp && recommendedPbp.generationYears !== null
+            ? round2(recommendedPbp.generationYears) : null,
+          reason: recommendedReason,
+        };
+      })(),
       requires_registration: !isMember,
       selected,
       price_range: {
@@ -747,18 +821,27 @@
     }
 
     if (isMember) {
+      const recInvId = recommendedCombo && recommendedCombo.inverter ? recommendedCombo.inverter.id : null;
+      const recBatId = recommendedCombo && recommendedCombo.battery ? recommendedCombo.battery.id : null;
+      const recPanelId = recommendedCombo && recommendedCombo.panel ? recommendedCombo.panel.id : null;
       result.candidates = {
         inverters: inverters.map((p) => {
           const exp = exportProduct('inverters', p, cfg.usdToKhr);
           exp.required_qty = inverterUnitsNeeded(p, inverterNeedW, gridTieSizing);
+          exp.recommended = p.id === recInvId;
           return exp;
         }),
-        batteries: batteries.map((p) => exportProduct('batteries', p, cfg.usdToKhr)),
+        batteries: batteries.map((p) => {
+          const exp = exportProduct('batteries', p, cfg.usdToKhr);
+          exp.recommended = p.id === recBatId;
+          return exp;
+        }),
         panels: panels.map((p) => {
           const exp = exportProduct('panels', p, cfg.usdToKhr);
           const qty = panelQtyOverride || Math.max(1, Math.min(MAX_PANEL_QTY, Math.ceil(solarNeedW / Number(p.rated_power))));
           exp.required_qty = qty;
           exp.total_kwp = round2((Number(p.rated_power) * qty) / 1000);
+          exp.recommended = p.id === recPanelId;
           return exp;
         }),
       };

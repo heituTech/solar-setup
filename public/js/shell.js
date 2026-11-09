@@ -94,13 +94,13 @@
   }
 
   /* ===================== Header account link ===================== */
-  // Guests see "Login"; signed-in members/staff see "My Account". Both point at
+  // Guests see "Sign In"; signed-in members/staff see "My Account". Both point at
   // /pv/member, which renders the login form or the member panel as needed.
   (function () {
     const link = document.getElementById('headerAccountLink');
     if (!link) return;
     const signedIn = !!(localStorage.getItem('member_token') || localStorage.getItem('staff_token'));
-    link.dataset.i18n = signedIn ? 'my_account' : 'login';
+    link.dataset.i18n = signedIn ? 'my_account' : 'sign_in';
     const refresh = function () {
       if (window.applyLang) window.applyLang();
     };

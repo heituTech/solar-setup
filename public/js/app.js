@@ -76,10 +76,35 @@
       </div>
       <div class="cta-box">
         <p>${t('guest_notice')}</p>
-        <a class="btn btn-primary btn-sm" href="/member" style="width:auto;text-decoration:none">${t('register_for_exact')}</a>
+        <a class="btn btn-primary btn-sm" href="/pv/member" style="width:auto;text-decoration:none">${t('register_for_exact')}</a>
       </div>
       ${d.notes && d.notes.length ? `<ul class="notes">${d.notes.map((n) => `<li>${t(n).replace('{psh}', d.calculation.peak_sun_hours)}</li>`).join('')}</ul>` : ''}
     </div>`;
+  }
+
+  async function fetchJson(path) {
+    const r = await fetch(path);
+    if (!r.ok) throw { error: 'error' };
+    return r.json();
+  }
+
+  // Guest quotes are computed in the browser as well: the catalog is public and
+  // the sizing algorithm is shared with the member portal.
+  async function buildLocalQuote(body) {
+    if (!window.SolarPricing) throw { error: 'pricing_unavailable' };
+    const [config, inverters, batteries, panels] = await Promise.all([
+      fetchJson('/pv/api/config'),
+      fetchJson('/pv/api/products/inverters'),
+      fetchJson('/pv/api/products/batteries'),
+      fetchJson('/pv/api/products/panels'),
+    ]);
+    return window.SolarPricing.buildQuote(body, {
+      user: null,
+      caseInfo: null,
+      config,
+      products: { inverters, batteries, panels },
+      hasDiscontinuedBatteryLessHybrid: Boolean(config.has_discontinued_battery_less_hybrid),
+    });
   }
 
   async function calculate() {
@@ -137,21 +162,13 @@
       const batteryType = document.getElementById('batteryType').value;
       if (batteryType) body.battery_type = batteryType;
 
-      const r = await fetch('/api/quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const data = await r.json();
-      if (r.ok) {
-        lastResult = data;
-        renderResult(data);
-        window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
-      } else {
-        document.getElementById('results').innerHTML = `<div class="card quote-error">${errMsg(data)}</div>`;
-      }
+      const data = await buildLocalQuote(body);
+      lastResult = data;
+      renderResult(data);
+      window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
     } catch (e) {
-      document.getElementById('results').innerHTML = `<div class="card empty-state">${t('error')}</div>`;
+      const message = e && e.error ? errMsg(e) : t('error');
+      document.getElementById('results').innerHTML = `<div class="card quote-error">${message}</div>`;
     } finally {
       btn.textContent = original;
       btn.disabled = false;
@@ -206,8 +223,9 @@
   }
 
   document.addEventListener('lang:change', (e) => {
-    setLang(e.detail.lang);
-    initLang();
+    // setLang resolves once the new dictionary is loaded (dict files replace
+    // the previous one client-side); re-render after that.
+    setLang(e.detail.lang).then(initLang);
   });
 
   document.getElementById('calcBtn').addEventListener('click', calculate);
@@ -228,7 +246,8 @@
   });
 
   function bootstrap() {
-    initLang();
+    // Render only after the dictionary is in memory (IndexedDB-backed).
+    window.I18N_READY.then(initLang);
   }
   if (document.readyState === 'complete') {
     bootstrap();

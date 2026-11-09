@@ -24,21 +24,21 @@ function sanitizeApproval(row) {
   return { ...row, payload };
 }
 
-async function createRequest({ requesterId, requestType, approverRole, targetTable, targetId = null, payload, reason = null }) {
+async function createRequest({ requesterId = null, requestType, approverRole, approverId = null, targetTable, targetId = null, payload, reason = null }, conn = pool) {
   if (targetId) {
-    const [pending] = await pool.query(
+    const [pending] = await conn.query(
       `SELECT id FROM approval_requests
        WHERE target_table = ? AND target_id = ? AND status = 'pending' LIMIT 1`,
       [targetTable, targetId]
     );
     if (pending.length) throw httpError('pending_request_exists', 409);
   }
-  if (requestType === 'account_create') {
+  if (requestType === 'account_create' || requestType === 'account_register') {
     const username = String((payload && payload.username) || '').trim().toLowerCase();
     if (username) {
-      const [pending] = await pool.query(
+      const [pending] = await conn.query(
         `SELECT id FROM approval_requests
-         WHERE request_type = 'account_create' AND status = 'pending'
+         WHERE request_type IN ('account_create', 'account_register') AND status = 'pending'
            AND JSON_UNQUOTE(JSON_EXTRACT(payload, '$.username')) = ?
          LIMIT 1`,
         [username]
@@ -46,11 +46,11 @@ async function createRequest({ requesterId, requestType, approverRole, targetTab
       if (pending.length) throw httpError('pending_request_exists', 409);
     }
   }
-  const [result] = await pool.query(
+  const [result] = await conn.query(
     `INSERT INTO approval_requests
-     (request_type, requester_id, approver_role, target_table, target_id, payload, reason)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [requestType, requesterId, approverRole, targetTable, targetId, JSON.stringify(payload || {}), reason]
+     (request_type, requester_id, approver_role, approver_id, target_table, target_id, payload, reason)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [requestType, requesterId, approverRole, approverId, targetTable, targetId, JSON.stringify(payload || {}), reason]
   );
   return result.insertId;
 }
@@ -73,6 +73,11 @@ async function applyRequest(conn, approval) {
   }
   if (approval.request_type === 'account_create') {
     return accounts.createStaff(conn, payload, ['salesperson']);
+  }
+  if (approval.request_type === 'account_register') {
+    const id = await accounts.createStaff(conn, payload, ['salesperson', 'sales_manager']);
+    await conn.query('UPDATE users SET email_verified_at = NOW() WHERE id = ?', [id]);
+    return id;
   }
   if (approval.request_type === 'account_update') {
     return accounts.updateStaff(conn, Number(approval.target_id), payload, ['salesperson']);

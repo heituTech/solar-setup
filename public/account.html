@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#772432" />
+  <title>HEITU TECHNOLOGY</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-bar">
+    <img class="app-bar-logo" src="img/logo.png" alt="HEITU Technology" />
+    <div class="app-bar-actions">
+      <a class="app-bar-link" href="/pv" data-i18n="home">Home</a>
+      <div class="lang-picker app-bar-picker" id="langPicker">
+        <button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">
+          <img id="langCurrentFlag" class="lang-flag" src="img/flags/en.svg" alt="English">
+          <svg class="lang-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+                <div class="lang-menu" id="langMenu" role="listbox" hidden>
+          <button class="lang-option" type="button" data-lang="km" role="option">ខ្មែរ</button>
+          <button class="lang-option" type="button" data-lang="en" role="option">English</button>
+          <button class="lang-option" type="button" data-lang="zh" role="option">中文</button>
+          <button class="lang-option" type="button" data-lang="es" role="option">Español</button>
+          <button class="lang-option" type="button" data-lang="de" role="option">Deutsch</button>
+          <button class="lang-option" type="button" data-lang="fr" role="option">Français</button>
+          <button class="lang-option" type="button" data-lang="ja" role="option">日本語</button>
+          <button class="lang-option" type="button" data-lang="ko" role="option">한국어</button>
+          <button class="lang-option" type="button" data-lang="th" role="option">ไทย</button>
+          <button class="lang-option" type="button" data-lang="vi" role="option">Tiếng Việt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container container-wide">
+    <div class="user-bar card">
+      <div class="user-info">
+        <span id="accountName" class="user-name"></span>
+        <span id="accountRoleBadge" class="role-badge"></span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="accountLogoutBtn" style="width:auto" data-i18n="logout">Logout</button>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title" data-i18n="account_info">Account Information</h2>
+
+      <div class="field">
+        <label data-i18n="username">Username</label>
+        <input id="a_username" disabled />
+      </div>
+
+      <div class="field">
+        <label data-i18n="full_name">Full Name</label>
+        <input id="a_full_name" maxlength="100" autocomplete="name" />
+      </div>
+
+      <div class="field">
+        <label data-i18n="phone">Phone</label>
+        <div class="phone-row">
+          <select id="a_phone_country"></select>
+          <input id="a_phone" autocomplete="tel" placeholder="1234567890" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="email">Email</label>
+        <div class="row">
+          <input id="a_email" type="email" autocomplete="email" />
+          <button class="btn btn-secondary btn-sm" id="a_sendCode" style="width:auto" data-i18n="send_code">Send Code</button>
+        </div>
+      </div>
+
+      <div class="field" id="a_codeField" style="display:none">
+        <label data-i18n="verification_code">Verification Code</label>
+        <input id="a_code" inputmode="numeric" maxlength="6" />
+        <div class="select-note" data-i18n="account_code_note"></div>
+      </div>
+
+      <div class="select-note" id="a_devHint" style="display:none" data-i18n="dev_mode_hint"></div>
+      <div class="select-note" data-i18n="account_verify_note"></div>
+
+      <button class="btn btn-primary" id="a_save" data-i18n="save">Save</button>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title" data-i18n="change_password">Change Password</h2>
+
+      <div class="field">
+        <label data-i18n="email">Email</label>
+        <div class="row">
+          <input id="p_email" disabled />
+          <button class="btn btn-secondary btn-sm" id="p_sendCode" style="width:auto" data-i18n="send_code">Send Code</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="verification_code">Verification Code</label>
+        <input id="p_code" inputmode="numeric" maxlength="6" />
+      </div>
+
+      <div class="field">
+        <label data-i18n="new_password">New Password</label>
+        <input id="p_password" type="password" autocomplete="new-password" />
+        <div class="select-note" data-i18n="password_hint">At least 8 characters</div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="confirm_password">Confirm Password</label>
+        <input id="p_confirm" type="password" autocomplete="new-password" />
+      </div>
+
+      <div class="select-note" id="p_devHint" style="display:none" data-i18n="dev_mode_hint"></div>
+
+      <button class="btn btn-primary" id="p_save" data-i18n="change_password">Change Password</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/account.js"></script>
+  <script src="js/select.js"></script>
+</body>
+</html>

@@ -11,6 +11,9 @@
   let panelQty = null;
   let catalogCat = 'inverters';
   let catalogLoaded = false;
+  let catalogData = [];
+  let catalogFilters = ProductCatalog.defaultFilters('inverters');
+  let catalogPage = 1;
   let codeTimer = null;
   let loginCodeTimer = null;
   let countries = [];
@@ -143,6 +146,18 @@
     return Math.round(Number(value) * 10) / 10;
   }
 
+  // Every string must have the same panel count: qty has to split into equal
+  // strings, each within the MPPT voltage limit, and no more strings than the
+  // inverter's MPPT inputs allow.
+  function qtyFormsStrings(qty, s) {
+    if (!s) return true;
+    const maxStrings = Math.min(Number(s.max_strings) || 0, qty);
+    for (let strings = 1; strings <= maxStrings; strings += 1) {
+      if (qty % strings === 0 && qty / strings <= Number(s.max_series)) return true;
+    }
+    return false;
+  }
+
   function categoryLabel(category) {
     if (category === 'inverter') return t('inverter');
     if (category === 'panel') return t('solar_panel');
@@ -192,7 +207,7 @@
   async function loadMe() {
     if (!token) return null;
     try {
-      const data = await api('/api/auth/me');
+      const data = await api('/pv/api/auth/me');
       if (!data.user || data.user.role !== 'member') {
         clearSession();
         return null;
@@ -219,7 +234,7 @@
 
   async function loadCountries() {
     try {
-      const data = await api('/api/config/countries', { auth: false });
+      const data = await api('/pv/api/config/countries', { auth: false });
       countries = Array.isArray(data.countries) ? data.countries : [];
     } catch {
       countries = [];
@@ -262,7 +277,7 @@
     if (data.user.role !== 'member') {
       localStorage.setItem('staff_token', data.token);
       showToast(t('staff_redirect'));
-      location.href = '/admin';
+      location.href = '/pv/admin';
       return false;
     }
     token = data.token;
@@ -270,6 +285,61 @@
     localStorage.setItem(TOKEN_KEY, token);
     showPanel();
     return true;
+  }
+
+  /* ===================== Google sign-in ===================== */
+
+  const GOOGLE_CLIENT_ID = '6141571543-urkb0dl5k9s6rtdbf9q7qv3udk6n752b.apps.googleusercontent.com';
+
+  function googleLocale() {
+    const map = { km: 'km', en: 'en', zh: 'zh-CN', es: 'es', de: 'de', fr: 'fr', ja: 'ja', ko: 'ko', th: 'th', vi: 'vi' };
+    return map[getCurrentLang()] || 'en';
+  }
+
+  async function onGoogleCredential(resp) {
+    if (!resp || !resp.credential) {
+      showToast(t('google_login_failed'), true);
+      return;
+    }
+    try {
+      const data = await api('/pv/api/auth/google', {
+        method: 'POST',
+        body: { credential: resp.credential },
+        auth: false,
+      });
+      enterSession(data);
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
+  function renderGoogleBtn() {
+    const el = document.getElementById('googleBtn');
+    if (!el || !(window.google && google.accounts && google.accounts.id)) return false;
+    google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
+    el.innerHTML = '';
+    const width = Math.max(200, Math.min(el.clientWidth || 320, 400));
+    google.accounts.id.renderButton(el, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      shape: 'rectangular',
+      text: 'signin_with',
+      logo_alignment: 'left',
+      width,
+      locale: googleLocale(),
+    });
+    return true;
+  }
+
+  // The GIS script loads asynchronously; retry briefly while it arrives.
+  function initGoogleBtn() {
+    if (renderGoogleBtn()) return;
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      if (renderGoogleBtn() || tries > 40) clearInterval(timer);
+    }, 250);
   }
 
   document.getElementById('memberLoginBtn').addEventListener('click', async () => {
@@ -280,7 +350,7 @@
       return;
     }
     try {
-      const data = await api('/api/auth/login', {
+      const data = await api('/pv/api/auth/login', {
         method: 'POST',
         body: { identifier, password },
         auth: false,
@@ -329,7 +399,7 @@
     pendingPhoneLogin = null;
     document.getElementById('phonePickModal').classList.remove('active');
     try {
-      const data = await api('/api/auth/login', {
+      const data = await api('/pv/api/auth/login', {
         method: 'POST',
         body: { identifier: ctx.identifier, password: ctx.password, phone_country: checked.value },
         auth: false,
@@ -348,7 +418,7 @@
     }
     const btn = document.getElementById('sendCodeBtn');
     try {
-      const data = await api('/api/auth/request-code', {
+      const data = await api('/pv/api/auth/request-code', {
         method: 'POST',
         body: { email },
         auth: false,
@@ -369,7 +439,7 @@
     }
     const btn = document.getElementById('sendLoginCodeBtn');
     try {
-      const data = await api('/api/auth/request-code', {
+      const data = await api('/pv/api/auth/request-code', {
         method: 'POST',
         body: { email, purpose: 'login' },
         auth: false,
@@ -390,7 +460,7 @@
       return;
     }
     try {
-      const data = await api('/api/auth/login-code', {
+      const data = await api('/pv/api/auth/login-code', {
         method: 'POST',
         body: { email, code },
         auth: false,
@@ -435,7 +505,7 @@
       password: document.getElementById('r_password').value,
     };
     try {
-      const data = await api('/api/auth/register', { method: 'POST', body, auth: false });
+      const data = await api('/pv/api/auth/register', { method: 'POST', body, auth: false });
       if (enterSession(data)) showToast(t('saved'));
     } catch (e) {
       showToast(errMsg(e), true);
@@ -463,7 +533,7 @@
       phone: document.getElementById('p_phone').value.trim(),
     };
     try {
-      const data = await api('/api/auth/me', { method: 'PATCH', body });
+      const data = await api('/pv/api/auth/me', { method: 'PATCH', body });
       me = data.user;
       showToast(t('profile_saved'));
     } catch (e) {
@@ -513,7 +583,7 @@
 
   async function loadCases() {
     try {
-      cases = await api('/api/cases');
+      cases = await api('/pv/api/cases');
       renderCaseList();
     } catch (e) {
       cases = [];
@@ -591,13 +661,24 @@
 
   /* ===================== Configurator (per-case) ===================== */
 
-  function openConfigurator(id) {
+  let snapshotNoteKey = null;
+
+  function setSnapshotNoteKey(key) {
+    snapshotNoteKey = key || null;
+    const el = document.getElementById('quoteSnapshotNote');
+    el.textContent = snapshotNoteKey ? t(snapshotNoteKey) : '';
+    el.style.display = snapshotNoteKey ? '' : 'none';
+  }
+
+  async function openConfigurator(id) {
     const c = cases.find((x) => x.id === id);
     if (!c) return;
     activeCaseId = id;
     selection = { inverter_id: null, battery_id: null, panel_id: null };
+    panelQty = null;
     lastQuote = null;
     document.getElementById('quoteResults').innerHTML = '';
+    setSnapshotNoteKey(null);
     document.getElementById('activeCaseLabel').textContent = caseLabel(c);
     const isHybrid = c.system_mode === 'hybrid';
     document.getElementById('backupLoadRow').style.display = isHybrid ? '' : 'none';
@@ -606,6 +687,51 @@
     const card = document.getElementById('configuratorCard');
     card.style.display = '';
     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Load the last saved recommendation for this case and restore it.
+    let full = c;
+    try {
+      full = await api('/pv/api/cases/' + id);
+    } catch (e) {
+      return;
+    }
+    if (activeCaseId !== id) return;
+    const idx = cases.findIndex((x) => x.id === id);
+    if (idx >= 0) cases[idx] = full;
+    setupLoadBuilder(full);
+    restoreQuoteSnapshot(full.quote);
+  }
+
+  // Re-apply the saved quote inputs after the load checklist recalculates totals.
+  function restoreQuoteSnapshot(snapshot) {
+    if (!snapshot || !snapshot.result) return;
+    const input = snapshot.input || {};
+    const setInput = (id, value) => {
+      if (value === null || value === undefined) return;
+      if (!Number.isFinite(Number(value))) return;
+      document.getElementById(id).value = String(Number(value));
+    };
+    setInput('dayPower', input.day_peak_power);
+    setInput('dayHours', input.day_hours);
+    setInput('nightPower', input.night_peak_power);
+    setInput('nightHours', input.night_hours);
+    setInput('backupPower', input.backup_peak_power);
+    setInput('autonomyDays', input.autonomy_days);
+    if (input.strategy !== undefined && input.strategy !== null) {
+      document.getElementById('strategy').value = String(input.strategy);
+    }
+    document.getElementById('batteryType').value = input.battery_type || '';
+    selection = {
+      inverter_id: input.inverter_id || null,
+      battery_id: input.battery_id || null,
+      panel_id: input.panel_id || null,
+    };
+    panelQty = input.panel_qty !== null && input.panel_qty !== undefined && Number.isFinite(Number(input.panel_qty))
+      ? Number(input.panel_qty) : null;
+    lastQuote = snapshot.result;
+    renderQuote(lastQuote);
+    updateAutonomyWarning();
+    setSnapshotNoteKey(snapshot.catalog_stale ? 'quote_catalog_changed' : 'quote_restored');
   }
 
   function closeConfigurator() {
@@ -629,9 +755,9 @@
     };
     try {
       if (editingCaseId) {
-        await api('/api/cases/' + editingCaseId, { method: 'PUT', body });
+        await api('/pv/api/cases/' + editingCaseId, { method: 'PUT', body });
       } else {
-        await api('/api/cases', { method: 'POST', body });
+        await api('/pv/api/cases', { method: 'POST', body });
       }
       closeCaseModal();
       showToast(t('saved'));
@@ -657,7 +783,7 @@
       if (!confirm(t('confirm_delete_case'))) return;
       try {
         const id = Number(delBtn.dataset.id);
-        await api('/api/cases/' + id, { method: 'DELETE' });
+        await api('/pv/api/cases/' + id, { method: 'DELETE' });
         if (activeCaseId === id) {
           closeConfigurator();
           document.getElementById('quoteResults').innerHTML = '';
@@ -804,7 +930,7 @@
   async function saveLoadItems() {
     if (!activeCaseId) return;
     try {
-      const data = await api('/api/cases/' + activeCaseId, { method: 'PUT', body: { load_items: loadItems } });
+      const data = await api('/pv/api/cases/' + activeCaseId, { method: 'PUT', body: { load_items: loadItems } });
       const idx = cases.findIndex((x) => x.id === activeCaseId);
       if (idx >= 0) cases[idx] = data;
       document.getElementById('loadSaveStatus').textContent = t('auto_saved');
@@ -944,29 +1070,94 @@
     return body;
   }
 
+  let quoting = false;
+
+  // The whole catalog, config and pricing algorithm are available in the browser,
+  // so the recommendation is computed locally and only the fetches are async.
+  async function loadPricingData() {
+    const [cfg, inverters, batteries, panels] = await Promise.all([
+      api('/pv/api/config', { auth: false }),
+      api('/pv/api/products/inverters', { auth: false }),
+      api('/pv/api/products/batteries', { auth: false }),
+      api('/pv/api/products/panels', { auth: false }),
+    ]);
+    return { config: cfg, products: { inverters, batteries, panels } };
+  }
+
+  function caseForActiveId() {
+    return cases.find((x) => x.id === activeCaseId) || null;
+  }
+
+  async function buildLocalQuote(body) {
+    if (!window.SolarPricing) throw { status: 500, error: 'pricing_unavailable' };
+    const data = await loadPricingData();
+    return window.SolarPricing.buildQuote(body, {
+      user: me ? { id: me.id, role: me.role } : null,
+      caseInfo: caseForActiveId(),
+      config: data.config,
+      products: data.products,
+      hasDiscontinuedBatteryLessHybrid: Boolean(data.config.has_discontinued_battery_less_hybrid),
+    });
+  }
+
+  function quoteSnapshotInput(body, data) {
+    const input = data.input || {};
+    return {
+      day_peak_power: input.day_peak_power,
+      day_hours: input.day_hours,
+      night_peak_power: input.night_peak_power,
+      night_hours: input.night_hours,
+      backup_peak_power: input.backup_peak_power,
+      autonomy_days: input.autonomy_days,
+      strategy: input.strategy,
+      battery_type: input.battery_type,
+      inverter_id: body.inverter_id || null,
+      battery_id: body.battery_id || null,
+      panel_id: body.panel_id || null,
+      panel_qty: body.panel_id && body.panel_qty !== undefined && body.panel_qty !== ''
+        ? Number(body.panel_qty) : null,
+    };
+  }
+
   async function runQuote() {
+    if (quoting) return false;
     const body = collectQuoteBody();
     if (!body) return false;
     const btn = document.getElementById('quoteBtn');
-    const original = btn.textContent;
+    quoting = true;
     btn.disabled = true;
     btn.textContent = t('calculating');
     try {
-      const data = await api('/api/quote', { method: 'POST', body });
+      const data = await buildLocalQuote(body);
       lastQuote = data;
       renderQuote(data);
+      setSnapshotNoteKey(null);
+      if (activeCaseId) {
+        // Persist this recommendation so reopening the case restores it.
+        try {
+          await api('/pv/api/cases/' + activeCaseId + '/quote', {
+            method: 'PUT',
+            body: { input: quoteSnapshotInput(body, data), result: data },
+          });
+        } catch (e) {
+          // A failed snapshot must never invalidate the quote itself.
+        }
+      }
       return true;
     } catch (e) {
+      if (e && e.status === 401) return false;
       document.getElementById('quoteResults').innerHTML = `<div class="card quote-error">${errMsg(e)}</div>`;
       showToast(errMsg(e), true);
       return false;
     } finally {
+      quoting = false;
       btn.disabled = false;
-      btn.textContent = original;
+      btn.textContent = t('calculate');
     }
   }
 
   document.getElementById('quoteBtn').addEventListener('click', () => {
+    if (quoting) return;
     selection = { inverter_id: null, battery_id: null, panel_id: null };
     panelQty = null;
     runQuote();
@@ -1002,12 +1193,20 @@
     const input = e.target.closest('.qty-input');
     if (!input) return;
     const qty = Math.floor(Number(input.value));
-    if (!Number.isFinite(qty) || qty < 1 || qty > 200) {
+    const s = lastQuote && lastQuote.strings;
+    const maxQty = s ? Number(s.max_qty) : 200;
+    if (!Number.isFinite(qty) || qty < 1 || qty > maxQty) {
       input.value = input.dataset.prev || input.value;
       showToast(t('invalid_panel_qty'), true);
       return;
     }
+    if (!qtyFormsStrings(qty, s)) {
+      input.value = input.dataset.prev || input.value;
+      showToast(t('panel_qty_string_mismatch'), true);
+      return;
+    }
     panelQty = qty;
+    input.dataset.prev = String(qty);
     runQuote();
   });
 
@@ -1052,6 +1251,15 @@
       <div class="metric"><div class="label">${t('solar_needed')}</div><div class="value">${fmtSolarWatts(d.calculation.solar_power_needed)}</div></div>
       <div class="metric"><div class="label">${t('peak_sun')}</div><div class="value">${fmtNum(d.calculation.peak_sun_hours, 'h')}</div></div>
     </div>`;
+
+    if (d.strings) {
+      const s = d.strings;
+      html += `<div class="metric-grid">
+        <div class="metric"><div class="label">${t('string_config')}</div><div class="value">${s.series} × ${s.parallel}</div></div>
+        <div class="metric"><div class="label">${t('string_voltage_current')}</div><div class="value">${fmtNum(s.string_voc_v, 'V')} / ${fmtNum(s.string_current_a, 'A')}</div></div>
+        <div class="metric"><div class="label">${t('string_mppt_limit')}</div><div class="value">${fmtNum(s.mppt_max_voltage_v, 'V')} / ${fmtNum(s.mppt_max_current_a, 'A')} × ${s.mppt_channels}</div></div>
+      </div>`;
+    }
 
     if (d.case) {
       html += `<div class="select-note" style="margin-bottom:10px">${t('select_case')}: ${(d.case.name ? d.case.name + ' · ' : '') + d.case.address} · ${d.case.install_type === 'ground' ? t('install_ground') : t('install_rooftop')} · ${d.case.system_mode === 'hybrid' ? t('hybrid') : t('off_grid')}</div>`;
@@ -1134,10 +1342,11 @@
       let priceHtml = `<span class="price">${fmtUsd(p.price_usd)}</span>`;
       if (category === 'panels' && selected) {
         const qty = panelQty !== null ? panelQty : (Number(p.required_qty) || 1);
+        const maxQty = d.strings ? Number(d.strings.max_qty) : 200;
         priceHtml = `<span class="price-wrap">
           <span class="price">${fmtUsd(p.price_usd)}</span>
           <span class="qty-x">×</span>
-          <input class="qty-input" type="number" min="1" max="200" step="1" value="${qty}" data-prev="${qty}" aria-label="${escapeHtml(t('quantity'))}" />
+          <input class="qty-input" type="number" min="1" max="${maxQty}" step="1" value="${qty}" data-prev="${qty}" aria-label="${escapeHtml(t('quantity'))}" />
         </span>`;
       }
       return `<div class="candidate${selected ? ' selected' : ''}" data-cat="${category}" data-id="${p.id}">
@@ -1200,6 +1409,8 @@
       document.querySelectorAll('#catalogTabs .tab-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       catalogCat = btn.dataset.cat;
+      catalogFilters = ProductCatalog.defaultFilters(catalogCat);
+      catalogPage = 1;
       loadCatalog();
     });
   });
@@ -1207,21 +1418,58 @@
   async function loadCatalog() {
     const list = document.getElementById('catalogList');
     list.innerHTML = `<div class="empty-state">${t('loading')}</div>`;
+    document.getElementById('catalogMore').innerHTML = '';
     try {
-      const data = await api('/api/products/' + catalogCat, { auth: false });
+      const data = await api('/pv/api/products/' + catalogCat, { auth: false });
+      catalogData = Array.isArray(data) ? data : [];
       catalogLoaded = true;
-      if (!data.length) {
-        list.innerHTML = `<div class="empty-state">${t('no_data')}</div>`;
-        return;
-      }
-      list.innerHTML = data.map((p) => `<div class="catalog-card">
+      renderCatalogFilters();
+      renderCatalogList();
+    } catch (e) {
+      list.innerHTML = `<div class="empty-state">${errMsg(e)}</div>`;
+    }
+  }
+
+  // Filtering and paging happen in the browser; the public catalog is already
+  // fully fetched, so page changes never hit the server again.
+  function renderCatalogFilters() {
+    const bar = document.getElementById('catalogFilters');
+    bar.innerHTML = ProductCatalog.barHtml(catalogCat, catalogData, catalogFilters, t);
+    ProductCatalog.bind(bar, catalogFilters, () => {
+      catalogPage = 1;
+      renderCatalogList();
+    }, () => {
+      catalogFilters = ProductCatalog.defaultFilters(catalogCat);
+      catalogPage = 1;
+      renderCatalogFilters();
+      renderCatalogList();
+    });
+  }
+
+  function renderCatalogList() {
+    const list = document.getElementById('catalogList');
+    const more = document.getElementById('catalogMore');
+    const filtered = ProductCatalog.filter(catalogCat, catalogData, catalogFilters);
+    if (!filtered.length) {
+      list.innerHTML = `<div class="empty-state">${t('no_data')}</div>`;
+      more.innerHTML = '';
+      return;
+    }
+    const pageSize = ProductCatalog.PAGE_SIZE;
+    const pageCount = Math.ceil(filtered.length / pageSize);
+    if (catalogPage > pageCount) catalogPage = pageCount;
+    if (catalogPage < 1) catalogPage = 1;
+    const shown = filtered.slice((catalogPage - 1) * pageSize, catalogPage * pageSize);
+    list.innerHTML = shown.map((p) => `<div class="catalog-card">
         <h4>${productTitle(catalogCat, p)}</h4>
         <div class="meta">${catalogMeta(p)}</div>
         <div class="price">${fmtUsd(p.price_usd)}${Number(p.price_khr) > 0 ? ' / ' + fmtKhr(p.price_khr) : ''}</div>
       </div>`).join('');
-    } catch (e) {
-      list.innerHTML = `<div class="empty-state">${errMsg(e)}</div>`;
-    }
+    more.innerHTML = ProductCatalog.pagerHtml(catalogPage, pageCount, t);
+    ProductCatalog.bindPager(more, (page) => {
+      catalogPage = page;
+      renderCatalogList();
+    });
   }
 
   function catalogMeta(p) {
@@ -1251,7 +1499,7 @@
 
   async function loadConfig() {
     try {
-      const r = await fetch('/api/config');
+      const r = await fetch('/pv/api/config');
       config = await r.json();
     } catch (e) {
       config = { usd_to_khr: 4100 };
@@ -1265,7 +1513,7 @@
   }
 
   document.addEventListener('lang:change', (e) => {
-    setLang(e.detail.lang);
+    setLang(e.detail.lang).then(() => {
     initLang();
     renderCaseList();
     updateScenarioHint();
@@ -1277,11 +1525,166 @@
       refreshLoadSummary();
     }
     if (lastQuote) renderQuote(lastQuote);
-    if (catalogLoaded && document.getElementById('catalogBody').style.display !== 'none') loadCatalog();
+    if (snapshotNoteKey) setSnapshotNoteKey(snapshotNoteKey);
+    if (catalogLoaded && document.getElementById('catalogBody').style.display !== 'none') {
+      renderCatalogFilters();
+      renderCatalogList();
+    }
+    renderAiWelcome();
+    renderGoogleBtn();
+    });
   });
 
+  /* ================= AI assistant ================= */
+  // The dialog assembles the member's question together with both knowledge
+  // bases and copies the bundle, so the member can paste it into any free AI
+  // web chat. All of this runs client-side; the server only serves the two
+  // markdown files to authenticated members.
+  let aiKbPromise = null;
+  function loadAiKnowledge() {
+    if (!aiKbPromise) {
+      const opts = { headers: { Authorization: 'Bearer ' + token } };
+      aiKbPromise = Promise.all([
+        fetch('/pv/skill/member/app', opts).then((r) => { if (!r.ok) throw { status: r.status }; return r.text(); }),
+        fetch('/pv/skill/member/solar_config', opts).then((r) => { if (!r.ok) throw { status: r.status }; return r.text(); }),
+      ]).catch((e) => { aiKbPromise = null; throw e; });
+    }
+    return aiKbPromise;
+  }
+
+  function aiAppendMsg(role, text) {
+    const box = document.getElementById('aiMessages');
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + role;
+    div.textContent = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function renderAiWelcome() {
+    const box = document.getElementById('aiMessages');
+    if (!box || box.children.length) return; // keep the conversation on language switch
+    aiAppendMsg('bot', t('ai_welcome'));
+  }
+
+  function aiRequireLogin() {
+    if (me) return true;
+    showToast(t('ai_login_required'), true);
+    return false;
+  }
+
+  // navigator.clipboard only exists in secure contexts (HTTPS/localhost);
+  // fall back to a hidden textarea + execCommand on plain HTTP deployments.
+  function aiCopyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise((resolve, reject) => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('copy_failed'));
+      } catch (e) {
+        document.body.removeChild(ta);
+        reject(e);
+      }
+    });
+  }
+
+  function downloadTextFile(name, content) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type: 'text/markdown;charset=utf-8' }));
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function sendAi() {
+    if (!aiRequireLogin()) return;
+    const input = document.getElementById('aiInput');
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = '';
+    aiAppendMsg('user', q);
+    let appMd, solarMd;
+    try {
+      [appMd, solarMd] = await loadAiKnowledge();
+    } catch (e) {
+      showToast(errMsg(e), true);
+      return;
+    }
+    const prompt = 'You are an assistant for the Solar Setup web app. Use the two knowledge bases below to answer the user question. Answer in the same language as the question.\n\n=== Knowledge base 1: App usage guide ===\n' + appMd + '\n\n=== Knowledge base 2: Solar system configuration ===\n' + solarMd + '\n\n=== User question ===\n' + q;
+    try {
+      await aiCopyText(prompt);
+      window.open('https://chat.openai.com/', '_blank');
+      aiAppendMsg('bot', t('ai_copied'));
+    } catch {
+      aiAppendMsg('bot', t('ai_copy_failed'));
+      const pre = document.createElement('pre');
+      pre.className = 'ai-prompt';
+      pre.textContent = prompt;
+      const box = document.getElementById('aiMessages');
+      box.appendChild(pre);
+      box.scrollTop = box.scrollHeight;
+    }
+  }
+
+  function initAi() {
+    renderAiWelcome();
+    // Collapse/expand the dock; it starts collapsed.
+    const dock = document.getElementById('aiDock');
+    const toggle = document.getElementById('aiToggle');
+    toggle.addEventListener('click', () => {
+      const open = dock.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    // Tapping the page area above the dock auto-collapses it.
+    document.addEventListener('click', (e) => {
+      if (!dock.classList.contains('open')) return;
+      if (dock.contains(e.target)) return;
+      dock.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+    // Clear the conversation (client-side only; the server stores nothing).
+    document.getElementById('aiClear').addEventListener('click', () => {
+      document.getElementById('aiMessages').innerHTML = '';
+      renderAiWelcome();
+    });
+    document.getElementById('aiKbApp').addEventListener('click', async () => {
+      if (!aiRequireLogin()) return;
+      try {
+        const [appMd] = await loadAiKnowledge();
+        downloadTextFile('member-app.md', appMd);
+      } catch (e) { showToast(errMsg(e), true); }
+    });
+    document.getElementById('aiKbSolar').addEventListener('click', async () => {
+      if (!aiRequireLogin()) return;
+      try {
+        const [, solarMd] = await loadAiKnowledge();
+        downloadTextFile('solar-config.md', solarMd);
+      } catch (e) { showToast(errMsg(e), true); }
+    });
+    const input = document.getElementById('aiInput');
+    input.addEventListener('focus', () => {
+      if (!aiRequireLogin()) input.blur();
+    });
+    document.getElementById('aiSend').addEventListener('click', sendAi);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendAi();
+    });
+  }
   async function bootstrap() {
+    // Render only after the dictionary is in memory (IndexedDB-backed).
+    await window.I18N_READY;
     initLang();
+    initAi();
     updateAutonomyWarning();
     await loadCountries();
     fillPhoneCountries();
@@ -1289,8 +1692,12 @@
     updateLoginMethod();
     await loadConfig();
     const user = await loadMe();
-    if (user) showPanel();
-    else showAuth();
+    if (user) {
+      showPanel();
+    } else {
+      showAuth();
+      initGoogleBtn();
+    }
   }
 
   if (document.readyState === 'complete') {

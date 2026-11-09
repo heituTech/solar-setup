@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#772432" />
+  <title>HEITU TECHNOLOGY</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-bar">
+    <img class="app-bar-logo" src="img/logo.png" alt="HEITU Technology" />
+    <div class="app-bar-actions">
+      <a class="app-bar-link" href="/pv/member" data-i18n="my_account">My Account</a>
+      <div class="lang-picker app-bar-picker" id="langPicker">
+        <button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">
+          <img id="langCurrentFlag" class="lang-flag" src="img/flags/en.svg" alt="English">
+          <svg class="lang-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+                <div class="lang-menu" id="langMenu" role="listbox" hidden>
+          <button class="lang-option" type="button" data-lang="km" role="option">ខ្មែរ</button>
+          <button class="lang-option" type="button" data-lang="en" role="option">English</button>
+          <button class="lang-option" type="button" data-lang="zh" role="option">中文</button>
+          <button class="lang-option" type="button" data-lang="es" role="option">Español</button>
+          <button class="lang-option" type="button" data-lang="de" role="option">Deutsch</button>
+          <button class="lang-option" type="button" data-lang="fr" role="option">Français</button>
+          <button class="lang-option" type="button" data-lang="ja" role="option">日本語</button>
+          <button class="lang-option" type="button" data-lang="ko" role="option">한국어</button>
+          <button class="lang-option" type="button" data-lang="th" role="option">ไทย</button>
+          <button class="lang-option" type="button" data-lang="vi" role="option">Tiếng Việt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="landing">
+      <section class="card landing-card">
+        <h1 data-i18n="app_title">Solar System Configurator</h1>
+        <p class="landing-desc" data-i18n="landing_desc">Answer a few questions and get a tailored solar system quote in seconds.</p>
+        <a class="btn btn-primary landing-cta" href="/pv/tool" data-i18n="start_config">Start Configuration</a>
+      </section>
+    </div>
+  </div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

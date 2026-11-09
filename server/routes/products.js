@@ -3,6 +3,7 @@ const router = express.Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
 const catalog = require('../services/catalog');
 const approvals = require('../services/approvals');
+const flows = require('../services/flows');
 
 const STAFF_ROLES = ['super_admin', 'sales_manager', 'salesperson'];
 const DIRECT_ROLES = ['super_admin', 'sales_manager'];
@@ -50,10 +51,16 @@ router.post('/:category', requireAuth, async (req, res) => {
       return res.json({ id });
     }
 
+    const route = await flows.routeRequest('product_create', 'salesperson');
+    if (!route.requireApproval) {
+      const id = await catalog.createProduct(category, data);
+      return res.json({ id });
+    }
+
     const approvalId = await approvals.createRequest({
       requesterId: req.user.id,
       requestType: 'product_create',
-      approverRole: 'sales_manager',
+      approverRole: route.approverRole,
       targetTable: catalog.tableForCategory(category),
       payload: data,
       reason: req.body.reason || null,
@@ -79,10 +86,16 @@ router.put('/:category/:id', requireAuth, async (req, res) => {
       return res.json({ ok: true });
     }
 
+    const route = await flows.routeRequest('product_update', 'salesperson');
+    if (!route.requireApproval) {
+      await catalog.updateProduct(category, id, data);
+      return res.json({ ok: true });
+    }
+
     const approvalId = await approvals.createRequest({
       requesterId: req.user.id,
       requestType: 'product_update',
-      approverRole: 'sales_manager',
+      approverRole: route.approverRole,
       targetTable: catalog.tableForCategory(category),
       targetId: id,
       payload: data,
@@ -107,10 +120,16 @@ router.delete('/:category/:id', requireAuth, async (req, res) => {
       return res.json({ ok: true });
     }
 
+    const route = await flows.routeRequest('product_delete', 'salesperson');
+    if (!route.requireApproval) {
+      await catalog.deleteProduct(category, id);
+      return res.json({ ok: true });
+    }
+
     const approvalId = await approvals.createRequest({
       requesterId: req.user.id,
       requestType: 'product_delete',
-      approverRole: 'sales_manager',
+      approverRole: route.approverRole,
       targetTable: catalog.tableForCategory(category),
       targetId: id,
       payload: { id, brand: existing.brand },

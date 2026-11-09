@@ -36,8 +36,8 @@ async function assertManager(conn, managerId) {
   return managerId;
 }
 
-async function assertPhoneAvailable(conn, phone, excludeId = null) {
-  const candidates = phoneMatchCandidates(phone, 'KH');
+async function assertPhoneAvailable(conn, phone, excludeId = null, countryCode = 'KH') {
+  const candidates = phoneMatchCandidates(phone, countryCode);
   if (!candidates.length) return;
   const params = [...candidates];
   let sql = `SELECT id FROM users
@@ -58,17 +58,19 @@ async function createStaff(conn, data, allowedRoles) {
   const email = data.email ? normalizeEmail(data.email) : null;
   const passwordHash = data.password_hash || hashPassword(data.password);
   if (!passwordHash) throw httpError('password_required');
-  const phone = data.phone ? composePhone(data.phone, 'KH') : null;
+  const countryCode = String(data.phone_country || 'KH').toUpperCase();
+  const phone = data.phone ? composePhone(data.phone, countryCode) : null;
   if (data.phone && !phone) throw httpError('invalid_phone');
-  if (phone) await assertPhoneAvailable(conn, phone);
+  if (phone) await assertPhoneAvailable(conn, phone, null, countryCode);
+  const fullName = data.full_name ? String(data.full_name).trim().slice(0, 100) : null;
   let managerId = null;
   if (role === 'salesperson' && data.manager_id !== null && data.manager_id !== undefined && data.manager_id !== '') {
     managerId = await assertManager(conn, Number(data.manager_id));
   }
   const [result] = await conn.query(
-    `INSERT INTO users (username, email, password_hash, role, status, phone, phone_country)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [username, email, passwordHash, role, data.status === 'disabled' ? 'disabled' : 'active', phone, phone ? 'KH' : null]
+    `INSERT INTO users (username, email, password_hash, role, status, full_name, phone, phone_country)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [username, email, passwordHash, role, data.status === 'disabled' ? 'disabled' : 'active', fullName, phone, phone ? countryCode : null]
   );
   if (managerId) {
     await conn.query(

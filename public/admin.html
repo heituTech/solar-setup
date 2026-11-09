@@ -9,52 +9,30 @@
 </head>
 <body>
   <div class="app-bar">
-    <button class="icon-btn" id="menuBtn" type="button" aria-label="Menu" aria-controls="sidebar" aria-expanded="false">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
-  </div>
-
-  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-  <aside class="sidebar" id="sidebar" aria-hidden="true">
-    <div class="sidebar-head">
-      <img class="sidebar-logo" src="img/logo.png" alt="HEITU Technology" />
-      <button class="icon-btn" id="sidebarClose" type="button" aria-label="Close">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <nav class="sidebar-nav">
-      <a class="sidebar-link" href="/">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 11l9-8 9 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <span data-i18n="home">Home</span>
-      </a>
-      <a class="sidebar-link" href="/member">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 21c0-4 3-6 7-6s7 2 7 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <span data-i18n="member_login">Member Login</span>
-      </a>
-      <a class="sidebar-link active" href="/admin">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <span data-i18n="nav_staff">Staff Login</span>
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <span class="sidebar-label" data-i18n="lang_label">Language</span>
-      <div class="lang-picker" id="langPicker">
+    <img class="app-bar-logo" src="img/logo.png" alt="HEITU Technology" />
+    <div class="app-bar-actions">
+      <a class="app-bar-link" href="/pv" data-i18n="home">Home</a>
+      <a class="app-bar-link" href="/pv/account" data-i18n="my_account">My Account</a>
+      <div class="lang-picker app-bar-picker" id="langPicker">
         <button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">
-          <span id="langCurrentLabel">ខ្មែរ</span>
+          <img id="langCurrentFlag" class="lang-flag" src="img/flags/en.svg" alt="English">
           <svg class="lang-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
-        <div class="lang-menu" id="langMenu" role="listbox" hidden>
+                <div class="lang-menu" id="langMenu" role="listbox" hidden>
           <button class="lang-option" type="button" data-lang="km" role="option">ខ្មែរ</button>
           <button class="lang-option" type="button" data-lang="en" role="option">English</button>
           <button class="lang-option" type="button" data-lang="zh" role="option">中文</button>
+          <button class="lang-option" type="button" data-lang="es" role="option">Español</button>
+          <button class="lang-option" type="button" data-lang="de" role="option">Deutsch</button>
+          <button class="lang-option" type="button" data-lang="fr" role="option">Français</button>
+          <button class="lang-option" type="button" data-lang="ja" role="option">日本語</button>
+          <button class="lang-option" type="button" data-lang="ko" role="option">한국어</button>
+          <button class="lang-option" type="button" data-lang="th" role="option">ไทย</button>
+          <button class="lang-option" type="button" data-lang="vi" role="option">Tiếng Việt</button>
         </div>
       </div>
     </div>
-  </aside>
-
-  <header class="page-head">
-    <h1 data-i18n="staff_portal">Staff Portal</h1>
-  </header>
+  </div>
 
   <div class="container container-wide">
     <!-- Staff auth -->
@@ -77,6 +55,18 @@
       </div>
 
       <div id="registerForm" style="display:none">
+        <div class="field">
+          <label data-i18n="role_label">Role</label>
+          <select id="sr_role">
+            <option value="salesperson" selected data-i18n="role_salesperson">Salesperson</option>
+            <option value="sales_manager" data-i18n="role_sales_manager">Sales Manager</option>
+          </select>
+        </div>
+        <div class="field" id="sr_managerField">
+          <label data-i18n="approver_manager">Approver (Sales Manager)</label>
+          <select id="sr_manager"></select>
+          <div class="select-note" data-i18n="manager_required_hint"></div>
+        </div>
         <div class="field">
           <label data-i18n="full_name">Name</label>
           <input id="sr_name" maxlength="100" autocomplete="name" />
@@ -121,13 +111,13 @@
           <span id="userName" class="user-name"></span>
           <span id="userRoleBadge" class="role-badge"></span>
         </div>
-        <button class="btn btn-secondary btn-sm" id="logoutBtn" style="width:auto" data-i18n="logout">Logout</button>
       </div>
 
       <div class="tabs" id="mainTabs">
         <button class="tab-btn active" data-tab="products" data-i18n="products">Products</button>
         <button class="tab-btn" data-tab="accounts" data-i18n="tab_accounts">Accounts</button>
         <button class="tab-btn" data-tab="approvals" data-i18n="tab_approvals">Approvals</button>
+        <button class="tab-btn" data-tab="flows" data-i18n="tab_flows">Approval Flows</button>
         <button class="tab-btn" data-tab="settings" data-i18n="settings">Settings</button>
       </div>
 
@@ -140,10 +130,10 @@
             <button class="tab-btn" data-cat="batteries" data-i18n="battery_tab">Batteries</button>
           </div>
           <div class="toolbar-actions">
-            <button class="btn btn-primary btn-sm" id="addProductBtn" style="width:auto" data-i18n="add_product">+ Add Product</button>
             <span class="inline-hint" id="productHint"></span>
           </div>
         </div>
+        <div id="productFilters" class="filter-bar"></div>
         <div id="productList"></div>
       </div>
 
@@ -151,8 +141,8 @@
       <div id="accountsPanel" style="display:none">
         <div class="card toolbar">
           <span class="inline-hint" id="accountHint"></span>
-          <button class="btn btn-primary btn-sm" id="addAccountBtn" style="width:auto" data-i18n="add_account">+ Add Account</button>
         </div>
+        <div id="accountFilters" class="filter-bar"></div>
         <div id="accountList"></div>
       </div>
 
@@ -164,7 +154,17 @@
             <button class="tab-btn" data-scope="mine" data-i18n="scope_mine">My Requests</button>
           </div>
         </div>
+        <div id="approvalFilters" class="filter-bar"></div>
         <div id="approvalList"></div>
+      </div>
+
+      <!-- Approval flows (super admin) -->
+      <div id="flowsPanel" style="display:none">
+        <div class="card toolbar">
+          <span class="inline-hint" data-i18n="flows_hint"></span>
+          <button class="btn btn-primary btn-sm btn-add" id="addFlowBtn" style="width:auto" data-i18n="add_flow">+ Add Flow</button>
+        </div>
+        <div id="flowList"></div>
       </div>
 
       <!-- Settings -->
@@ -211,10 +211,24 @@
     </div>
   </div>
 
+  <!-- Flow modal -->
+  <div class="modal-overlay" id="flowModal">
+    <div class="modal">
+      <h2 id="flowModalTitle" data-i18n="add_flow">Add Flow</h2>
+      <div id="flowModalBody"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="flowCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary" id="flowSave" data-i18n="save">Save</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script src="js/i18n.js"></script>
   <script src="js/shell.js"></script>
+  <script src="js/product-catalog.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/select.js"></script>
 </body>
 </html>

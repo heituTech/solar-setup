@@ -117,8 +117,12 @@ body {
   font-size: 14px;
   line-height: 1.6;
 }
+/* The landing CTA sits in the middle of its card. */
 .landing .landing-cta {
-  width: 100%;
+  display: block;
+  width: fit-content;
+  min-width: 200px;
+  margin: 0 auto;
   text-decoration: none;
 }
 
@@ -715,7 +719,7 @@ body:has(.ai-dock) .container {
 }
 
 /* Action buttons align to the right edge of their card/form. */
-.card > .btn-primary:not(.btn-add),
+.card > .btn-primary:not(.btn-add):not(.landing-cta),
 #loginForm .btn-primary,
 #registerForm > .btn-primary {
   display: flex;

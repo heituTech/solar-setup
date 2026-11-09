@@ -140,6 +140,26 @@ router.post('/login', async (req, res) => {
   }
 });
 
+async function issueEmailCode(email, purpose, req, res) {
+  const [recent] = await pool.query(
+    `SELECT id FROM email_codes
+     WHERE email = ? AND purpose = ?
+       AND created_at > DATE_SUB(NOW(), INTERVAL ? SECOND)
+     ORDER BY id DESC LIMIT 1`,
+    [email, purpose, CODE_COOLDOWN_SECONDS]
+  );
+  if (recent.length) return res.status(429).json({ error: 'code_too_frequent' });
+
+  const code = crypto.randomInt(0, 1000000).toString().padStart(6, '0');
+  await pool.query(
+    `INSERT INTO email_codes (email, purpose, code_hash, expires_at, ip)
+     VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), ?)`,
+    [email, purpose, hashCode(code), CODE_TTL_MINUTES, req.ip || null]
+  );
+  await sendVerificationCode(email, code);
+  return res.json({ ok: true, dev_mode: process.env.MAIL_DEV_MODE !== 'false' });
+}
+
 router.post('/request-code', async (req, res) => {
   const email = normalizeEmail(req.body.email);
   const purpose = req.body.purpose === 'login' ? 'login' : 'register';
@@ -151,27 +171,29 @@ router.post('/request-code', async (req, res) => {
       const [userRows] = await pool.query('SELECT id FROM users WHERE email = ? AND status = ? LIMIT 1', [email, 'active']);
       if (!userRows.length) return res.json({ ok: true, dev_mode: process.env.MAIL_DEV_MODE !== 'false' });
     }
-
-    const [recent] = await pool.query(
-      `SELECT id FROM email_codes
-       WHERE email = ? AND purpose = ?
-         AND created_at > DATE_SUB(NOW(), INTERVAL ? SECOND)
-       ORDER BY id DESC LIMIT 1`,
-      [email, purpose, CODE_COOLDOWN_SECONDS]
-    );
-    if (recent.length) return res.status(429).json({ error: 'code_too_frequent' });
-
-    const code = crypto.randomInt(0, 1000000).toString().padStart(6, '0');
-    await pool.query(
-      `INSERT INTO email_codes (email, purpose, code_hash, expires_at, ip)
-       VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), ?)`,
-      [email, purpose, hashCode(code), CODE_TTL_MINUTES, req.ip || null]
-    );
-    await sendVerificationCode(email, code);
-    res.json({ ok: true, dev_mode: process.env.MAIL_DEV_MODE !== 'false' });
+    await issueEmailCode(email, purpose, req, res);
   } catch (e) {
     console.error('request-code failed:', e.message);
-    res.status(500).json({ error: 'code_send_failed' });
+    if (!res.headersSent) res.status(500).json({ error: 'code_send_failed' });
+  }
+});
+
+// Verification code for changing phone/email from the account page. The code is
+// always sent to the email currently entered in the form, so an email change
+// proves ownership of the new address.
+router.post('/profile-code', requireAuth, async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'invalid_email' });
+
+  try {
+    if (email !== normalizeEmail(req.user.email)) {
+      const [rows] = await pool.query('SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1', [email, req.user.id]);
+      if (rows.length) return res.status(409).json({ error: 'email_exists' });
+    }
+    await issueEmailCode(email, 'profile', req, res);
+  } catch (e) {
+    console.error('profile-code failed:', e.message);
+    if (!res.headersSent) res.status(500).json({ error: 'code_send_failed' });
   }
 });
 
@@ -287,32 +309,79 @@ router.get('/me', requireAuth, async (req, res) => {
   res.json({ user: await getUserById(req.user.id) });
 });
 
+// Self-service profile update for members and staff. Changing the phone or email
+// requires a verification code previously sent to the submitted email address.
 router.patch('/me', requireAuth, async (req, res) => {
-  if (req.user.role !== 'member') return res.status(403).json({ error: 'forbidden' });
+  const current = await getUserById(req.user.id);
+  if (!current) return res.status(401).json({ error: 'unauthorized' });
+
   const fields = [];
   const values = [];
+  let nextEmail = normalizeEmail(current.email);
+  let emailChanged = false;
+  let phoneChanged = false;
+
   if ('full_name' in req.body) {
     const fullName = String(req.body.full_name || '').trim();
     if (!fullName) return res.status(400).json({ error: 'full_name_required' });
     fields.push('full_name = ?');
     values.push(fullName.slice(0, 100));
   }
+
   if ('phone' in req.body) {
-    const phone = composePhone(req.body.phone, req.body.phone_country || req.user.phone_country || 'KH');
+    const countryCode = String(req.body.phone_country || current.phone_country || 'KH').toUpperCase();
+    if (!findCountry(countryCode)) return res.status(400).json({ error: 'invalid_phone_country' });
+    const phone = composePhone(req.body.phone, countryCode);
     if (!phone || digitsOnly(phone).length < 6) return res.status(400).json({ error: 'invalid_phone' });
+    phoneChanged = phone !== current.phone;
     fields.push('phone = ?', 'phone_country = ?');
-    values.push(phone, String(req.body.phone_country || req.user.phone_country || 'KH').toUpperCase());
+    values.push(phone, countryCode);
   }
+
+  if ('email' in req.body) {
+    nextEmail = normalizeEmail(req.body.email);
+    if (!EMAIL_RE.test(nextEmail)) return res.status(400).json({ error: 'invalid_email' });
+    emailChanged = nextEmail !== normalizeEmail(current.email);
+    if (emailChanged) {
+      fields.push('email = ?', 'email_verified_at = NOW()');
+      values.push(nextEmail);
+    }
+  }
+
   if (!fields.length) return res.status(400).json({ error: 'no_updates' });
 
+  const requiresCode = phoneChanged || emailChanged;
+  const code = String(req.body.code || '').trim();
+  if (requiresCode && !/^\d{6}$/.test(code)) return res.status(400).json({ error: 'invalid_code' });
+
+  const conn = await pool.getConnection();
   try {
+    await conn.beginTransaction();
+    if (requiresCode) {
+      const codeError = await consumeEmailCode(conn, nextEmail, 'profile', code);
+      if (codeError) {
+        await conn.rollback();
+        return res.status(400).json({ error: codeError });
+      }
+    }
+    if (emailChanged) {
+      const [dup] = await conn.query('SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1', [nextEmail, req.user.id]);
+      if (dup.length) {
+        await conn.rollback();
+        return res.status(409).json({ error: 'email_exists' });
+      }
+    }
     values.push(req.user.id);
-    await pool.query(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+    await conn.query(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+    await conn.commit();
     res.json({ user: await getUserById(req.user.id) });
   } catch (e) {
+    try { await conn.rollback(); } catch {}
     const dupKey = duplicateErrorKey(e.message);
     if (dupKey) return res.status(409).json({ error: dupKey });
     res.status(500).json({ error: e.message });
+  } finally {
+    conn.release();
   }
 });
 

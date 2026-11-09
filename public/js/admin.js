@@ -134,11 +134,10 @@
     localStorage.removeItem(TOKEN_KEY);
     document.getElementById('loginBox').style.display = '';
     document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('portalHead').style.display = '';
     document.getElementById('loginPassword').value = '';
     if (!silent) showToast(t('logged_out'));
   }
-
-  document.getElementById('logoutBtn').addEventListener('click', () => logout());
 
   /* ===================== Staff registration ===================== */
 
@@ -253,6 +252,7 @@
 
   function showPanel() {
     document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('portalHead').style.display = 'none';
     document.getElementById('adminPanel').style.display = '';
     document.getElementById('userName').textContent = me.username || me.email || '';
     const badge = document.getElementById('userRoleBadge');

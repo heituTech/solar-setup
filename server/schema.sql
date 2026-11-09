@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS approval_requests (
 CREATE TABLE IF NOT EXISTS email_codes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(160) NOT NULL,
-  purpose ENUM('register') NOT NULL DEFAULT 'register',
+  purpose ENUM('register','login','profile') NOT NULL DEFAULT 'register',
   code_hash CHAR(64) NOT NULL,
   expires_at DATETIME NOT NULL,
   consumed_at DATETIME DEFAULT NULL,

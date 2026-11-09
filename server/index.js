@@ -31,6 +31,9 @@ app.get('/pv/member', (req, res) => {
 app.get('/pv/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
 });
+app.get('/pv/account', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'account.html'));
+});
 
 app.use('/pv', express.static(path.join(__dirname, '..', 'public'), { index: false }));
 

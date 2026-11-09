@@ -122,6 +122,29 @@ body {
   text-decoration: none;
 }
 
+/* Configurator sections */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.section-title::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 3px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+.calc-btn {
+  margin-top: 4px;
+  box-shadow: 0 6px 16px rgba(119, 36, 50, 0.22);
+}
+
 .icon-btn {
   flex: 0 0 auto;
   width: 44px;

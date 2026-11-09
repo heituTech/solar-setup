@@ -32,9 +32,11 @@
   </header>
 
   <div class="container">
-    <!-- Input form -->
-    <div class="card">
-      <div class="scope-notice" data-i18n="scope_notice"></div>
+    <div class="scope-notice" data-i18n="scope_notice"></div>
+
+    <!-- Load information -->
+    <section class="card">
+      <h2 class="section-title" data-i18n="sec_load">Load Information</h2>
       <div class="row">
         <div class="field">
           <label><span data-i18n="day_peak_power">Day Peak Power (W)</span> <button type="button" class="info-btn" data-tip="load" title="?">?</button></label>
@@ -55,6 +57,11 @@
           <input type="number" id="nightHours" min="0" max="16" step="0.5" placeholder="e.g. 4" />
         </div>
       </div>
+    </section>
+
+    <!-- System settings -->
+    <section class="card">
+      <h2 class="section-title" data-i18n="sec_system">System Settings</h2>
       <div class="row">
         <div class="field">
           <label data-i18n="has_grid">Grid Power Available</label>
@@ -90,16 +97,20 @@
           </select>
         </div>
       </div>
+    </section>
+
+    <!-- Strategy -->
+    <section class="card">
+      <h2 class="section-title"><span data-i18n="sec_strategy">Configuration Strategy</span> <button type="button" class="info-btn" data-tip="strategy" title="?">?</button></h2>
       <div class="field">
-        <label><span data-i18n="strategy">Configuration Strategy</span> <button type="button" class="info-btn" data-tip="strategy" title="?">?</button></label>
         <select id="strategy">
           <option value="1" data-i18n="strategy_1">High ROI, low generation guarantee</option>
           <option value="2" selected data-i18n="strategy_2">Medium ROI, medium generation (recommended)</option>
           <option value="3" data-i18n="strategy_3">Low ROI, high generation guarantee</option>
         </select>
       </div>
-      <button class="btn btn-primary" id="calcBtn" data-i18n="calculate">Get Recommendation</button>
-    </div>
+      <button class="btn btn-primary calc-btn" id="calcBtn" data-i18n="calculate">Get Recommendation</button>
+    </section>
 
     <!-- Results -->
     <div id="results"></div>

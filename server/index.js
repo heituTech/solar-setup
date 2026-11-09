@@ -33,7 +33,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.get('/home', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'home.html'));
 });
-app.get('/home/tool', (req, res) => {
+app.get('/tool', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'tool.html'));
 });
 app.get('/member', (req, res) => {

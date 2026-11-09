@@ -87,7 +87,7 @@
     if (bundlePromise) return bundlePromise;
     bundlePromise = new Promise(function (resolve, reject) {
       const s = document.createElement('script');
-      s.src = 'js/i18n/all.js?v=' + DICT_VERSION;
+      s.src = '/pv/js/i18n/all.js?v=' + DICT_VERSION;
       s.async = false; // keep execution order deterministic
       s.onload = function () { resolve(window.I18N_DICTS || {}); };
       s.onerror = function () { reject(new Error('Failed to load dictionary bundle')); };

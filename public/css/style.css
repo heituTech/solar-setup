@@ -947,6 +947,7 @@ body:has(.ai-dock) .container {
   max-height: 90vh;
   overflow-y: auto;
 }
+.modal.modal-wide { max-width: 1100px; }
 .modal h2 {
   font-size: 18px;
   margin-bottom: 14px;

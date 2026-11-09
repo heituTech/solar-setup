@@ -5,7 +5,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ function readSkill(name) {
   return cache[name];
 }
 
-router.use(requireAuth, requireRole('member'));
+router.use(requireAuth);
 
 for (const name of Object.keys(FILES)) {
   router.get('/' + name, (req, res) => {

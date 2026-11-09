@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
 app.use(express.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public'), { index: false }));
 
 // API routes
 app.use('/api/products', productsRouter);
@@ -29,12 +29,20 @@ app.use('/api/cases', casesRouter);
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
-// SPA fallback
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+// Customer pages
+app.get('/home', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'home.html'));
+});
+app.get('/home/tool', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'tool.html'));
 });
 app.get('/member', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'member.html'));
+});
+
+// Staff pages
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
 });
 
 app.listen(PORT, HOST, () => {

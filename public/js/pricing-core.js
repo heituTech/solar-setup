@@ -34,6 +34,8 @@
   function httpError(message, status = 400, params) {
     const err = new Error(message);
     err.status = status;
+    // Mirror the API error shape ({ error: key }) so frontends can translate it.
+    err.error = message;
     if (params) err.params = params;
     return err;
   }

@@ -1329,7 +1329,7 @@
     const maxQty = s ? Number(s.max_qty) : 200;
     if (!Number.isFinite(qty) || qty < 1 || qty > maxQty) {
       input.value = input.dataset.prev || input.value;
-      showToast(t('invalid_panel_qty'), true);
+      showToast(t('invalid_panel_qty').replace('{max}', maxQty), true);
       return;
     }
     if (!qtyFormsStrings(qty, s)) {

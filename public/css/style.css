@@ -726,12 +726,18 @@ body:has(.ai-dock) .container {
 }
 
 /* Action buttons align to the right edge of their card/form. */
-.card > .btn-primary:not(.btn-add):not(.landing-cta),
+.card > .btn-primary:not(.btn-add):not(.landing-cta) {
+  display: flex;
+  width: fit-content;
+  margin-left: auto;
+}
+/* Login and register submit buttons are centered in their forms. */
 #loginForm .btn-primary,
 #registerForm > .btn-primary {
   display: flex;
   width: fit-content;
   margin-left: auto;
+  margin-right: auto;
 }
 /* "Add new" buttons align left instead. */
 .btn-add {

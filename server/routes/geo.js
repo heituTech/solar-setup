@@ -58,34 +58,4 @@ router.get('/cities', (req, res) => {
   }));
 });
 
-// Peak sun hours from PVGIS (EU JRC, worldwide coverage). Answers are cached
-// in memory by ~0.1 degree cell — weather-climate data barely changes.
-const pshCache = new Map();
-
-router.get('/psh', async (req, res) => {
-  const lat = Number(req.query.lat);
-  const lon = Number(req.query.lon);
-  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
-    return res.status(400).json({ error: 'invalid_coordinates' });
-  }
-  const key = lat.toFixed(1) + ',' + lon.toFixed(1);
-  if (pshCache.has(key)) return res.json({ psh: pshCache.get(key) });
-  try {
-    // loss=0: the pricing core applies its own system-efficiency factor, so we
-    // must not bake PVGIS's default 14% system loss into the sun hours too.
-    const url = `https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=1&loss=0&outputformat=json`;
-    const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    if (!r.ok) return res.status(502).json({ error: 'pvgis_unavailable' });
-    const data = await r.json();
-    const ey = data && data.outputs && data.outputs.totals && data.outputs.totals.fixed && data.outputs.totals.fixed.E_y;
-    if (!Number.isFinite(ey) || ey <= 0) return res.status(502).json({ error: 'pvgis_unavailable' });
-    // E_y is yearly kWh per kWp; dividing by 365 gives average peak sun hours.
-    const psh = Math.round((ey / 365) * 100) / 100;
-    pshCache.set(key, psh);
-    res.json({ psh });
-  } catch (e) {
-    res.status(502).json({ error: 'pvgis_unavailable' });
-  }
-});
-
 module.exports = router;

@@ -1239,15 +1239,15 @@
     btn.disabled = true;
     btn.textContent = t('calculating');
     try {
-      // Peak sun hours come from PVGIS for the case's location; when PVGIS is
-      // unreachable the strategy-based default inside the pricing core applies.
+      // Peak sun hours come from the bundled PVGIS dataset (cached in IndexedDB);
+      // when the case has no coordinates the pricing-core default applies.
       const activeCase = caseForActiveId();
       if (activeCase && activeCase.latitude != null && activeCase.longitude != null) {
         if (activeCase.pvgis_psh == null) {
           try {
-            const geo = await api('/pv/api/geo/psh?lat=' + activeCase.latitude + '&lon=' + activeCase.longitude, { auth: false });
-            activeCase.pvgis_psh = geo.psh;
-          } catch (e) { /* PVGIS unavailable: fall through to the default */ }
+            await window.PshStore.ready();
+            activeCase.pvgis_psh = window.PshStore.lookup(activeCase.latitude, activeCase.longitude);
+          } catch (e) { /* dataset unavailable: fall through to the default */ }
         }
         if (activeCase.pvgis_psh != null) body.peak_sun_hours = activeCase.pvgis_psh;
       }
@@ -1657,6 +1657,8 @@
   async function bootstrap() {
     // Render only after the dictionary is in memory (IndexedDB-backed).
     await window.I18N_READY;
+    // Warm the PVGIS dataset into IndexedDB so quoting never waits on it.
+    if (window.PshStore) window.PshStore.ready();
     initLang();
     updateAutonomyWarning();
     await loadCountries();

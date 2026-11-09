@@ -1112,9 +1112,12 @@ body:has(.ai-dock) .container {
   display: flex;
   justify-content: flex-end;
   min-height: 44px;
+  max-width: 100%;
+  overflow: hidden;
 }
 .google-btn iframe {
   margin: 0;
+  max-width: 100%;
 }
 .auth-switch {
   text-align: center;

@@ -4,8 +4,9 @@ const router = express.Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
 const COUNTRIES = require('../data/countries');
 
+// Peak sun hours are looked up from PVGIS per project location; the site-wide
+// default_peak_sun_hours setting is retired (the stored row is simply unused).
 const PUBLIC_KEYS = [
-  'default_peak_sun_hours',
   'default_currency',
   'usd_to_khr',
   'installation_fee_percent',

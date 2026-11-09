@@ -74,6 +74,13 @@ body {
   white-space: nowrap;
 }
 .app-bar-link:active { background: var(--primary-soft); }
+/* Member-only top bar actions (Profile / Logout) sit between Home and the
+   language picker, so they use tighter spacing to fit narrow phones. */
+.app-bar .app-bar-link-compact {
+  padding: 6px 9px;
+  font-size: 13px;
+  font-family: inherit;
+}
 .app-bar .app-bar-picker {
   flex: 0 0 auto;
   width: auto;

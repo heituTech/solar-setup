@@ -92,7 +92,7 @@ if ($token) {
 }
 
 # --- asset versions ---
-foreach ($a in @('/pv/css/style.css?v=10', '/pv/js/psh-store.js', '/pv/js/ai-dock.js', '/pv/js/member.js?v=8')) {
+foreach ($a in @('/pv/css/style.css?v=11', '/pv/js/psh-store.js', '/pv/js/ai-dock.js', '/pv/js/member.js?v=9')) {
   $r = Get-Code $a
   Check "asset $a" ($r.code -eq 200) "HTTP $($r.code)"
 }

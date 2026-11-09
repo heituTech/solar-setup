@@ -143,6 +143,18 @@
     return Math.round(Number(value) * 10) / 10;
   }
 
+  // Every string must have the same panel count: qty has to split into equal
+  // strings, each within the MPPT voltage limit, and no more strings than the
+  // inverter's MPPT inputs allow.
+  function qtyFormsStrings(qty, s) {
+    if (!s) return true;
+    const maxStrings = Math.min(Number(s.max_strings) || 0, qty);
+    for (let strings = 1; strings <= maxStrings; strings += 1) {
+      if (qty % strings === 0 && qty / strings <= Number(s.max_series)) return true;
+    }
+    return false;
+  }
+
   function categoryLabel(category) {
     if (category === 'inverter') return t('inverter');
     if (category === 'panel') return t('solar_panel');
@@ -1002,12 +1014,20 @@
     const input = e.target.closest('.qty-input');
     if (!input) return;
     const qty = Math.floor(Number(input.value));
-    if (!Number.isFinite(qty) || qty < 1 || qty > 200) {
+    const s = lastQuote && lastQuote.strings;
+    const maxQty = s ? Number(s.max_qty) : 200;
+    if (!Number.isFinite(qty) || qty < 1 || qty > maxQty) {
       input.value = input.dataset.prev || input.value;
       showToast(t('invalid_panel_qty'), true);
       return;
     }
+    if (!qtyFormsStrings(qty, s)) {
+      input.value = input.dataset.prev || input.value;
+      showToast(t('panel_qty_string_mismatch'), true);
+      return;
+    }
     panelQty = qty;
+    input.dataset.prev = String(qty);
     runQuote();
   });
 
@@ -1052,6 +1072,15 @@
       <div class="metric"><div class="label">${t('solar_needed')}</div><div class="value">${fmtSolarWatts(d.calculation.solar_power_needed)}</div></div>
       <div class="metric"><div class="label">${t('peak_sun')}</div><div class="value">${fmtNum(d.calculation.peak_sun_hours, 'h')}</div></div>
     </div>`;
+
+    if (d.strings) {
+      const s = d.strings;
+      html += `<div class="metric-grid">
+        <div class="metric"><div class="label">${t('string_config')}</div><div class="value">${s.series} × ${s.parallel}</div></div>
+        <div class="metric"><div class="label">${t('string_voltage_current')}</div><div class="value">${fmtNum(s.string_voc_v, 'V')} / ${fmtNum(s.string_current_a, 'A')}</div></div>
+        <div class="metric"><div class="label">${t('string_mppt_limit')}</div><div class="value">${fmtNum(s.mppt_max_voltage_v, 'V')} / ${fmtNum(s.mppt_max_current_a, 'A')} × ${s.mppt_channels}</div></div>
+      </div>`;
+    }
 
     if (d.case) {
       html += `<div class="select-note" style="margin-bottom:10px">${t('select_case')}: ${(d.case.name ? d.case.name + ' · ' : '') + d.case.address} · ${d.case.install_type === 'ground' ? t('install_ground') : t('install_rooftop')} · ${d.case.system_mode === 'hybrid' ? t('hybrid') : t('off_grid')}</div>`;
@@ -1134,10 +1163,11 @@
       let priceHtml = `<span class="price">${fmtUsd(p.price_usd)}</span>`;
       if (category === 'panels' && selected) {
         const qty = panelQty !== null ? panelQty : (Number(p.required_qty) || 1);
+        const maxQty = d.strings ? Number(d.strings.max_qty) : 200;
         priceHtml = `<span class="price-wrap">
           <span class="price">${fmtUsd(p.price_usd)}</span>
           <span class="qty-x">×</span>
-          <input class="qty-input" type="number" min="1" max="200" step="1" value="${qty}" data-prev="${qty}" aria-label="${escapeHtml(t('quantity'))}" />
+          <input class="qty-input" type="number" min="1" max="${maxQty}" step="1" value="${qty}" data-prev="${qty}" aria-label="${escapeHtml(t('quantity'))}" />
         </span>`;
       }
       return `<div class="candidate${selected ? ' selected' : ''}" data-cat="${category}" data-id="${p.id}">

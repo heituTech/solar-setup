@@ -73,6 +73,73 @@ function panelQtyNeeded(panel, solarNeedW) {
   return Math.max(1, Math.ceil(solarNeedW / Number(panel.rated_power)));
 }
 
+// ---- PV string sizing -------------------------------------------------------
+// Modules in series add their Voc and keep the module current; strings in
+// parallel add current. Every string of an array must contain the same number of
+// modules so their voltages match. A string may not exceed the inverter's max PV
+// input voltage, and the paralleled current per MPPT input may not exceed that
+// MPPT's max current. Returns null when catalogue data is incomplete, in which
+// case no hard limit is applied.
+function panelStringLimits(panel, inv, inverterQty = 1) {
+  const voc = Number(panel.voc_v);
+  const isc = Number(panel.isc_a);
+  const vMax = inv && inv.mppt_max_voltage_v !== null && inv.mppt_max_voltage_v !== undefined
+    ? Number(inv.mppt_max_voltage_v) : null;
+  const iMax = inv && inv.mppt_max_current_a !== null && inv.mppt_max_current_a !== undefined
+    ? Number(inv.mppt_max_current_a) : null;
+  if (!(voc > 0) || !(isc > 0) || !(vMax > 0) || !(iMax > 0)) return null;
+  const channels = Math.max(1, Number(inv.mppt_channels) || 1) * Math.max(1, inverterQty);
+  const maxSeries = Math.floor(vMax / voc); // modules per string, voltage limited
+  const maxParallel = Math.floor(iMax / isc); // parallel strings per MPPT input
+  const maxStrings = Math.max(0, maxParallel * channels); // all MPPT inputs together
+  return {
+    voc, isc, vMax, iMax, channels, maxSeries, maxParallel, maxStrings,
+    maxQty: maxSeries > 0 ? maxSeries * maxStrings : 0,
+  };
+}
+
+// Equal string length: qty must split into `strings` equal strings, each no
+// longer than maxSeries, with no more strings than the MPPT inputs allow.
+function findStringSplit(qty, limits) {
+  if (!limits) return { series: qty, strings: 1 };
+  if (limits.maxSeries < 1 || limits.maxStrings < 1) return null;
+  const maxStrings = Math.min(limits.maxStrings, qty);
+  // Prefer fewest parallel strings (longest strings) to limit copper current.
+  for (let strings = 1; strings <= maxStrings; strings += 1) {
+    if (qty % strings !== 0) continue;
+    const series = qty / strings;
+    if (series <= limits.maxSeries) return { series, strings };
+  }
+  return null;
+}
+
+// Smallest quantity at or above the energy requirement that still forms valid,
+// equal-length strings; null when this panel / inverter pair cannot host it.
+function recommendedPanelQty(panel, inv, inverterQty, minQty) {
+  const limits = panelStringLimits(panel, inv, inverterQty);
+  const start = Math.max(1, Math.ceil(minQty));
+  if (!limits) return start <= MAX_PANEL_QTY ? start : null;
+  const upper = Math.min(MAX_PANEL_QTY, limits.maxQty);
+  for (let qty = start; qty <= upper; qty += 1) {
+    if (findStringSplit(qty, limits)) return qty;
+  }
+  return null;
+}
+
+function panelStringErrorParams(qty, limits) {
+  return {
+    qty,
+    max_series: limits.maxSeries,
+    max_strings: limits.maxStrings,
+    max_qty: limits.maxQty,
+    module_voc: round2(limits.voc),
+    module_isc: round2(limits.isc),
+    mppt_voltage: round2(limits.vMax),
+    mppt_current: round2(limits.iMax),
+    mppt_channels: limits.channels,
+  };
+}
+
 function round2(n) {
   return Math.round(Number(n) * 100) / 100;
 }
@@ -165,17 +232,17 @@ function exportProduct(category, p, rate) {
   return base;
 }
 
-function buildCombo(inv, bat, panel, ctx) {
+function buildCombo(inv, bat, panel, ctx, panelQty) {
   const inverterQty = inverterUnitsNeeded(inv, ctx.inverterNeedW, ctx.gridTieSizing);
   const batteryQty = batteryQtyNeeded(bat, ctx);
-  const panelQty = ctx.panelQtyOverride || panelQtyNeeded(panel, ctx.solarNeedW);
+  const quantity = panelQty || ctx.panelQtyOverride || panelQtyNeeded(panel, ctx.solarNeedW);
 
   const invPrice = priceOf(inv, ctx.rate);
   const batPrice = ctx.guestBatteryPricing ? batteryPriceOf(bat, ctx) : priceOf(bat, ctx.rate);
   const panelPrice = priceOf(panel, ctx.rate);
 
-  const hardwareUsd = invPrice.usd * inverterQty + batPrice.usd * batteryQty + panelPrice.usd * panelQty;
-  const hardwareKhr = invPrice.khr * inverterQty + batPrice.khr * batteryQty + panelPrice.khr * panelQty;
+  const hardwareUsd = invPrice.usd * inverterQty + batPrice.usd * batteryQty + panelPrice.usd * quantity;
+  const hardwareKhr = invPrice.khr * inverterQty + batPrice.khr * batteryQty + panelPrice.khr * quantity;
   const installUsd = ctx.includeInstallation
     ? Math.max(ctx.installMinUsd, hardwareUsd * ctx.installPercent / 100)
     : 0;
@@ -187,14 +254,14 @@ function buildCombo(inv, bat, panel, ctx) {
     inverter: inv,
     battery: bat,
     panel,
-    quantities: { inverter: inverterQty, battery: batteryQty, panel: panelQty },
+    quantities: { inverter: inverterQty, battery: batteryQty, panel: quantity },
     hardware_usd: round2(hardwareUsd),
     hardware_khr: roundKhr(hardwareKhr),
     installation_usd: round2(installUsd),
     installation_khr: roundKhr(installKhr),
     total_usd: round2(totalUsd),
     total_khr: roundKhr(totalKhr),
-    panel_kwp: (Number(panel.rated_power) * panelQty) / 1000,
+    panel_kwp: (Number(panel.rated_power) * quantity) / 1000,
     battery_kwh: Number(bat.capacity_kwh) * batteryQty,
   };
 }
@@ -369,6 +436,16 @@ async function buildQuote(body, user) {
     panelQtyOverride = qty;
   }
 
+  // With both a panel and an inverter selected the string layout is known, so an
+  // invalid quantity can be rejected with the exact voltage/current limits.
+  if (panelQtyOverride && selected.inverter && selected.panel && inverters.length && panels.length) {
+    const inverterQty = inverterUnitsNeeded(inverters[0], inverterNeedW, gridTieSizing);
+    const limits = panelStringLimits(panels[0], inverters[0], inverterQty);
+    if (limits && !findStringSplit(panelQtyOverride, limits)) {
+      throw httpError('panel_string_limit_exceeded', 400, panelStringErrorParams(panelQtyOverride, limits));
+    }
+  }
+
   // ---- Category-specific feasibility: tell the customer exactly what cannot fit ----
   // Off-grid always needs a battery; hybrid grid-tied only needs one with night load
   // (or when the customer explicitly picked a battery).
@@ -456,11 +533,29 @@ async function buildQuote(body, user) {
   let pbpGenerationMin = null;
   let pbpGenerationMax = null;
 
+  let stringRejected = false;
+
   for (const inv of inverters) {
+    const inverterQty = inverterUnitsNeeded(inv, inverterNeedW, gridTieSizing);
     for (const bat of quoteBatteries) {
       if (!bat._no_battery && Number(bat.nominal_voltage) !== Number(parseFloat(inv.battery_voltage))) continue;
       for (const panel of panels) {
-        const combo = buildCombo(inv, bat, panel, ctx);
+        const minQty = panelQtyNeeded(panel, solarNeedW);
+        let panelQty;
+        if (panelQtyOverride) {
+          if (!findStringSplit(panelQtyOverride, panelStringLimits(panel, inv, inverterQty))) {
+            stringRejected = true;
+            continue;
+          }
+          panelQty = panelQtyOverride;
+        } else {
+          panelQty = recommendedPanelQty(panel, inv, inverterQty, minQty);
+          if (!panelQty) {
+            stringRejected = true;
+            continue;
+          }
+        }
+        const combo = buildCombo(inv, bat, panel, ctx, panelQty);
         comboCount += 1;
         if (!minCombo || combo.total_usd < minCombo.total_usd) minCombo = combo;
         if (!maxCombo || combo.total_usd > maxCombo.total_usd) maxCombo = combo;
@@ -487,8 +582,31 @@ async function buildQuote(body, user) {
     if (truncated) break;
   }
 
-  if (!minCombo) throw httpError('no_voltage_match');
+  if (!minCombo) {
+    if (stringRejected) {
+      // With a fixed panel count but no inverter selected, explain the widest
+      // limits among the available inverters so the customer knows the ceiling.
+      if (panelQtyOverride && panels.length) {
+        let bestLimits = null;
+        for (const inv of inverters) {
+          const limits = panelStringLimits(panels[0], inv, inverterUnitsNeeded(inv, inverterNeedW, gridTieSizing));
+          if (limits && (!bestLimits || limits.maxQty > bestLimits.maxQty)) bestLimits = limits;
+        }
+        if (bestLimits) throw httpError('panel_string_limit_exceeded', 400, panelStringErrorParams(panelQtyOverride, bestLimits));
+      }
+      throw httpError('no_panel_string_fit', 400, {
+        need_kw: round2(solarNeedW / 1000),
+        max_qty: MAX_PANEL_QTY,
+      });
+    }
+    throw httpError('no_voltage_match');
+  }
   const isExact = Boolean(selected.inverter && selected.panel && (selected.battery || !needsBattery));
+  // String layout of the quoted array: equal-length series strings, each within
+  // the MPPT voltage window, and parallel current within the MPPT current limit.
+  const comboStringLimits = panelStringLimits(minCombo.panel, minCombo.inverter, minCombo.quantities.inverter);
+  const comboStringSplit = comboStringLimits
+    ? findStringSplit(minCombo.quantities.panel, comboStringLimits) : null;
 
   const result = {
     mode: isMember ? 'member' : 'guest',
@@ -556,9 +674,28 @@ async function buildQuote(body, user) {
     notes: ['note_install']
       .concat(needsBattery ? ['note_battery_dod'] : [])
       .concat(['note_panel_psh'])
+      .concat(comboStringLimits ? [] : ['note_panel_string_data_missing'])
       .concat(systemMode === 'hybrid' ? ['note_hybrid_backup'] : [])
       .concat(needsBattery ? [] : ['note_hybrid_no_battery']),
   };
+
+  if (isExact && comboStringLimits && comboStringSplit) {
+    result.strings = {
+      series: comboStringSplit.series,
+      parallel: comboStringSplit.strings,
+      string_voc_v: round2(comboStringSplit.series * comboStringLimits.voc),
+      string_current_a: round2(comboStringLimits.isc),
+      per_mppt_parallel: Math.ceil(comboStringSplit.strings / comboStringLimits.channels),
+      max_series: comboStringLimits.maxSeries,
+      max_strings: comboStringLimits.maxStrings,
+      max_qty: comboStringLimits.maxQty,
+      mppt_max_voltage_v: round2(comboStringLimits.vMax),
+      mppt_max_current_a: round2(comboStringLimits.iMax),
+      mppt_channels: comboStringLimits.channels,
+      module_voc_v: round2(comboStringLimits.voc),
+      module_isc_a: round2(comboStringLimits.isc),
+    };
+  }
 
   if (isMember) {
     result.candidates = {

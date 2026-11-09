@@ -70,6 +70,11 @@ function sanitize(row) {
     usage_scenario: row.usage_scenario || null,
     load_items: sanitizeLoadItems(row.load_items),
     address: row.address,
+    country_code: row.country_code || null,
+    state_code: row.state_code || null,
+    city: row.city || null,
+    latitude: row.latitude === null || row.latitude === undefined ? null : Number(row.latitude),
+    longitude: row.longitude === null || row.longitude === undefined ? null : Number(row.longitude),
     has_grid: Boolean(row.has_grid),
     install_type: row.install_type,
     system_mode: row.system_mode,
@@ -110,6 +115,27 @@ function validate(body, partial) {
     const address = String(body.address || '').trim();
     if (!address) throw Object.assign(new Error('project_address_required'), { status: 400 });
     data.address = address.slice(0, 255);
+  }
+  if (body.country_code !== undefined) {
+    const cc = String(body.country_code || '').trim().toUpperCase();
+    if (cc && !/^[A-Z]{2}$/.test(cc)) throw Object.assign(new Error('invalid_country_code'), { status: 400 });
+    data.country_code = cc || null;
+  }
+  if (body.state_code !== undefined) {
+    data.state_code = String(body.state_code || '').trim().slice(0, 10) || null;
+  }
+  if (body.city !== undefined) {
+    data.city = String(body.city || '').trim().slice(0, 120) || null;
+  }
+  for (const key of ['latitude', 'longitude']) {
+    if (body[key] !== undefined) {
+      const raw = body[key];
+      const value = raw === '' || raw === null || raw === undefined ? null : Number(raw);
+      if (value !== null && (!Number.isFinite(value) || Math.abs(value) > (key === 'latitude' ? 90 : 180))) {
+        throw Object.assign(new Error('invalid_coordinates'), { status: 400 });
+      }
+      data[key] = value;
+    }
   }
   if (!partial || body.has_grid !== undefined) {
     data.has_grid = body.has_grid ? 1 : 0;
@@ -171,8 +197,8 @@ router.post('/', async (req, res) => {
   try {
     const data = validate(req.body, false);
     const [r] = await pool.query(
-      'INSERT INTO cases (member_id, name, usage_scenario, load_items, address, has_grid, install_type, system_mode, electricity_price, electricity_price_currency) VALUES (?,?,?,?,?,?,?,?,?,?)',
-      [req.user.id, data.name, data.usage_scenario, data.load_items, data.address, data.has_grid, data.install_type, data.system_mode, data.electricity_price, data.electricity_price_currency]
+      'INSERT INTO cases (member_id, name, usage_scenario, load_items, address, country_code, state_code, city, latitude, longitude, has_grid, install_type, system_mode, electricity_price, electricity_price_currency) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [req.user.id, data.name, data.usage_scenario, data.load_items, data.address, data.country_code ?? null, data.state_code ?? null, data.city ?? null, data.latitude ?? null, data.longitude ?? null, data.has_grid, data.install_type, data.system_mode, data.electricity_price, data.electricity_price_currency]
     );
     const [rows] = await pool.query('SELECT * FROM cases WHERE id = ?', [r.insertId]);
     res.status(201).json(sanitize(rows[0]));

@@ -1446,8 +1446,6 @@
     const data = settingsCache;
     panel.innerHTML = `
         <div class="card">
-          <div class="field"><label>${t('peak_sun_hours')}</label>
-            <input id="s_psh" type="number" step="0.1" value="${data.default_peak_sun_hours || 5}" /></div>
           <div class="field"><label>${t('default_currency')}</label>
             <select id="s_currency">
               <option value="USD" ${data.default_currency === 'USD' ? 'selected' : ''}>USD</option>
@@ -1477,7 +1475,6 @@
 
   async function saveSettings() {
     const updates = {
-      default_peak_sun_hours: document.getElementById('s_psh').value,
       default_currency: document.getElementById('s_currency').value,
       usd_to_khr: document.getElementById('s_rate').value,
       installation_fee_percent: document.getElementById('s_install_pct').value,

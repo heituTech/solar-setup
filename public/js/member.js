@@ -179,14 +179,21 @@
 
   /* ===================== Session ===================== */
 
+  function setHomeLink(target) {
+    const link = document.querySelector('.app-bar-link[data-i18n="home"]');
+    if (link) link.href = target;
+  }
+
   function showAuth() {
     document.getElementById('authBox').style.display = '';
     document.getElementById('memberPanel').style.display = 'none';
+    setHomeLink('/pv');
   }
 
   function showPanel() {
     document.getElementById('authBox').style.display = 'none';
     document.getElementById('memberPanel').style.display = '';
+    setHomeLink('/pv/member');
     document.getElementById('memberName').textContent = me.username || me.email || me.phone || '';
     fillProfile();
     loadCases();
@@ -318,7 +325,11 @@
     if (!el || !(window.google && google.accounts && google.accounts.id)) return false;
     google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
     el.innerHTML = '';
-    const width = Math.max(200, Math.min(el.clientWidth || 320, 400));
+    // Measure the real container width; a hidden container reports 0, in which
+    // case we let the caller retry later instead of overflowing the card.
+    const hostWidth = el.clientWidth || 0;
+    if (!hostWidth) return false;
+    const width = Math.max(180, Math.min(hostWidth, 400));
     google.accounts.id.renderButton(el, {
       type: 'standard',
       theme: 'outline',
@@ -601,7 +612,7 @@
     document.getElementById('c_scenario').value = c && c.usage_scenario ? c.usage_scenario : '';
     updateScenarioHint();
     document.getElementById('c_name').value = c && c.name ? c.name : '';
-    document.getElementById('c_address').value = c ? c.address : '';
+    initCaseLocation(c);
     document.getElementById('c_has_grid').value = c ? (c.has_grid ? '1' : '0') : '1';
     document.getElementById('c_install_type').value = c ? c.install_type : 'rooftop';
     document.getElementById('c_system_mode').value = c ? c.system_mode : 'hybrid';
@@ -614,6 +625,132 @@
   function closeCaseModal() {
     document.getElementById('caseModal').classList.remove('active');
     editingCaseId = null;
+  }
+
+  /* ===================== Project location cascade (country / province / city) ===================== */
+
+  const geoCache = { countries: null, countryCode: null, states: [], stateCode: null, cities: [] };
+
+  // Only English / Khmer / Chinese have native names; every other language
+  // falls back to English as specified.
+  function geoName(item) {
+    const lang = getCurrentLang();
+    if (lang === 'zh') return item.zh || item.en;
+    if (lang === 'km') return item.km || item.en;
+    return item.en;
+  }
+
+  function fillGeoSelect(el, items, placeholderKey, getValue) {
+    el.innerHTML = '';
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = t(placeholderKey);
+    el.appendChild(ph);
+    items.forEach((item) => {
+      const opt = document.createElement('option');
+      opt.value = getValue(item);
+      opt.textContent = geoName(item);
+      el.appendChild(opt);
+    });
+  }
+
+  async function loadGeoCountries() {
+    if (!geoCache.countries) {
+      geoCache.countries = await api('/pv/api/geo/countries', { auth: false });
+    }
+    return geoCache.countries;
+  }
+
+  async function loadGeoStates(countryCode) {
+    const stateSel = document.getElementById('c_state');
+    const citySel = document.getElementById('c_city');
+    geoCache.countryCode = countryCode;
+    geoCache.stateCode = null;
+    geoCache.states = [];
+    geoCache.cities = [];
+    fillGeoSelect(citySel, [], 'select_city');
+    fillGeoSelect(stateSel, [], 'select_province');
+    geoCache.states = await api('/pv/api/geo/states?country=' + countryCode, { auth: false });
+    fillGeoSelect(stateSel, geoCache.states, 'select_province', (s) => s.code);
+  }
+
+  async function loadGeoCities(countryCode, stateCode) {
+    const citySel = document.getElementById('c_city');
+    geoCache.stateCode = stateCode;
+    geoCache.cities = [];
+    fillGeoSelect(citySel, [], 'select_city');
+    geoCache.cities = await api('/pv/api/geo/cities?country=' + countryCode + '&state=' + encodeURIComponent(stateCode), { auth: false });
+    fillGeoSelect(citySel, geoCache.cities, 'select_city', (ci) => ci.en);
+  }
+
+  async function initCaseLocation(c) {
+    const countrySel = document.getElementById('c_country');
+    fillGeoSelect(countrySel, [], 'select_country');
+    fillGeoSelect(document.getElementById('c_state'), [], 'select_province');
+    fillGeoSelect(document.getElementById('c_city'), [], 'select_city');
+    try {
+      const countries = await loadGeoCountries();
+      fillGeoSelect(countrySel, countries, 'select_country', (x) => x.code);
+      if (c && c.country_code) {
+        countrySel.value = c.country_code;
+        await loadGeoStates(c.country_code);
+        if (c.state_code) {
+          document.getElementById('c_state').value = c.state_code;
+          await loadGeoCities(c.country_code, c.state_code);
+          if (c.city) document.getElementById('c_city').value = c.city;
+        }
+      }
+    } catch (e) { /* geo endpoint unreachable: cascade stays empty, old address kept */ }
+  }
+
+  document.getElementById('c_country').addEventListener('change', async (e) => {
+    const cc = e.target.value;
+    geoCache.countryCode = cc || null;
+    geoCache.states = [];
+    geoCache.stateCode = null;
+    geoCache.cities = [];
+    fillGeoSelect(document.getElementById('c_state'), [], 'select_province');
+    fillGeoSelect(document.getElementById('c_city'), [], 'select_city');
+    if (!cc) return;
+    try {
+      await loadGeoStates(cc);
+    } catch (err) {
+      showToast(errMsg(err), true);
+    }
+  });
+
+  document.getElementById('c_state').addEventListener('change', async (e) => {
+    const sc = e.target.value;
+    geoCache.stateCode = sc || null;
+    geoCache.cities = [];
+    fillGeoSelect(document.getElementById('c_city'), [], 'select_city');
+    if (!sc || !geoCache.countryCode) return;
+    try {
+      await loadGeoCities(geoCache.countryCode, sc);
+    } catch (err) {
+      showToast(errMsg(err), true);
+    }
+  });
+
+  // Returns null when a new case has no country selected (caller aborts);
+  // returns {} for legacy cases whose free-text address should stay untouched.
+  function readCaseLocation(existing) {
+    const cc = document.getElementById('c_country').value;
+    if (!cc) return existing && existing.address ? {} : null;
+    const sc = document.getElementById('c_state').value || null;
+    const cityName = document.getElementById('c_city').value || null;
+    const country = (geoCache.countries || []).find((x) => x.code === cc);
+    const state = sc ? geoCache.states.find((x) => x.code === sc) : null;
+    const city = cityName ? geoCache.cities.find((x) => x.en === cityName) : null;
+    const anchor = city || state || country || null;
+    return {
+      address: [city && city.en, state && state.en, country && country.en].filter(Boolean).join(', '),
+      country_code: cc,
+      state_code: sc,
+      city: cityName,
+      latitude: anchor && Number.isFinite(anchor.lat) ? anchor.lat : null,
+      longitude: anchor && Number.isFinite(anchor.lon) ? anchor.lon : null,
+    };
   }
 
   function updateScenarioHint() {
@@ -743,10 +880,15 @@
 
   document.getElementById('caseSave').addEventListener('click', async () => {
     const priceRaw = document.getElementById('c_price').value;
+    const loc = readCaseLocation(editingCaseId ? cases.find((x) => x.id === editingCaseId) : null);
+    if (!loc) {
+      showToast(t('select_country'), true);
+      return;
+    }
     const body = {
+      ...loc,
       usage_scenario: document.getElementById('c_scenario').value || null,
       name: document.getElementById('c_name').value.trim() || null,
-      address: document.getElementById('c_address').value.trim(),
       has_grid: document.getElementById('c_has_grid').value === '1',
       install_type: document.getElementById('c_install_type').value,
       system_mode: document.getElementById('c_system_mode').value,
@@ -1128,6 +1270,18 @@
     btn.disabled = true;
     btn.textContent = t('calculating');
     try {
+      // Peak sun hours come from PVGIS for the case's location; when PVGIS is
+      // unreachable the strategy-based default inside the pricing core applies.
+      const activeCase = caseForActiveId();
+      if (activeCase && activeCase.latitude != null && activeCase.longitude != null) {
+        if (activeCase.pvgis_psh == null) {
+          try {
+            const geo = await api('/pv/api/geo/psh?lat=' + activeCase.latitude + '&lon=' + activeCase.longitude, { auth: false });
+            activeCase.pvgis_psh = geo.psh;
+          } catch (e) { /* PVGIS unavailable: fall through to the default */ }
+        }
+        if (activeCase.pvgis_psh != null) body.peak_sun_hours = activeCase.pvgis_psh;
+      }
       const data = await buildLocalQuote(body);
       lastQuote = data;
       renderQuote(data);

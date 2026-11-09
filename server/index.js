@@ -8,6 +8,7 @@ const approvalsRouter = require('./routes/approvals');
 const flowsRouter = require('./routes/flows');
 const casesRouter = require('./routes/cases');
 const skillsRouter = require('./routes/skills');
+const geoRouter = require('./routes/geo');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,7 +38,14 @@ app.get('/pv/account', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'account.html'));
 });
 
-app.use('/pv', express.static(path.join(__dirname, '..', 'public'), { index: false }));
+// HTML must always be revalidated so users never run a stale page against new
+// CSS/JS; static assets carry explicit ?v= versions for cache busting.
+app.use('/pv', express.static(path.join(__dirname, '..', 'public'), {
+  index: false,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+  },
+}));
 
 // API routes
 app.use('/pv/api/products', productsRouter);
@@ -47,6 +55,7 @@ app.use('/pv/api/admin/users', usersRouter);
 app.use('/pv/api/approvals', approvalsRouter);
 app.use('/pv/api/admin/flows', flowsRouter);
 app.use('/pv/api/cases', casesRouter);
+app.use('/pv/api/geo', geoRouter);
 app.use('/pv/skill/member', skillsRouter);
 
 // Health check

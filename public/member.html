@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#772432" />
   <title>HEITU TECHNOLOGY</title>
-  <link rel="stylesheet" href="css/style.css?v=7" />
+  <link rel="stylesheet" href="css/style.css?v=8" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -276,7 +276,9 @@
         <div class="select-note" id="c_scenario_hint" style="display:none"></div>
       </div>
       <div class="field"><label><span data-i18n="case_name">Case Name</span> (<span data-i18n="optional">Optional</span>)</label><input id="c_name" maxlength="100" /></div>
-      <div class="field"><label data-i18n="project_address">Project Address</label><input id="c_address" maxlength="255" /></div>
+      <div class="field"><label data-i18n="project_country">Country</label><select id="c_country"></select></div>
+      <div class="field"><label data-i18n="project_province">Province / State</label><select id="c_state"></select></div>
+      <div class="field"><label data-i18n="project_city">City</label><select id="c_city"></select></div>
       <div class="field"><label data-i18n="has_grid">Grid Power Available</label>
         <select id="c_has_grid">
           <option value="1" data-i18n="has_grid_yes">Grid available</option>
@@ -367,7 +369,7 @@
   <script src="js/shell.js"></script>
   <script src="js/pricing-core.js"></script>
   <script src="js/product-catalog.js"></script>
-  <script src="js/member.js?v=5"></script>
+  <script src="js/member.js?v=6"></script>
   <script src="js/select.js"></script>
 </body>
 </html>

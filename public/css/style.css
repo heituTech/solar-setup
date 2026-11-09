@@ -747,10 +747,18 @@ body:has(.ai-dock) .container {
   margin-left: auto;
   margin-right: auto;
 }
-/* "Add new" buttons align left instead. */
+/* "Add new" buttons: unified light-gray pill with a leading "+" prefix,
+   regardless of whether they also carry btn-primary or btn-secondary. */
 .btn-add {
   margin-left: 0;
   margin-right: auto;
+  background: var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  font-weight: 500;
+}
+.btn-add::before {
+  content: "+ ";
 }
 
 .result-card {

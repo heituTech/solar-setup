@@ -37,8 +37,8 @@ function sanitizeLoadItems(raw) {
       name: typeof item.name === 'string' ? item.name.slice(0, 80) : null,
       power,
       qty,
-      day_hours: dayHours,
-      night_hours: nightHours,
+      day_hours: Math.min(8, dayHours),
+      night_hours: Math.min(16, nightHours),
       critical: Boolean(item.critical),
     });
   }

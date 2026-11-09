@@ -10,6 +10,9 @@ const PUBLIC_KEYS = [
   'usd_to_khr',
   'installation_fee_percent',
   'installation_fee_min_usd',
+  'battery_price_lfp_per_kwh',
+  'battery_price_ternary_per_kwh',
+  'battery_price_lead_acid_per_kwh',
 ];
 
 function validateConfig(key, value) {

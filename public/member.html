@@ -3,23 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#f59e0b" />
-  <title data-i18n="member_portal">Member Portal</title>
+  <meta name="theme-color" content="#772432" />
+  <title>HEITU TECHNOLOGY</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header class="app-header">
-    <div class="lang-switcher" id="langSwitcher">
-      <button data-lang="km" title="ខ្មែរ"><img src="https://flagcdn.com/24x18/kh.png" alt="ខ្មែរ" /></button>
-      <button data-lang="en" title="English"><img src="https://flagcdn.com/24x18/gb.png" alt="English" /></button>
-      <button data-lang="zh" title="中文"><img src="https://flagcdn.com/24x18/cn.png" alt="中文" /></button>
+  <div class="app-bar">
+    <button class="icon-btn" id="menuBtn" type="button" aria-label="Menu" aria-controls="sidebar" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <aside class="sidebar" id="sidebar" aria-hidden="true">
+    <div class="sidebar-head">
+      <img class="sidebar-logo" src="img/logo.png" alt="HEITU Technology" />
+      <button class="icon-btn" id="sidebarClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link" href="/">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 11l9-8 9 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span data-i18n="home">Home</span>
+      </a>
+      <a class="sidebar-link active" href="/member">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 21c0-4 3-6 7-6s7 2 7 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span data-i18n="member_login">Member Login</span>
+      </a>
+      <a class="sidebar-link" href="/admin">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span data-i18n="nav_staff">Staff Login</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="sidebar-label" data-i18n="lang_label">Language</span>
+      <div class="lang-picker" id="langPicker">
+        <button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">
+          <span id="langCurrentLabel">ខ្មែរ</span>
+          <svg class="lang-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <div class="lang-menu" id="langMenu" role="listbox" hidden>
+          <button class="lang-option" type="button" data-lang="km" role="option">ខ្មែរ</button>
+          <button class="lang-option" type="button" data-lang="en" role="option">English</button>
+          <button class="lang-option" type="button" data-lang="zh" role="option">中文</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <header class="page-head">
     <h1 data-i18n="member_portal">Member Portal</h1>
-    <p class="header-links">
-      <a href="/"><span data-i18n="home">Home</span></a>
-      <span>·</span>
-      <a href="/admin"><span data-i18n="admin">Admin</span></a>
-    </p>
   </header>
 
   <div class="container container-wide">
@@ -71,13 +105,6 @@
 
         <div id="registerForm" style="display:none">
           <div class="field">
-            <label data-i18n="account_type">Account Type</label>
-            <select id="r_role">
-              <option value="member" data-i18n="role_member">Member</option>
-              <option value="salesperson" data-i18n="role_salesperson">Salesperson</option>
-            </select>
-          </div>
-          <div class="field">
             <label data-i18n="full_name">Name</label>
             <input id="r_name" maxlength="100" autocomplete="name" />
           </div>
@@ -90,14 +117,13 @@
             <label data-i18n="phone">Phone</label>
             <div class="phone-row">
               <select id="r_phone_country"></select>
-              <input id="r_phone" autocomplete="tel" />
+              <input id="r_phone" autocomplete="tel" placeholder="1234567890" />
             </div>
-            <div class="select-note" id="r_phone_display"></div>
           </div>
           <div class="field">
             <label data-i18n="email">Email</label>
             <div class="row">
-              <input id="r_email" type="email" autocomplete="email" />
+              <input id="r_email" type="email" autocomplete="email" placeholder="testmember@example.com" />
               <button class="btn btn-secondary btn-sm" id="sendCodeBtn" style="width:auto" data-i18n="send_code">Send Code</button>
             </div>
           </div>
@@ -182,7 +208,7 @@
           </div>
           <div class="field">
             <label data-i18n="day_hours">Day Usage Hours (sunlight)</label>
-            <input type="number" id="dayHours" min="0" max="24" step="0.1" />
+            <input type="number" id="dayHours" min="0" max="8" step="0.1" />
           </div>
         </div>
         <div class="row">
@@ -192,7 +218,7 @@
           </div>
           <div class="field">
             <label data-i18n="night_hours">Night Usage Hours (no sunlight)</label>
-            <input type="number" id="nightHours" min="0" max="24" step="0.1" />
+            <input type="number" id="nightHours" min="0" max="16" step="0.1" />
           </div>
         </div>
         <div class="select-note" id="hybridLoadNote" style="display:none;margin-bottom:10px" data-i18n="hybrid_load_note"></div>
@@ -269,8 +295,8 @@
       <div class="field"><label data-i18n="project_address">Project Address</label><input id="c_address" maxlength="255" /></div>
       <div class="field"><label data-i18n="has_grid">Grid Power Available</label>
         <select id="c_has_grid">
-          <option value="1" data-i18n="has_grid_yes">Yes</option>
-          <option value="0" data-i18n="has_grid_no">No</option>
+          <option value="1" data-i18n="has_grid_yes">Grid available</option>
+          <option value="0" data-i18n="has_grid_no">No grid</option>
         </select>
       </div>
       <div class="field"><label data-i18n="install_type">Installation Type</label>
@@ -282,9 +308,10 @@
       </div>
       <div class="field"><label data-i18n="system_mode">System Mode</label>
         <select id="c_system_mode">
-          <option value="hybrid" data-i18n="hybrid">Hybrid</option>
-          <option value="off-grid" data-i18n="off_grid">Off-grid</option>
+          <option value="hybrid" data-i18n="mode_hybrid">Hybrid / grid-tied — battery optional</option>
+          <option value="off-grid" data-i18n="mode_off_grid">Pure off-grid — battery required</option>
         </select>
+        <div class="select-note" id="c_system_mode_note" data-i18n="system_mode_note">Off-grid always needs at least one battery whose output covers 1.2× the day peak. Hybrid grid-tied can run without a battery when there is no night load.</div>
       </div>
       <div class="row">
         <div class="field"><label><span data-i18n="electricity_price">Electricity Price</span> (<span data-i18n="optional">Optional</span>)</label>
@@ -330,6 +357,7 @@
   </div>
 
   <script src="js/i18n.js"></script>
+  <script src="js/shell.js"></script>
   <script src="js/member.js"></script>
 </body>
 </html>

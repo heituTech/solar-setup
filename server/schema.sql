@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS inverters (
   id INT AUTO_INCREMENT PRIMARY KEY,
   brand VARCHAR(100) NOT NULL,
+  model VARCHAR(100) NOT NULL DEFAULT '',
   rated_power INT NOT NULL COMMENT 'W',
   type ENUM('off-grid', 'hybrid') NOT NULL,
   battery_voltage ENUM('12V','24V','48V') NOT NULL DEFAULT '48V',
@@ -12,6 +13,8 @@ CREATE TABLE IF NOT EXISTS inverters (
   mppt_max_voltage_v INT DEFAULT NULL COMMENT 'Max input voltage per MPPT channel (V)',
   grid_parallel_max INT NOT NULL DEFAULT 1 COMMENT 'Hybrid mode: max units in parallel on grid side (1 = not supported)',
   offgrid_parallel_max INT NOT NULL DEFAULT 1 COMMENT 'Off-grid mode: max units in parallel (1 = not supported)',
+  grid_output_max_w INT DEFAULT NULL COMMENT 'Hybrid grid-tied max output power (W); NULL = unlimited pass-through',
+  battery_less_start TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1 = hybrid inverter can start and run without a battery',
   warranty_months INT NOT NULL DEFAULT 24,
   price_usd DECIMAL(12,2) NOT NULL,
   price_khr DECIMAL(14,2) NOT NULL DEFAULT 0,
@@ -23,6 +26,7 @@ CREATE TABLE IF NOT EXISTS inverters (
 CREATE TABLE IF NOT EXISTS solar_panels (
   id INT AUTO_INCREMENT PRIMARY KEY,
   brand VARCHAR(100) NOT NULL,
+  model VARCHAR(100) NOT NULL DEFAULT '',
   rated_power INT NOT NULL COMMENT 'W',
   length_mm DECIMAL(8,2) DEFAULT NULL,
   width_mm DECIMAL(8,2) DEFAULT NULL,
@@ -44,10 +48,13 @@ CREATE TABLE IF NOT EXISTS solar_panels (
 CREATE TABLE IF NOT EXISTS batteries (
   id INT AUTO_INCREMENT PRIMARY KEY,
   brand VARCHAR(100) NOT NULL,
+  model VARCHAR(100) NOT NULL DEFAULT '',
   capacity_kwh DECIMAL(10,3) NOT NULL COMMENT 'kWh',
   nominal_voltage DECIMAL(6,1) NOT NULL DEFAULT 48 COMMENT 'V',
   type ENUM('lead-acid','lithium-ternary','lfp') NOT NULL,
   discharge_rate DECIMAL(6,2) NOT NULL DEFAULT 0.5 COMMENT 'C-rate',
+  parallel_supported TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1 = parallel connection allowed, 0 = single unit only',
+  bms_brand VARCHAR(100) DEFAULT NULL COMMENT 'Battery management system vendor',
   warranty_months INT NOT NULL DEFAULT 36,
   price_usd DECIMAL(12,2) NOT NULL,
   price_khr DECIMAL(14,2) NOT NULL DEFAULT 0,
@@ -68,7 +75,10 @@ INSERT INTO system_config (config_key, config_value) VALUES
   ('default_currency', 'USD'),
   ('usd_to_khr', '4100'),
   ('installation_fee_percent', '20'),
-  ('installation_fee_min_usd', '500')
+  ('installation_fee_min_usd', '500'),
+  ('battery_price_lfp_per_kwh', '120'),
+  ('battery_price_ternary_per_kwh', '120'),
+  ('battery_price_lead_acid_per_kwh', '85')
 ON DUPLICATE KEY UPDATE config_value = VALUES(config_value);
 
 CREATE TABLE IF NOT EXISTS users (

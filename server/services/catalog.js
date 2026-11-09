@@ -3,20 +3,20 @@ const pool = require('../db');
 const CATEGORY_CONFIG = {
   inverters: {
     table: 'inverters',
-    fields: ['brand', 'rated_power', 'type', 'battery_voltage', 'mppt_channels', 'mppt_max_current_a', 'mppt_max_voltage_v', 'grid_parallel_max', 'offgrid_parallel_max', 'warranty_months', 'price_usd', 'price_khr', 'sales_status'],
-    numeric: ['rated_power', 'mppt_channels', 'mppt_max_current_a', 'mppt_max_voltage_v', 'grid_parallel_max', 'offgrid_parallel_max', 'warranty_months', 'price_usd', 'price_khr'],
-    nullableNumeric: ['mppt_max_current_a', 'mppt_max_voltage_v'],
+    fields: ['brand', 'model', 'rated_power', 'type', 'battery_voltage', 'mppt_channels', 'mppt_max_current_a', 'mppt_max_voltage_v', 'grid_parallel_max', 'offgrid_parallel_max', 'grid_output_max_w', 'battery_less_start', 'warranty_months', 'price_usd', 'price_khr', 'sales_status'],
+    numeric: ['rated_power', 'mppt_channels', 'mppt_max_current_a', 'mppt_max_voltage_v', 'grid_parallel_max', 'offgrid_parallel_max', 'grid_output_max_w', 'warranty_months', 'price_usd', 'price_khr'],
+    nullableNumeric: ['mppt_max_current_a', 'mppt_max_voltage_v', 'grid_output_max_w'],
     enums: {
       type: ['off-grid', 'hybrid'],
       battery_voltage: ['12V', '24V', '48V'],
       sales_status: ['on_sale', 'discontinued'],
     },
     required: ['brand', 'rated_power', 'type', 'price_usd'],
-    defaults: { battery_voltage: '48V', mppt_channels: 1, grid_parallel_max: 1, offgrid_parallel_max: 1, warranty_months: 24, price_khr: 0, sales_status: 'on_sale' },
+    defaults: { battery_voltage: '48V', mppt_channels: 1, grid_parallel_max: 1, offgrid_parallel_max: 1, battery_less_start: 0, warranty_months: 24, price_khr: 0, sales_status: 'on_sale' },
   },
   panels: {
     table: 'solar_panels',
-    fields: ['brand', 'rated_power', 'length_mm', 'width_mm', 'height_mm', 'voltage_min', 'voltage_max', 'voc_v', 'isc_a', 'glass_type', 'technology', 'warranty_months', 'price_usd', 'price_khr', 'sales_status'],
+    fields: ['brand', 'model', 'rated_power', 'length_mm', 'width_mm', 'height_mm', 'voltage_min', 'voltage_max', 'voc_v', 'isc_a', 'glass_type', 'technology', 'warranty_months', 'price_usd', 'price_khr', 'sales_status'],
     numeric: ['rated_power', 'length_mm', 'width_mm', 'height_mm', 'voltage_min', 'voltage_max', 'voc_v', 'isc_a', 'warranty_months', 'price_usd', 'price_khr'],
     nullableNumeric: ['length_mm', 'width_mm', 'height_mm', 'voltage_min', 'voltage_max', 'voc_v', 'isc_a'],
     enums: { glass_type: ['single', 'double'], sales_status: ['on_sale', 'discontinued'] },
@@ -26,14 +26,14 @@ const CATEGORY_CONFIG = {
   },
   batteries: {
     table: 'batteries',
-    fields: ['brand', 'capacity_kwh', 'nominal_voltage', 'type', 'discharge_rate', 'warranty_months', 'price_usd', 'price_khr', 'sales_status'],
+    fields: ['brand', 'model', 'capacity_kwh', 'nominal_voltage', 'type', 'discharge_rate', 'parallel_supported', 'bms_brand', 'warranty_months', 'price_usd', 'price_khr', 'sales_status'],
     numeric: ['capacity_kwh', 'nominal_voltage', 'discharge_rate', 'warranty_months', 'price_usd', 'price_khr'],
     enums: {
       type: ['lead-acid', 'lithium-ternary', 'lfp'],
       sales_status: ['on_sale', 'discontinued'],
     },
     required: ['brand', 'capacity_kwh', 'type', 'price_usd'],
-    defaults: { nominal_voltage: 48, discharge_rate: 0.5, warranty_months: 36, price_khr: 0, sales_status: 'on_sale' },
+    defaults: { nominal_voltage: 48, discharge_rate: 0.5, parallel_supported: 1, bms_brand: null, warranty_months: 36, price_khr: 0, sales_status: 'on_sale' },
   },
 };
 
@@ -90,7 +90,7 @@ function normalizeProductPayload(category, body, { partial = false } = {}) {
       if (field !== 'price_khr' && num === 0 && ['rated_power', 'capacity_kwh', 'price_usd'].includes(field)) {
         throw httpError(`invalid_${field}`);
       }
-      const INT_FIELDS = ['rated_power', 'mppt_max_voltage_v'];
+      const INT_FIELDS = ['rated_power', 'mppt_max_voltage_v', 'grid_output_max_w'];
       const ONE_DECIMAL = ['mppt_max_current_a', 'voltage_min', 'voltage_max', 'voc_v', 'isc_a', 'nominal_voltage'];
       out[field] = INT_FIELDS.includes(field)
         ? Math.round(num)
@@ -98,10 +98,26 @@ function normalizeProductPayload(category, body, { partial = false } = {}) {
       continue;
     }
 
-    if (field === 'brand') {
+    if (field === 'brand' || field === 'model') {
       const text = String(value || '').trim();
-      if (!text) throw httpError('brand_required');
+      if (field === 'brand' && !text) throw httpError('brand_required');
       out[field] = text;
+      continue;
+    }
+
+    if (field === 'battery_less_start') {
+      out[field] = value === true || value === 1 || value === '1' || value === 'true' ? 1 : 0;
+      continue;
+    }
+
+    if (field === 'parallel_supported') {
+      out[field] = value === true || value === 1 || value === '1' || value === 'true' ? 1 : 0;
+      continue;
+    }
+
+    if (field === 'bms_brand') {
+      const text = String(value || '').trim();
+      out[field] = text || null;
       continue;
     }
 

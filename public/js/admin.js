@@ -138,6 +138,102 @@
 
   document.getElementById('logoutBtn').addEventListener('click', () => logout());
 
+  /* ===================== Staff registration ===================== */
+
+  let countries = [];
+  let codeTimer = null;
+
+  function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function setAuthMode(mode) {
+    document.querySelectorAll('#authTabs button').forEach((b) => {
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+    document.getElementById('loginForm').style.display = mode === 'login' ? '' : 'none';
+    document.getElementById('registerForm').style.display = mode === 'register' ? '' : 'none';
+  }
+
+  document.querySelectorAll('#authTabs button').forEach((b) => {
+    b.addEventListener('click', () => setAuthMode(b.dataset.mode));
+  });
+
+  function fillPhoneCountries() {
+    const select = document.getElementById('sr_phone_country');
+    select.innerHTML = countries
+      .map((c) => `<option value="${escapeHtml(c.code)}">${escapeHtml(c.name)} +${escapeHtml(c.dial)}</option>`)
+      .join('');
+    select.value = countries.some((c) => c.code === 'KH') ? 'KH' : (countries[0] ? countries[0].code : '');
+  }
+
+  function startCooldown(btn, seconds) {
+    if (codeTimer) clearInterval(codeTimer);
+    let left = seconds;
+    btn.disabled = true;
+    btn.textContent = left + 's';
+    codeTimer = setInterval(() => {
+      left -= 1;
+      if (left <= 0) {
+        clearInterval(codeTimer);
+        codeTimer = null;
+        btn.disabled = false;
+        btn.textContent = t('send_code');
+      } else {
+        btn.textContent = left + 's';
+      }
+    }, 1000);
+  }
+
+  document.getElementById('sr_sendCode').addEventListener('click', async () => {
+    const email = document.getElementById('sr_email').value.trim();
+    if (!email) {
+      showToast(t('email'), true);
+      return;
+    }
+    const btn = document.getElementById('sr_sendCode');
+    try {
+      const { data } = await api('/api/auth/request-code', {
+        method: 'POST',
+        body: { email },
+        auth: false,
+      });
+      showToast(t('code_sent'));
+      if (data.dev_mode) document.getElementById('sr_devHint').style.display = '';
+      startCooldown(btn, 60);
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  });
+
+  document.getElementById('registerBtn').addEventListener('click', async () => {
+    const body = {
+      role: 'salesperson',
+      full_name: document.getElementById('sr_name').value.trim(),
+      username: document.getElementById('sr_username').value.trim(),
+      phone_country: document.getElementById('sr_phone_country').value,
+      phone: document.getElementById('sr_phone').value.trim(),
+      email: document.getElementById('sr_email').value.trim(),
+      code: document.getElementById('sr_code').value.trim(),
+      password: document.getElementById('sr_password').value,
+    };
+    try {
+      const { data } = await api('/api/auth/register', { method: 'POST', body, auth: false });
+      token = data.token;
+      me = data.user;
+      localStorage.setItem(TOKEN_KEY, token);
+      showPanel();
+      showToast(t('saved'));
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  });
+
   async function loadMe() {
     if (!token) return null;
     try {
@@ -239,23 +335,41 @@
     }
   }
 
+  function parUnits(n) {
+    return Number(n) > 1 ? `×${Number(n)}` : t('no');
+  }
+
   function renderProduct(p) {
+    const base = `${p.brand}${p.model ? ' ' + p.model : ''}`;
+    let title = '';
     let meta = '';
     if (currentCategory === 'inverters') {
       const mpptSpec = p.mppt_max_current_a || p.mppt_max_voltage_v
         ? ` · ${p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '-'}/${p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '-'}`
         : '';
-      meta = `${t('power')}: ${p.rated_power}W · ${p.type} · ${p.battery_voltage} · MPPT×${p.mppt_channels}${mpptSpec} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
+      const gridOut = p.type === 'hybrid' ? ` · ${t('grid_output_max_w')}: ${p.grid_output_max_w ? p.grid_output_max_w + 'W' : '-'} · ${t('battery_less_start')}: ${Number(p.battery_less_start) ? t('yes') : t('no')}` : '';
+      const typeLabel = p.type === 'hybrid' ? t('hybrid') : t('off_grid');
+      title = `${base} · ${typeLabel} · ${p.rated_power}W · ${p.battery_voltage}`;
+      const par = [];
+      if (p.type === 'hybrid') par.push(`${t('grid_parallel_short')}: ${parUnits(p.grid_parallel_max)}`);
+      par.push(`${t('offgrid_parallel_short')}: ${parUnits(p.offgrid_parallel_max)}`);
+      meta = `MPPT×${p.mppt_channels}${mpptSpec} · ${par.join(' · ')}${gridOut} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
     } else if (currentCategory === 'panels') {
       const tech = Array.isArray(p.technology) ? p.technology.join('/') : '';
       const elSpec = `${p.voc_v ? ` · Voc ${fmtDec1(p.voc_v)}V` : ''}${p.isc_a ? ` · Isc ${fmtDec1(p.isc_a)}A` : ''}`;
-      meta = `${t('power')}: ${p.rated_power}W · ${p.glass_type === 'double' ? t('double_glass') : t('single_glass')}${tech ? ' · ' + tech : ''}${elSpec} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
+      title = `${base} · ${p.rated_power}W · ${p.glass_type === 'double' ? t('double_glass') : t('single_glass')}${tech ? ' · ' + tech : ''}`;
+      const size = [p.length_mm, p.width_mm, p.height_mm].every((v) => v !== null && v !== undefined && v !== '')
+        ? `${p.length_mm}×${p.width_mm}×${p.height_mm}mm`
+        : '-';
+      meta = `${t('dimensions')}: ${size}${elSpec} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
     } else {
-      meta = `${t('capacity')}: ${p.capacity_kwh}kWh · ${p.type} · ${fmtDec1(p.nominal_voltage)}V · ${p.discharge_rate}C · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
+      const typeLabel = p.type === 'lfp' ? t('battery_lfp') : p.type === 'lithium-ternary' ? t('battery_ternary') : t('battery_lead_acid');
+      title = `${base} · ${typeLabel} · ${fmtDec1(p.capacity_kwh)}kWh · ${fmtDec1(p.discharge_rate)}C · ${fmtDec1(p.nominal_voltage)}V`;
+      meta = `${t('bms_brand')}: ${p.bms_brand || '-'} · ${t('parallel_supported')}: ${Number(p.parallel_supported) ? t('yes') : t('no')} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
     }
     const status = p.sales_status === 'discontinued' ? 'discontinued' : 'on_sale';
     return `<div class="product-item">
-      <h4>${p.brand}<span class="status-badge ${status}">${t(status)}</span></h4>
+      <h4>${title}<span class="status-badge ${status}">${t(status)}</span></h4>
       <div class="meta">${meta}</div>
       <div class="meta price-line">${money(p)}</div>
       <div class="row-actions">
@@ -294,7 +408,24 @@
     document.getElementById('productModalTitle').textContent = id ? t('edit_product') : t('add_product');
     document.getElementById('productModalBody').innerHTML = buildProductForm();
     if (id) fillProductForm(id);
+    const typeEl = document.getElementById('f_type');
+    if (typeEl && document.getElementById('gridParallelField')) {
+      typeEl.addEventListener('change', syncParallelFields);
+      syncParallelFields();
+    }
     document.getElementById('productModal').classList.add('active');
+  }
+
+  function syncParallelFields() {
+    const typeEl = document.getElementById('f_type');
+    const gridField = document.getElementById('gridParallelField');
+    if (!typeEl || !gridField) return;
+    const isHybrid = typeEl.value === 'hybrid';
+    gridField.style.display = isHybrid ? '' : 'none';
+    if (!isHybrid) {
+      const gridInput = document.getElementById('f_grid_parallel_max');
+      if (gridInput) gridInput.value = 1;
+    }
   }
 
   function closeProductModal() {
@@ -319,6 +450,7 @@
   function inverterForm() {
     return `
       <div class="field"><label>${t('brand')}</label><input id="f_brand" /></div>
+      <div class="field"><label>${t('model')}</label><input id="f_model" maxlength="100" /></div>
       <div class="row">
         <div class="field"><label>${t('power')} (W)</label><input id="f_rated_power" type="number" min="1" step="1" /></div>
         <div class="field"><label>${t('mppt')}</label><input id="f_mppt" type="number" min="1" step="1" value="1" /></div>
@@ -336,10 +468,15 @@
         </div>
       </div>
       <div class="row">
-        <div class="field"><label>${t('grid_parallel_max')}</label><input id="f_grid_parallel_max" type="number" min="1" value="1" /></div>
+        <div class="field" id="gridParallelField"><label>${t('grid_parallel_max')}</label><input id="f_grid_parallel_max" type="number" min="1" value="1" /></div>
         <div class="field"><label>${t('offgrid_parallel_max')}</label><input id="f_offgrid_parallel_max" type="number" min="1" value="1" /></div>
       </div>
       <div class="select-note">${t('parallel_hint')}</div>
+      <div class="field"><label>${t('grid_output_max_w')}</label><input id="f_grid_output_max_w" type="number" min="0" step="1" /><div class="select-note">${t('grid_output_hint')}</div></div>
+      <div class="field"><label>${t('battery_less_start')}</label>
+        <select id="f_battery_less"><option value="0">${t('no')}</option><option value="1">${t('yes')}</option></select>
+        <div class="select-note">${t('battery_less_hint')}</div>
+      </div>
       <div class="field"><label>${t('warranty')} (${t('months')})</label><input id="f_warranty" type="number" value="24" /></div>
       <div class="row">
         <div class="field"><label>${t('price_usd')}</label><input id="f_price_usd" type="number" step="0.01" /></div>
@@ -350,6 +487,7 @@
   function panelForm() {
     return `
       <div class="field"><label>${t('brand')}</label><input id="f_brand" /></div>
+      <div class="field"><label>${t('model')}</label><input id="f_model" maxlength="100" /></div>
       <div class="field"><label>${t('power')} (W)</label><input id="f_rated_power" type="number" /></div>
       <div class="field"><label>${t('dimensions')}</label>
         <div class="row">
@@ -384,6 +522,7 @@
   function batteryForm() {
     return `
       <div class="field"><label>${t('brand')}</label><input id="f_brand" /></div>
+      <div class="field"><label>${t('model')}</label><input id="f_model" maxlength="100" /></div>
       <div class="row">
         <div class="field"><label>${t('capacity')} (kWh)</label><input id="f_capacity" type="number" step="0.01" /></div>
         <div class="field"><label>${t('voltage')} (V)</label><input id="f_voltage" type="number" step="0.1" value="48" /></div>
@@ -396,7 +535,16 @@
             <option value="lithium-ternary">${t('battery_ternary')}</option>
           </select>
         </div>
-        <div class="field"><label>${t('discharge_rate')} (C)</label><input id="f_discharge" type="number" step="0.1" value="0.5" /></div>
+        <div class="field"><label>${t('discharge_rate')} (C)</label><input id="f_discharge" type="number" step="0.01" min="0" value="0.5" /></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>${t('bms_brand')}</label><input id="f_bms" maxlength="100" /></div>
+        <div class="field"><label>${t('parallel_supported')}</label>
+          <select id="f_parallel">
+            <option value="1">${t('yes')}</option>
+            <option value="0">${t('no')}</option>
+          </select>
+        </div>
       </div>
       <div class="field"><label>${t('warranty')} (${t('months')})</label><input id="f_warranty" type="number" value="36" /></div>
       <div class="row">
@@ -413,6 +561,7 @@
       if (el !== null && value !== undefined && value !== null) el.value = value;
     };
     set('f_brand', p.brand);
+    set('f_model', p.model);
     set('f_price_usd', p.price_usd);
     set('f_price_khr', p.price_khr);
     set('f_warranty', p.warranty_months);
@@ -426,6 +575,8 @@
       set('f_battery_voltage', p.battery_voltage);
       set('f_grid_parallel_max', p.grid_parallel_max || 1);
       set('f_offgrid_parallel_max', p.offgrid_parallel_max || 1);
+      set('f_grid_output_max_w', p.grid_output_max_w === null || p.grid_output_max_w === undefined ? '' : p.grid_output_max_w);
+      set('f_battery_less', Number(p.battery_less_start) ? '1' : '0');
     } else if (currentCategory === 'panels') {
       set('f_rated_power', p.rated_power);
       set('f_length', p.length_mm);
@@ -445,6 +596,8 @@
       set('f_voltage', fmtDec1(p.nominal_voltage));
       set('f_type', p.type);
       set('f_discharge', p.discharge_rate);
+      set('f_bms', p.bms_brand || '');
+      set('f_parallel', Number(p.parallel_supported) ? '1' : '0');
     }
   }
 
@@ -458,6 +611,7 @@
     const get = (id) => document.getElementById(id).value;
     const body = {
       brand: get('f_brand').trim(),
+      model: get('f_model').trim(),
       warranty_months: Number(get('f_warranty')) || 0,
       price_usd: Number(get('f_price_usd')) || 0,
       price_khr: Number(get('f_price_khr')) || 0,
@@ -470,8 +624,10 @@
       body.mppt_max_voltage_v = get('f_mppt_voltage') === '' ? null : Number(get('f_mppt_voltage'));
       body.type = get('f_type');
       body.battery_voltage = get('f_battery_voltage');
-      body.grid_parallel_max = Math.max(1, Number(get('f_grid_parallel_max')) || 1);
+      body.grid_parallel_max = body.type === 'off-grid' ? 1 : Math.max(1, Number(get('f_grid_parallel_max')) || 1);
       body.offgrid_parallel_max = Math.max(1, Number(get('f_offgrid_parallel_max')) || 1);
+      body.grid_output_max_w = get('f_grid_output_max_w') === '' ? null : Math.round(Number(get('f_grid_output_max_w')));
+      body.battery_less_start = get('f_battery_less') === '1' ? 1 : 0;
     } else if (currentCategory === 'panels') {
       body.rated_power = Number(get('f_rated_power'));
       body.length_mm = get('f_length') === '' ? null : Number(get('f_length'));
@@ -488,6 +644,8 @@
       body.nominal_voltage = Number(get('f_voltage')) || 48;
       body.type = get('f_type');
       body.discharge_rate = Number(get('f_discharge')) || 0.5;
+      body.bms_brand = get('f_bms').trim() || null;
+      body.parallel_supported = get('f_parallel') === '1' ? 1 : 0;
     }
     return body;
   }
@@ -764,7 +922,7 @@
     const p = payload(a);
     let detail = '';
     if (String(a.request_type).startsWith('product_')) {
-      detail = [p.brand, p.rated_power ? p.rated_power + 'W' : '', p.mppt_channels ? 'MPPT×' + p.mppt_channels : '', p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '', p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '', p.voc_v ? 'Voc ' + fmtDec1(p.voc_v) + 'V' : '', p.isc_a ? 'Isc ' + fmtDec1(p.isc_a) + 'A' : '', p.capacity_kwh ? p.capacity_kwh + 'kWh' : '', p.price_usd ? '$' + p.price_usd : '']
+      detail = [`${p.brand || ''}${p.model ? ' ' + p.model : ''}`, p.rated_power ? p.rated_power + 'W' : '', p.mppt_channels ? 'MPPT×' + p.mppt_channels : '', p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '', p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '', p.voc_v ? 'Voc ' + fmtDec1(p.voc_v) + 'V' : '', p.isc_a ? 'Isc ' + fmtDec1(p.isc_a) + 'A' : '', p.capacity_kwh ? p.capacity_kwh + 'kWh' : '', p.price_usd ? '$' + p.price_usd : '']
         .filter(Boolean).join(' · ');
     } else {
       detail = [p.username, p.email, p.phone].filter(Boolean).join(' · ');
@@ -877,6 +1035,14 @@
             <div class="field"><label>${t('installation_fee_min_usd')}</label>
               <input id="s_install_min" type="number" step="1" value="${data.installation_fee_min_usd || 500}" /></div>
           </div>
+          <div class="row">
+            <div class="field"><label>${t('battery_price_lfp_per_kwh')}</label>
+              <input id="s_batt_lfp" type="number" step="1" value="${data.battery_price_lfp_per_kwh || 120}" /></div>
+            <div class="field"><label>${t('battery_price_ternary_per_kwh')}</label>
+              <input id="s_batt_ternary" type="number" step="1" value="${data.battery_price_ternary_per_kwh || 120}" /></div>
+          </div>
+          <div class="field"><label>${t('battery_price_lead_acid_per_kwh')}</label>
+            <input id="s_batt_lead" type="number" step="1" value="${data.battery_price_lead_acid_per_kwh || 85}" /></div>
           <button class="btn btn-primary" id="saveSettings">${t('save_settings')}</button>
         </div>`;
       document.getElementById('saveSettings').addEventListener('click', saveSettings);
@@ -892,6 +1058,9 @@
       usd_to_khr: document.getElementById('s_rate').value,
       installation_fee_percent: document.getElementById('s_install_pct').value,
       installation_fee_min_usd: document.getElementById('s_install_min').value,
+      battery_price_lfp_per_kwh: document.getElementById('s_batt_lfp').value,
+      battery_price_ternary_per_kwh: document.getElementById('s_batt_ternary').value,
+      battery_price_lead_acid_per_kwh: document.getElementById('s_batt_lead').value,
     };
     try {
       await api('/api/config', { method: 'PUT', body: { updates } });
@@ -905,30 +1074,35 @@
 
   function initLang() {
     const lang = getCurrentLang();
-    document.querySelectorAll('#langSwitcher button').forEach((b) => {
-      b.classList.toggle('active', b.dataset.lang === lang);
-    });
+    if (window.updateLangPicker) window.updateLangPicker(lang);
     applyLang();
   }
 
-  document.querySelectorAll('#langSwitcher button').forEach((b) => {
-    b.addEventListener('click', () => {
-      setLang(b.dataset.lang);
-      initLang();
-      if (me) {
-        document.getElementById('userRoleBadge').textContent = t('role_' + me.role);
-        if (currentTab === 'products') {
-          updateProductHint();
-          loadProducts();
-        } else {
-          switchTab(currentTab);
-        }
+  document.addEventListener('lang:change', (e) => {
+    setLang(e.detail.lang);
+    initLang();
+    if (me) {
+      document.getElementById('userRoleBadge').textContent = t('role_' + me.role);
+      if (currentTab === 'products') {
+        updateProductHint();
+        loadProducts();
+      } else {
+        switchTab(currentTab);
       }
-    });
+    }
   });
 
   async function bootstrap() {
     initLang();
+    setAuthMode('login');
+    try {
+      const { data } = await api('/api/config/countries', { auth: false });
+      countries = Array.isArray(data.countries) ? data.countries : [];
+    } catch (e) {
+      countries = [];
+    }
+    if (!countries.length) countries = [{ code: 'KH', dial: '855', name: 'Cambodia' }];
+    fillPhoneCountries();
     const user = await loadMe();
     if (user) showPanel();
   }

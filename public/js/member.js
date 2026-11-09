@@ -8,6 +8,7 @@
   let config = { usd_to_khr: 4100 };
   let lastQuote = null;
   let selection = { inverter_id: null, battery_id: null, panel_id: null };
+  let panelQty = null;
   let catalogCat = 'inverters';
   let catalogLoaded = false;
   let codeTimer = null;
@@ -24,9 +25,9 @@
       { name_key: 'dev_lights', power: 100, qty: 1, day_hours: 0, night_hours: 6, critical: true },
     ],
     supermarket: [
-      { name_key: 'dev_freezer', power: 400, qty: 2, day_hours: 12, night_hours: 12, critical: true },
-      { name_key: 'dev_fridge', power: 300, qty: 2, day_hours: 10, night_hours: 10, critical: true },
-      { name_key: 'dev_lights', power: 500, qty: 1, day_hours: 10, night_hours: 0, critical: false },
+      { name_key: 'dev_freezer', power: 400, qty: 2, day_hours: 8, night_hours: 12, critical: true },
+      { name_key: 'dev_fridge', power: 300, qty: 2, day_hours: 8, night_hours: 10, critical: true },
+      { name_key: 'dev_lights', power: 500, qty: 1, day_hours: 8, night_hours: 0, critical: false },
       { name_key: 'dev_air', power: 1500, qty: 2, day_hours: 8, night_hours: 0, critical: false },
     ],
     resort: [
@@ -100,10 +101,33 @@
     return Number(value).toLocaleString() + (unit ? ' ' + unit : '');
   }
 
+  // Battery capacity: round up to 1 decimal (24.84 -> 24.9).
+  function fmtBatteryKwh(value) {
+    if (value === null || value === undefined || isNaN(value)) return '-';
+    let n = Math.ceil(Number(value) * 10 - 1e-6) / 10;
+    if (!(n > 0)) n = 0;
+    return n.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' kWh';
+  }
+
+  // Solar array power: round up to the nearest 100W (11,283.11 -> 11,300).
+  function fmtSolarWatts(value) {
+    if (value === null || value === undefined || isNaN(value)) return '-';
+    let n = Math.ceil(Number(value) / 100 - 1e-6) * 100;
+    if (!(n > 0)) n = 0;
+    return n.toLocaleString() + ' W';
+  }
+
   function fmtRange(min, max, formatter) {
     if (min === null || min === undefined) return '-';
     if (min === max || max === null || max === undefined) return formatter(min);
     return formatter(min) + ' – ' + formatter(max);
+  }
+
+  // Battery is only quoted after the customer chooses off-grid or hybrid.
+  function batteryNeededText(calc) {
+    if (!calc || calc.battery_required === false) return t('battery_not_needed');
+    if (Number(calc.night_energy_kwh) > 0) return fmtBatteryKwh(calc.battery_kwh_needed);
+    return t('battery_min_one');
   }
 
   function escapeHtml(value) {
@@ -186,7 +210,7 @@
   let pendingPhoneLogin = null;
 
   function countryOptionLabel(c) {
-    return `${c.code} +${c.dial} · ${c.name}`;
+    return `${c.name} +${c.dial}`;
   }
 
   function countryFlagUrl(code) {
@@ -203,18 +227,6 @@
     if (!countries.length) countries = [{ code: 'KH', dial: '855', name: 'Cambodia' }];
   }
 
-  function updatePhoneCountryDisplay() {
-    const select = document.getElementById('r_phone_country');
-    if (!select) return;
-    const c = countries.find((x) => x.code === select.value);
-    const note = document.getElementById('r_phone_display');
-    if (!c) {
-      note.textContent = '';
-      return;
-    }
-    note.innerHTML = `${escapeHtml(c.code)} <img class="flag-icon" src="${countryFlagUrl(c.code)}" alt="${escapeHtml(c.code)}" onerror="this.style.visibility='hidden'" /> · +${c.dial}`;
-  }
-
   function fillPhoneCountries() {
     const select = document.getElementById('r_phone_country');
     if (!select) return;
@@ -222,10 +234,7 @@
       .map((c) => `<option value="${escapeHtml(c.code)}">${escapeHtml(countryOptionLabel(c))}</option>`)
       .join('');
     select.value = countries.some((c) => c.code === 'KH') ? 'KH' : countries[0].code;
-    updatePhoneCountryDisplay();
   }
-
-  document.getElementById('r_phone_country').addEventListener('change', updatePhoneCountryDisplay);
 
   function setAuthMode(mode) {
     authMode = mode;
@@ -416,7 +425,7 @@
 
   document.getElementById('registerBtn').addEventListener('click', async () => {
     const body = {
-      role: document.getElementById('r_role').value,
+      role: 'member',
       full_name: document.getElementById('r_name').value.trim(),
       username: document.getElementById('r_username').value.trim(),
       phone_country: document.getElementById('r_phone_country').value,
@@ -526,6 +535,7 @@
     document.getElementById('c_has_grid').value = c ? (c.has_grid ? '1' : '0') : '1';
     document.getElementById('c_install_type').value = c ? c.install_type : 'rooftop';
     document.getElementById('c_system_mode').value = c ? c.system_mode : 'hybrid';
+    syncCaseMode();
     document.getElementById('c_price').value = c && c.electricity_price !== null && c.electricity_price !== undefined ? c.electricity_price : '';
     document.getElementById('c_currency').value = c ? (c.electricity_price_currency || 'USD') : 'USD';
     document.getElementById('caseModal').classList.add('active');
@@ -549,6 +559,20 @@
   }
 
   document.getElementById('c_scenario').addEventListener('change', updateScenarioHint);
+
+  function syncCaseMode() {
+    const hasGridEl = document.getElementById('c_has_grid');
+    const modeEl = document.getElementById('c_system_mode');
+    const noteEl = document.getElementById('c_system_mode_note');
+    if (!hasGridEl || !modeEl || !noteEl) return;
+    const hasGrid = hasGridEl.value === '1';
+    if (!hasGrid) modeEl.value = 'off-grid';
+    modeEl.disabled = !hasGrid;
+    noteEl.dataset.i18n = hasGrid ? 'system_mode_note' : 'system_mode_no_grid_note';
+    noteEl.textContent = t(noteEl.dataset.i18n);
+  }
+
+  document.getElementById('c_has_grid').addEventListener('change', syncCaseMode);
 
   function updateAutonomyWarning() {
     const note = document.getElementById('autonomyWarn');
@@ -662,8 +686,8 @@
       name: it && typeof it.name === 'string' ? it.name : '',
       power: Number(it && it.power) || 0,
       qty: Number(it && it.qty) || 0,
-      day_hours: Number(it && it.day_hours) || 0,
-      night_hours: Number(it && it.night_hours) || 0,
+      day_hours: Math.min(8, Number(it && it.day_hours) || 0),
+      night_hours: Math.min(16, Number(it && it.night_hours) || 0),
       critical: Boolean(it && it.critical),
     }));
   }
@@ -698,8 +722,8 @@
         <div class="name-cell"><label>${escapeHtml(t('device'))}</label>${nameCell}</div>
         <div><label>${escapeHtml(t('power_w'))}</label><input type="number" min="0" step="1" data-field="power" data-index="${i}" value="${it.power}" /></div>
         <div><label>${escapeHtml(t('qty'))}</label><input type="number" min="0" step="1" data-field="qty" data-index="${i}" value="${it.qty}" /></div>
-        <div><label>${escapeHtml(t('day_hours_short'))}</label><input type="number" min="0" max="24" step="0.1" data-field="day_hours" data-index="${i}" value="${it.day_hours}" /></div>
-        <div><label>${escapeHtml(t('night_hours_short'))}</label><input type="number" min="0" max="24" step="0.1" data-field="night_hours" data-index="${i}" value="${it.night_hours}" /></div>
+        <div><label>${escapeHtml(t('day_hours_short'))}</label><input type="number" min="0" max="8" step="0.1" data-field="day_hours" data-index="${i}" value="${it.day_hours}" /></div>
+        <div><label>${escapeHtml(t('night_hours_short'))}</label><input type="number" min="0" max="16" step="0.1" data-field="night_hours" data-index="${i}" value="${it.night_hours}" /></div>
         ${hybrid ? `<div><label>${escapeHtml(t('critical_load'))}</label><div class="critical-cell"><input type="checkbox" data-field="critical" data-index="${i}" ${it.critical ? 'checked' : ''} /></div></div>` : ''}
         <button type="button" class="del-load" data-index="${i}">×</button>
       </div>`;
@@ -802,7 +826,13 @@
     } else if (field === 'critical') {
       item.critical = el.checked;
     } else {
-      item[field] = el.value === '' ? 0 : Number(el.value);
+      let v = el.value === '' ? 0 : Number(el.value);
+      const max = field === 'day_hours' ? 8 : field === 'night_hours' ? 16 : null;
+      if (max !== null && v > max) {
+        v = max;
+        el.value = max;
+      }
+      item[field] = v;
     }
     applyLoadTotals();
     scheduleLoadSave();
@@ -862,12 +892,16 @@
       showToast(t('invalid_day_peak_power'), true);
       return null;
     }
-    if (!Number.isFinite(dayHours) || dayHours < 0) {
+    if (!Number.isFinite(dayHours) || dayHours < 0 || dayHours > 8) {
       showToast(t('invalid_day_hours'), true);
       return null;
     }
     if (Number.isFinite(nightHours) && nightHours > 0 && (!Number.isFinite(nightPower) || nightPower <= 0)) {
       showToast(t('invalid_night_peak_power'), true);
+      return null;
+    }
+    if (Number.isFinite(nightHours) && nightHours > 16) {
+      showToast(t('invalid_night_hours'), true);
       return null;
     }
     if ((!Number.isFinite(dayHours) || dayHours <= 0) && (!Number.isFinite(nightHours) || nightHours <= 0)) {
@@ -906,6 +940,7 @@
     if (selection.inverter_id) body.inverter_id = selection.inverter_id;
     if (selection.battery_id) body.battery_id = selection.battery_id;
     if (selection.panel_id) body.panel_id = selection.panel_id;
+    if (selection.panel_id && panelQty !== null) body.panel_qty = panelQty;
     return body;
   }
 
@@ -933,6 +968,7 @@
 
   document.getElementById('quoteBtn').addEventListener('click', () => {
     selection = { inverter_id: null, battery_id: null, panel_id: null };
+    panelQty = null;
     runQuote();
   });
 
@@ -940,6 +976,7 @@
     const prev = Object.assign({}, selection);
     const key = SELECT_KEYS[category];
     selection[key] = selection[key] === id ? null : id;
+    if (category === 'panels') panelQty = null;
     const ok = await runQuote();
     if (!ok) {
       selection = prev;
@@ -948,6 +985,7 @@
   }
 
   document.getElementById('quoteResults').addEventListener('click', (e) => {
+    if (e.target.closest('.qty-input')) return;
     const target = e.target.closest('.candidate');
     if (target && target.dataset.id) {
       changeSelection(target.dataset.cat, Number(target.dataset.id));
@@ -955,8 +993,22 @@
     }
     if (e.target.closest('.reset-selection')) {
       selection = { inverter_id: null, battery_id: null, panel_id: null };
+      panelQty = null;
       runQuote();
     }
+  });
+
+  document.getElementById('quoteResults').addEventListener('change', (e) => {
+    const input = e.target.closest('.qty-input');
+    if (!input) return;
+    const qty = Math.floor(Number(input.value));
+    if (!Number.isFinite(qty) || qty < 1 || qty > 200) {
+      input.value = input.dataset.prev || input.value;
+      showToast(t('invalid_panel_qty'), true);
+      return;
+    }
+    panelQty = qty;
+    runQuote();
   });
 
   function renderQuote(d) {
@@ -995,9 +1047,9 @@
       <div class="metric"><div class="label">${t('installation_fee')}</div><div class="value">${fmtRange(installation.min, installation.max, fmtUsd)}</div></div>
       <div class="metric"><div class="label">${t('day_energy')}</div><div class="value">${fmtNum(d.calculation.day_energy_kwh, 'kWh')}</div></div>
       <div class="metric"><div class="label">${t('night_energy')}</div><div class="value">${fmtNum(d.calculation.night_energy_kwh, 'kWh')}</div></div>
-      <div class="metric"><div class="label">${t('battery_needed')}</div><div class="value">${fmtNum(d.calculation.battery_kwh_needed, 'kWh')}</div></div>
+      <div class="metric"><div class="label">${t('battery_needed')}</div><div class="value">${batteryNeededText(d.calculation)}</div></div>
       <div class="metric"><div class="label">${t('inverter_needed')}</div><div class="value">${fmtNum(d.calculation.inverter_power_needed, 'W')}</div></div>
-      <div class="metric"><div class="label">${t('solar_needed')}</div><div class="value">${fmtNum(d.calculation.solar_power_needed, 'W')}</div></div>
+      <div class="metric"><div class="label">${t('solar_needed')}</div><div class="value">${fmtSolarWatts(d.calculation.solar_power_needed)}</div></div>
       <div class="metric"><div class="label">${t('peak_sun')}</div><div class="value">${fmtNum(d.calculation.peak_sun_hours, 'h')}</div></div>
     </div>`;
 
@@ -1008,7 +1060,7 @@
     if (exact) {
       exact.items.forEach((item) => {
         html += `<div class="price-row">
-          <span>${categoryLabel(item.category)} × ${item.quantity} · ${item.product.brand}</span>
+          <span>${categoryLabel(item.category)} × ${item.quantity} · ${item.product.brand}${item.product.model ? ' ' + item.product.model : ''}</span>
           <span>${fmtUsd(item.subtotal_usd)}</span>
         </div>`;
       });
@@ -1079,28 +1131,59 @@
     const title = category === 'inverters' ? t('inverter') : category === 'batteries' ? t('battery') : t('solar_panel');
     const items = list.map((p) => {
       const selected = selection[key] === p.id;
+      let priceHtml = `<span class="price">${fmtUsd(p.price_usd)}</span>`;
+      if (category === 'panels' && selected) {
+        const qty = panelQty !== null ? panelQty : (Number(p.required_qty) || 1);
+        priceHtml = `<span class="price-wrap">
+          <span class="price">${fmtUsd(p.price_usd)}</span>
+          <span class="qty-x">×</span>
+          <input class="qty-input" type="number" min="1" max="200" step="1" value="${qty}" data-prev="${qty}" aria-label="${escapeHtml(t('quantity'))}" />
+        </span>`;
+      }
       return `<div class="candidate${selected ? ' selected' : ''}" data-cat="${category}" data-id="${p.id}">
-        <div class="candidate-main"><strong>${p.brand}</strong><span>${candidateMeta(category, p)}</span></div>
-        <span class="price">${fmtUsd(p.price_usd)}</span>
+        <div class="candidate-main"><strong>${productTitle(category, p)}</strong><span>${candidateMeta(category, p)}</span></div>
+        ${priceHtml}
       </div>`;
     }).join('');
 
     return `<div class="candidate-group"><h4>${title}</h4><div class="candidate-list">${items}</div></div>`;
   }
 
+  function parUnits(n) {
+    return Number(n) > 1 ? `×${Number(n)}` : t('no');
+  }
+
+  function productTitle(category, p) {
+    const base = `${p.brand}${p.model ? ' ' + p.model : ''}`;
+    if (category === 'inverters') {
+      return `${base} · ${p.type === 'hybrid' ? t('hybrid') : t('off_grid')} · ${p.rated_power}W · ${p.battery_voltage}`;
+    }
+    if (category === 'batteries') {
+      return `${base} · ${battTypeLabel(p.type)} · ${fmtDec1(p.capacity_kwh)}kWh · ${fmtDec1(p.discharge_rate)}C · ${fmtDec1(p.nominal_voltage)}V`;
+    }
+    const tech = Array.isArray(p.technology) && p.technology.length ? ' · ' + p.technology.join('/') : '';
+    return `${base} · ${p.rated_power}W · ${glassLabel(p.glass_type)}${tech}`;
+  }
+
   function candidateMeta(category, p) {
     if (category === 'inverters') {
       const qtyInfo = p.required_qty && p.required_qty > 1 ? ` × ${p.required_qty}` : '';
       const spec = p.mppt_max_current_a || p.mppt_max_voltage_v
-        ? ` · ${p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '-'}/${p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '-'}`
+        ? ` (${p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '-'}/${p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '-'})`
         : '';
-      return `${p.rated_power}W${qtyInfo} · ${p.type === 'hybrid' ? t('hybrid') : t('off_grid')} · ${p.battery_voltage} · MPPT×${p.mppt_channels}${spec}`;
+      const par = [];
+      if (p.type === 'hybrid') par.push(`${t('grid_parallel_short')}: ${parUnits(p.grid_parallel_max)}`);
+      par.push(`${t('offgrid_parallel_short')}: ${parUnits(p.offgrid_parallel_max)}`);
+      return `MPPT×${p.mppt_channels}${spec}${qtyInfo} · ${par.join(' · ')}`;
     }
     if (category === 'batteries') {
-      return `${p.capacity_kwh}kWh · ${fmtDec1(p.nominal_voltage)}V · ${battTypeLabel(p.type)} · ${p.discharge_rate}C`;
+      return `${t('bms_brand')}: ${p.bms_brand || '-'} · ${t('parallel_supported')}: ${Number(p.parallel_supported) ? t('yes') : t('no')}`;
     }
-    const qtyInfo = p.required_qty ? ` × ${p.required_qty} = ${p.total_kwp}kWp` : '';
-    return `${p.rated_power}W${qtyInfo} · ${glassLabel(p.glass_type)}${Array.isArray(p.technology) && p.technology.length ? ' · ' + p.technology.join('/') : ''}`;
+    const kwpInfo = p.total_kwp ? `= ${fmtDec1(p.total_kwp)}kWp` : '';
+    const size = [p.length_mm, p.width_mm, p.height_mm].every((v) => v !== null && v !== undefined && v !== '')
+      ? `${p.length_mm}×${p.width_mm}×${p.height_mm}mm`
+      : '';
+    return `${kwpInfo}${kwpInfo && size ? ' · ' : ''}${size}` || '-';
   }
 
   /* ===================== Catalog ===================== */
@@ -1132,7 +1215,7 @@
         return;
       }
       list.innerHTML = data.map((p) => `<div class="catalog-card">
-        <h4>${p.brand}</h4>
+        <h4>${productTitle(catalogCat, p)}</h4>
         <div class="meta">${catalogMeta(p)}</div>
         <div class="price">${fmtUsd(p.price_usd)}${Number(p.price_khr) > 0 ? ' / ' + fmtKhr(p.price_khr) : ''}</div>
       </div>`).join('');
@@ -1143,13 +1226,25 @@
 
   function catalogMeta(p) {
     if (catalogCat === 'inverters') {
-      return `${p.rated_power}W · ${p.battery_voltage} · MPPT×${p.mppt_channels}`;
+      const spec = p.mppt_max_current_a || p.mppt_max_voltage_v
+        ? ` (${p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '-'}/${p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '-'})`
+        : '';
+      const par = [];
+      if (p.type === 'hybrid') par.push(`${t('grid_parallel_short')}: ${parUnits(p.grid_parallel_max)}`);
+      par.push(`${t('offgrid_parallel_short')}: ${parUnits(p.offgrid_parallel_max)}`);
+      return `MPPT×${p.mppt_channels}${spec} · ${par.join(' · ')} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
     }
     if (catalogCat === 'panels') {
-      const elSpec = `${p.voc_v ? ` · Voc ${fmtDec1(p.voc_v)}V` : ''}${p.isc_a ? ` · Isc ${fmtDec1(p.isc_a)}A` : ''}`;
-      return `${p.rated_power}W · ${glassLabel(p.glass_type)}${elSpec} · ${p.warranty_months}${t('months')}`;
+      const parts = [];
+      if ([p.length_mm, p.width_mm, p.height_mm].every((v) => v !== null && v !== undefined && v !== '')) {
+        parts.push(`${p.length_mm}×${p.width_mm}×${p.height_mm}mm`);
+      }
+      if (p.voc_v) parts.push(`Voc ${fmtDec1(p.voc_v)}V`);
+      if (p.isc_a) parts.push(`Isc ${fmtDec1(p.isc_a)}A`);
+      parts.push(`${t('warranty')}: ${p.warranty_months}${t('months')}`);
+      return parts.join(' · ');
     }
-    return `${p.capacity_kwh}kWh · ${fmtDec1(p.nominal_voltage)}V · ${battTypeLabel(p.type)}`;
+    return `${t('bms_brand')}: ${p.bms_brand || '-'} · ${t('parallel_supported')}: ${Number(p.parallel_supported) ? t('yes') : t('no')} · ${t('warranty')}: ${p.warranty_months}${t('months')}`;
   }
 
   /* ===================== Config / language / bootstrap ===================== */
@@ -1165,28 +1260,24 @@
 
   function initLang() {
     const lang = getCurrentLang();
-    document.querySelectorAll('#langSwitcher button').forEach((b) => {
-      b.classList.toggle('active', b.dataset.lang === lang);
-    });
+    if (window.updateLangPicker) window.updateLangPicker(lang);
     applyLang();
   }
 
-  document.querySelectorAll('#langSwitcher button').forEach((b) => {
-    b.addEventListener('click', () => {
-      setLang(b.dataset.lang);
-      initLang();
-      renderCaseList();
-      updateScenarioHint();
-      updateAutonomyWarning();
-      const activeCase = cases.find((x) => x.id === activeCaseId);
-      if (activeCase && document.getElementById('loadBuilderCard').style.display !== 'none') {
-        document.getElementById('scenarioGuide').textContent = t('scenario_' + activeCase.usage_scenario + '_guide');
-        renderLoadRows();
-        refreshLoadSummary();
-      }
-      if (lastQuote) renderQuote(lastQuote);
-      if (catalogLoaded && document.getElementById('catalogBody').style.display !== 'none') loadCatalog();
-    });
+  document.addEventListener('lang:change', (e) => {
+    setLang(e.detail.lang);
+    initLang();
+    renderCaseList();
+    updateScenarioHint();
+    updateAutonomyWarning();
+    const activeCase = cases.find((x) => x.id === activeCaseId);
+    if (activeCase && document.getElementById('loadBuilderCard').style.display !== 'none') {
+      document.getElementById('scenarioGuide').textContent = t('scenario_' + activeCase.usage_scenario + '_guide');
+      renderLoadRows();
+      refreshLoadSummary();
+    }
+    if (lastQuote) renderQuote(lastQuote);
+    if (catalogLoaded && document.getElementById('catalogBody').style.display !== 'none') loadCatalog();
   });
 
   async function bootstrap() {

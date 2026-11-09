@@ -28,8 +28,34 @@
     return Number(value).toLocaleString() + (unit ? ' ' + unit : '');
   }
 
+  // Battery capacity: round up to 1 decimal (24.84 -> 24.9).
+  function fmtBatteryKwh(value) {
+    if (value === null || value === undefined || isNaN(value)) return '-';
+    let n = Math.ceil(Number(value) * 10 - 1e-6) / 10;
+    if (!(n > 0)) n = 0;
+    return n.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' kWh';
+  }
+
+  // Solar array power: round up to the nearest 100W (11,283.11 -> 11,300).
+  function fmtSolarWatts(value) {
+    if (value === null || value === undefined || isNaN(value)) return '-';
+    let n = Math.ceil(Number(value) / 100 - 1e-6) * 100;
+    if (!(n > 0)) n = 0;
+    return n.toLocaleString() + ' W';
+  }
+
+  // Battery is only quoted after the customer chooses off-grid or hybrid.
+  function batteryNeededText(calc) {
+    if (!calc || calc.battery_required === false) return t('battery_not_needed');
+    if (Number(calc.night_energy_kwh) > 0) return fmtBatteryKwh(calc.battery_kwh_needed);
+    return t('battery_min_one');
+  }
+
   function renderResult(d) {
     const el = document.getElementById('results');
+    const batteryMetric = d.input && d.input.system_mode
+      ? `<div class="metric"><div class="label">${t('battery_needed')}</div><div class="value">${batteryNeededText(d.calculation)}</div></div>`
+      : '';
     el.innerHTML = `<div class="card">
       <h3 class="card-title">${t('price_range')}</h3>
       <div class="range-box">
@@ -45,8 +71,8 @@
         <div class="metric"><div class="label">${t('installation_fee')}</div><div class="value">${fmtUsd(d.installation_range.min_usd)} – ${fmtUsd(d.installation_range.max_usd)}</div></div>
         <div class="metric"><div class="label">${t('day_energy')}</div><div class="value">${fmtNum(d.calculation.day_energy_kwh, 'kWh')}</div></div>
         <div class="metric"><div class="label">${t('night_energy')}</div><div class="value">${fmtNum(d.calculation.night_energy_kwh, 'kWh')}</div></div>
-        <div class="metric"><div class="label">${t('battery_needed')}</div><div class="value">${fmtNum(d.calculation.battery_kwh_needed, 'kWh')}</div></div>
-        <div class="metric"><div class="label">${t('solar_needed')}</div><div class="value">${fmtNum(d.calculation.solar_power_needed, 'W')}</div></div>
+        ${batteryMetric}
+        <div class="metric"><div class="label">${t('solar_needed')}</div><div class="value">${fmtSolarWatts(d.calculation.solar_power_needed)}</div></div>
       </div>
       <div class="cta-box">
         <p>${t('guest_notice')}</p>
@@ -65,7 +91,7 @@
       showToast(t('invalid_day_peak_power'), true);
       return;
     }
-    if (!Number.isFinite(dayHours) || dayHours < 0) {
+    if (!Number.isFinite(dayHours) || dayHours < 0 || dayHours > 8) {
       showToast(t('invalid_day_hours'), true);
       return;
     }
@@ -73,8 +99,22 @@
       showToast(t('invalid_night_peak_power'), true);
       return;
     }
+    if (Number.isFinite(nightHours) && nightHours > 16) {
+      showToast(t('invalid_night_hours'), true);
+      return;
+    }
     if ((!dayHours || dayHours <= 0) && (!nightHours || nightHours <= 0)) {
       showToast(t('invalid_daily_hours'), true);
+      return;
+    }
+    const hasGrid = document.getElementById('hasGrid').value;
+    if (!hasGrid) {
+      showToast(t('has_grid_required'), true);
+      return;
+    }
+    const systemMode = document.getElementById('systemMode').value;
+    if (!systemMode) {
+      showToast(t('system_mode_required'), true);
       return;
     }
 
@@ -91,6 +131,8 @@
         night_hours: Number.isFinite(nightHours) ? nightHours : 0,
         autonomy_days: parseFloat(document.getElementById('autonomyDays').value) || 1,
         strategy: Number(document.getElementById('strategy').value) || 2,
+        system_mode: systemMode,
+        has_grid: hasGrid === '1',
       };
       const batteryType = document.getElementById('batteryType').value;
       if (batteryType) body.battery_type = batteryType;
@@ -137,25 +179,40 @@
     }
   }
 
+  function updateModeForGrid() {
+    const hasGridEl = document.getElementById('hasGrid');
+    const modeEl = document.getElementById('systemMode');
+    const noteEl = document.getElementById('systemModeNote');
+    if (!hasGridEl || !modeEl || !noteEl) return;
+    const hasGrid = hasGridEl.value;
+    if (hasGrid === '0') {
+      modeEl.value = 'off-grid';
+      modeEl.disabled = true;
+      noteEl.dataset.i18n = 'system_mode_no_grid_note';
+    } else {
+      modeEl.disabled = hasGrid !== '1';
+      noteEl.dataset.i18n = 'system_mode_note';
+    }
+    noteEl.textContent = t(noteEl.dataset.i18n);
+  }
+
   function initLang() {
     const lang = getCurrentLang();
-    document.querySelectorAll('#langSwitcher button').forEach((b) => {
-      b.classList.toggle('active', b.dataset.lang === lang);
-    });
+    if (window.updateLangPicker) window.updateLangPicker(lang);
     applyLang();
     updateAutonomyWarning();
+    updateModeForGrid();
     if (lastResult) renderResult(lastResult);
   }
 
-  document.querySelectorAll('#langSwitcher button').forEach((b) => {
-    b.addEventListener('click', () => {
-      setLang(b.dataset.lang);
-      initLang();
-    });
+  document.addEventListener('lang:change', (e) => {
+    setLang(e.detail.lang);
+    initLang();
   });
 
   document.getElementById('calcBtn').addEventListener('click', calculate);
   document.getElementById('autonomyDays').addEventListener('input', updateAutonomyWarning);
+  document.getElementById('hasGrid').addEventListener('change', updateModeForGrid);
 
   /* ===================== Tips ===================== */
   function openTip(kind) {

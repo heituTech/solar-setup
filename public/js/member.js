@@ -180,7 +180,7 @@
   /* ===================== Session ===================== */
 
   function setHomeLink(target) {
-    const link = document.querySelector('.app-bar-link[data-i18n="home"]');
+    const link = document.getElementById('logoLink');
     if (link) link.href = target;
   }
 
@@ -1408,6 +1408,30 @@
         <div class="price-row total"><span>${t('exact_price')}</span><span>${fmtUsd(exact.total_usd)}</span></div>`;
     }
 
+    // Recommended configuration highlight: the highest-ROI combo (or cheapest
+    // when electricity price is unset) so the customer sees the best pick first.
+    if (d.recommended) {
+      const rec = d.recommended;
+      const reasonKey = rec.reason === 'best_roi' ? 'recommended_best_roi' : 'recommended_lowest_cost';
+      const recItems = (rec.items || []).map((item) =>
+        `${categoryLabel(item.category)} × ${item.quantity} · ${item.product.brand}${item.product.model ? ' ' + item.product.model : ''}`
+      ).join(' ・ ');
+      const pbpHtml = rec.payback_years !== null
+        ? `<span class="rec-pbp">${t('payback_years')}: ${fmtNum(rec.payback_years)}</span>`
+        : '';
+      html += `<div class="rec-card">
+        <div class="rec-head">
+          <span class="rec-badge">${t('recommended')}</span>
+          <span class="rec-reason">${t(reasonKey)}</span>
+        </div>
+        <div class="rec-items">${escapeHtml(recItems)}</div>
+        <div class="rec-foot">
+          <span class="rec-total">${t('total')}: ${fmtUsd(rec.total_usd)}</span>
+          ${pbpHtml}
+        </div>
+      </div>`;
+    }
+
     if (d.candidates) {
       html += `<div class="candidate-group">
         <h4>${t('candidates')}</h4>
@@ -1465,9 +1489,14 @@
 
     if (!list.length) return '';
 
+    // Pin the product from the highest-ROI combo to the top of each list so the
+    // customer can pick the recommended configuration in one click.
+    list = list.slice().sort((a, b) => Number(b.recommended) - Number(a.recommended));
+
     const title = category === 'inverters' ? t('inverter') : category === 'batteries' ? t('battery') : t('solar_panel');
     const items = list.map((p) => {
       const selected = selection[key] === p.id;
+      const recBadge = p.recommended ? `<span class="rec-badge">${t('recommended')}</span>` : '';
       let priceHtml = `<span class="price">${fmtUsd(p.price_usd)}</span>`;
       if (category === 'panels' && selected) {
         const qty = panelQty !== null ? panelQty : (Number(p.required_qty) || 1);
@@ -1478,8 +1507,8 @@
           <input class="qty-input" type="number" min="1" max="${maxQty}" step="1" value="${qty}" data-prev="${qty}" aria-label="${escapeHtml(t('quantity'))}" />
         </span>`;
       }
-      return `<div class="candidate${selected ? ' selected' : ''}" data-cat="${category}" data-id="${p.id}">
-        <div class="candidate-main"><strong>${productTitle(category, p)}</strong><span>${candidateMeta(category, p)}</span></div>
+      return `<div class="candidate${selected ? ' selected' : ''}${p.recommended ? ' recommended' : ''}" data-cat="${category}" data-id="${p.id}">
+        <div class="candidate-main"><strong>${productTitle(category, p)}</strong>${recBadge}<span>${candidateMeta(category, p)}</span></div>
         ${priceHtml}
       </div>`;
     }).join('');

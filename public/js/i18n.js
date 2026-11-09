@@ -7,7 +7,7 @@
   const LANGS = ['km', 'en', 'zh', 'es', 'de', 'fr', 'ja', 'ko', 'th', 'vi'];
   // Bump this whenever js/i18n/all.js content changes so browsers refresh
   // their IndexedDB cache from the new bundle.
-  const DICT_VERSION = 7;
+  const DICT_VERSION = 9;
   const DB_NAME = 'solar_i18n';
   const STORE_DICTS = 'dicts';
   const STORE_META = 'meta';

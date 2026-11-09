@@ -22,6 +22,10 @@
     var label = document.createElement('span');
     label.className = 'cselect-label';
 
+    var textSpan = document.createElement('span');
+    textSpan.className = 'cselect-label-text';
+    label.appendChild(textSpan);
+
     var chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     chevron.setAttribute('class', 'cselect-chevron');
     chevron.setAttribute('viewBox', '0 0 24 24');
@@ -53,9 +57,37 @@
     }
 
     function syncLabel() {
-      label.textContent = currentText();
+      textSpan.textContent = currentText();
       btn.disabled = select.disabled;
       wrap.classList.toggle('cselect-disabled', select.disabled);
+      startMarquee();
+    }
+
+    // Long option text scrolls inside the fixed-width button instead of widening it
+    function startMarquee() {
+      if (textSpan._marquee) {
+        textSpan._marquee.cancel();
+        textSpan._marquee = null;
+      }
+      textSpan.style.transform = '';
+      var overflow = textSpan.scrollWidth - label.clientWidth;
+      if (overflow <= 1) return;
+      if (typeof textSpan.animate !== 'function') return;
+      var distance = overflow + 6;
+      textSpan._marquee = textSpan.animate(
+        [
+          { transform: 'translateX(0)', offset: 0 },
+          { transform: 'translateX(0)', offset: 0.08 },
+          { transform: 'translateX(-' + distance + 'px)', offset: 0.5 },
+          { transform: 'translateX(-' + distance + 'px)', offset: 0.72 },
+          { transform: 'translateX(0)', offset: 1 },
+        ],
+        {
+          duration: Math.max(3600, distance * 40),
+          iterations: Infinity,
+          easing: 'ease-in-out',
+        }
+      );
     }
 
     function fillMenu() {

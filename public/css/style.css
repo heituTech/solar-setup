@@ -126,6 +126,7 @@ body {
 .cselect {
   position: relative;
   width: 100%;
+  min-width: 0;
 }
 .cselect-native {
   position: absolute;
@@ -162,9 +163,16 @@ body {
   cursor: not-allowed;
 }
 .cselect-label {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+}
+.cselect-label-text {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
 }
 .cselect-chevron {
   flex: 0 0 auto;
@@ -470,7 +478,7 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
-.field { margin-bottom: 14px; }
+.field { margin-bottom: 14px; min-width: 0; }
 .field label {
   display: block;
   font-size: 13px;
@@ -493,8 +501,9 @@ body {
   border-color: var(--primary);
 }
 .row { display: flex; gap: 10px; }
-.row .field { flex: 1; }
+.row .field { flex: 1; min-width: 0; }
 .phone-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+.phone-row > * { min-width: 0; }
 @media (max-width: 640px) { .phone-row { grid-template-columns: 1fr; } }
 
 .btn {

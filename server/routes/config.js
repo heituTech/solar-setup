@@ -34,8 +34,14 @@ router.get('/', async (req, res) => {
       `SELECT config_key, config_value FROM system_config WHERE config_key IN (${PUBLIC_KEYS.map(() => '?').join(',')})`,
       PUBLIC_KEYS
     );
+    // Catalog fact the browser pricing core needs to distinguish "no battery-less
+    // inverter exists" from "the only battery-less models are out of stock".
+    const [discontinued] = await pool.query(
+      "SELECT 1 FROM inverters WHERE sales_status = 'discontinued' AND type = 'hybrid' AND battery_less_start = 1 LIMIT 1"
+    );
     const obj = {};
     rows.forEach((r) => (obj[r.config_key] = r.config_value));
+    obj.has_discontinued_battery_less_hybrid = discontinued.length > 0;
     res.json(obj);
   } catch (e) {
     res.status(500).json({ error: e.message });

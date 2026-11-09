@@ -2,11 +2,9 @@ const express = require('express');
 const path = require('path');
 const productsRouter = require('./routes/products');
 const configRouter = require('./routes/config');
-const recommendRouter = require('./routes/recommend');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
 const approvalsRouter = require('./routes/approvals');
-const quoteRouter = require('./routes/quote');
 const casesRouter = require('./routes/cases');
 
 const app = express();
@@ -39,11 +37,9 @@ app.use('/pv', express.static(path.join(__dirname, '..', 'public'), { index: fal
 // API routes
 app.use('/pv/api/products', productsRouter);
 app.use('/pv/api/config', configRouter);
-app.use('/pv/api/recommend', recommendRouter);
 app.use('/pv/api/auth', authRouter);
 app.use('/pv/api/admin/users', usersRouter);
 app.use('/pv/api/approvals', approvalsRouter);
-app.use('/pv/api/quote', quoteRouter);
 app.use('/pv/api/cases', casesRouter);
 
 // Health check

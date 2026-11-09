@@ -11,6 +11,9 @@
   let panelQty = null;
   let catalogCat = 'inverters';
   let catalogLoaded = false;
+  let catalogData = [];
+  let catalogFilters = ProductCatalog.defaultFilters('inverters');
+  let catalogVisible = ProductCatalog.PAGE_SIZE;
   let codeTimer = null;
   let loginCodeTimer = null;
   let countries = [];
@@ -1038,6 +1041,7 @@
       caseInfo: caseForActiveId(),
       config: data.config,
       products: data.products,
+      hasDiscontinuedBatteryLessHybrid: Boolean(data.config.has_discontinued_battery_less_hybrid),
     });
   }
 
@@ -1350,6 +1354,8 @@
       document.querySelectorAll('#catalogTabs .tab-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       catalogCat = btn.dataset.cat;
+      catalogFilters = ProductCatalog.defaultFilters(catalogCat);
+      catalogVisible = ProductCatalog.PAGE_SIZE;
       loadCatalog();
     });
   });
@@ -1357,20 +1363,53 @@
   async function loadCatalog() {
     const list = document.getElementById('catalogList');
     list.innerHTML = `<div class="empty-state">${t('loading')}</div>`;
+    document.getElementById('catalogMore').innerHTML = '';
     try {
       const data = await api('/pv/api/products/' + catalogCat, { auth: false });
+      catalogData = Array.isArray(data) ? data : [];
       catalogLoaded = true;
-      if (!data.length) {
-        list.innerHTML = `<div class="empty-state">${t('no_data')}</div>`;
-        return;
-      }
-      list.innerHTML = data.map((p) => `<div class="catalog-card">
+      renderCatalogFilters();
+      renderCatalogList();
+    } catch (e) {
+      list.innerHTML = `<div class="empty-state">${errMsg(e)}</div>`;
+    }
+  }
+
+  // Filtering and 8-per-page loading happen in the browser; the public catalog
+  // is already fully fetched, so "Show more" never hits the server again.
+  function renderCatalogFilters() {
+    const bar = document.getElementById('catalogFilters');
+    bar.innerHTML = ProductCatalog.barHtml(catalogCat, catalogData, catalogFilters, t);
+    ProductCatalog.bind(bar, catalogFilters, () => {
+      catalogVisible = ProductCatalog.PAGE_SIZE;
+      renderCatalogList();
+    });
+  }
+
+  function renderCatalogList() {
+    const list = document.getElementById('catalogList');
+    const more = document.getElementById('catalogMore');
+    const filtered = ProductCatalog.filter(catalogCat, catalogData, catalogFilters);
+    if (!filtered.length) {
+      list.innerHTML = `<div class="empty-state">${t('no_data')}</div>`;
+      more.innerHTML = '';
+      return;
+    }
+    const shown = filtered.slice(0, catalogVisible);
+    list.innerHTML = shown.map((p) => `<div class="catalog-card">
         <h4>${productTitle(catalogCat, p)}</h4>
         <div class="meta">${catalogMeta(p)}</div>
         <div class="price">${fmtUsd(p.price_usd)}${Number(p.price_khr) > 0 ? ' / ' + fmtKhr(p.price_khr) : ''}</div>
       </div>`).join('');
-    } catch (e) {
-      list.innerHTML = `<div class="empty-state">${errMsg(e)}</div>`;
+    const remaining = filtered.length - catalogVisible;
+    if (remaining > 0) {
+      more.innerHTML = `<button class="btn btn-secondary btn-sm" id="catalogShowMore">${t('show_more')} (${remaining})</button>`;
+      document.getElementById('catalogShowMore').addEventListener('click', () => {
+        catalogVisible += ProductCatalog.PAGE_SIZE;
+        renderCatalogList();
+      });
+    } else {
+      more.innerHTML = '';
     }
   }
 

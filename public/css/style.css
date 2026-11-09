@@ -634,6 +634,59 @@ body {
 }
 .product-item h4 { font-size: 15px; margin-bottom: 4px; }
 .product-item .meta { font-size: 12px; color: var(--text-muted); }
+
+/* Catalog filters and progressive 8-per-page loading (staff + member pages) */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.filter-field {
+  flex: 1 1 150px;
+  min-width: 0;
+  max-width: 220px;
+}
+.filter-range-field {
+  flex: 1 1 240px;
+  max-width: 300px;
+}
+.filter-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.filter-field input,
+.filter-field select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+}
+.filter-field input:focus,
+.filter-field select:focus {
+  border-color: var(--primary);
+}
+.filter-field .cselect-btn {
+  padding: 9px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+.filter-range {
+  display: flex;
+  gap: 6px;
+}
+.show-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 4px;
+}
 .status-badge {
   display: inline-block;
   margin-left: 6px;

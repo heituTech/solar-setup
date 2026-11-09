@@ -9,6 +9,8 @@
   let approvalScope = 'to_review';
 
   let productsCache = {};
+  let productFilters = ProductCatalog.defaultFilters('inverters');
+  let productVisible = ProductCatalog.PAGE_SIZE;
   let accountsCache = [];
   let editingProductId = null;
   let editingAccountId = null;
@@ -301,6 +303,8 @@
       document.querySelectorAll('#productsPanel .sub-tabs .tab-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       currentCategory = btn.dataset.cat;
+      productFilters = ProductCatalog.defaultFilters(currentCategory);
+      productVisible = ProductCatalog.PAGE_SIZE;
       loadProducts();
     });
   });
@@ -324,14 +328,47 @@
     try {
       const { data } = await api('/pv/api/products/admin/' + currentCategory + '?status=all');
       productsCache[currentCategory] = data;
-      if (!data.length) {
-        list.innerHTML = `<div class="card empty-state">${t('no_data')}</div>`;
-        return;
-      }
-      list.innerHTML = data.map(renderProduct).join('');
-      bindProductActions();
+      renderProductFilters();
+      renderProductList();
     } catch (e) {
       list.innerHTML = `<div class="card empty-state">${errMsg(e)}</div>`;
+    }
+  }
+
+  // Filters and progressive loading run entirely in the browser: the full
+  // catalog is already cached, only the first 8 matches are shown at a time.
+  function renderProductFilters() {
+    const bar = document.getElementById('productFilters');
+    const data = productsCache[currentCategory] || [];
+    bar.innerHTML = ProductCatalog.barHtml(currentCategory, data, productFilters, t, { status: true });
+    ProductCatalog.bind(bar, productFilters, () => {
+      productVisible = ProductCatalog.PAGE_SIZE;
+      renderProductList();
+    });
+  }
+
+  function renderProductList() {
+    const list = document.getElementById('productList');
+    const data = productsCache[currentCategory] || [];
+    const filtered = ProductCatalog.filter(currentCategory, data, productFilters);
+    if (!filtered.length) {
+      list.innerHTML = `<div class="card empty-state">${t('no_data')}</div>`;
+      return;
+    }
+    const shown = filtered.slice(0, productVisible);
+    let html = shown.map(renderProduct).join('');
+    const remaining = filtered.length - productVisible;
+    if (remaining > 0) {
+      html += `<div class="show-more-wrap"><button class="btn btn-secondary btn-sm" id="productShowMore">${t('show_more')} (${remaining})</button></div>`;
+    }
+    list.innerHTML = html;
+    bindProductActions();
+    const more = document.getElementById('productShowMore');
+    if (more) {
+      more.addEventListener('click', () => {
+        productVisible += ProductCatalog.PAGE_SIZE;
+        renderProductList();
+      });
     }
   }
 

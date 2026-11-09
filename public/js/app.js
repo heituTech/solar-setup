@@ -103,6 +103,7 @@
       caseInfo: null,
       config,
       products: { inverters, batteries, panels },
+      hasDiscontinuedBatteryLessHybrid: Boolean(config.has_discontinued_battery_less_hybrid),
     });
   }
 

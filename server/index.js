@@ -29,6 +29,9 @@ app.get('/pv/tool', (req, res) => {
 app.get('/pv/member', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'member.html'));
 });
+app.get('/pv/member/profile', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'member-profile.html'));
+});
 
 // Staff pages
 app.get('/pv/admin', (req, res) => {

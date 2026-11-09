@@ -312,14 +312,14 @@
     };
   }
 
+  // Payback is based on the system's annual generation only: the array output
+  // valued at the local tariff, not on the household's own consumption.
   function paybackForCombo(combo, ctx) {
     const priceUsdPerKwh = ctx.electricityPriceUsdPerKwh;
     if (!priceUsdPerKwh || priceUsdPerKwh <= 0) return null;
-    const consumptionSavings = ctx.dailyKwh * 365 * priceUsdPerKwh;
     const generationSavings = combo.panel_kwp * ctx.psh * 365 * GENERATION_EFF * priceUsdPerKwh;
-    const consumptionYears = consumptionSavings > 0 ? combo.total_usd / consumptionSavings : null;
     const generationYears = generationSavings > 0 ? combo.total_usd / generationSavings : null;
-    return { consumptionSavings, generationSavings, consumptionYears, generationYears };
+    return { generationSavings, generationYears };
   }
 
   // Ascending numeric order with id as a deterministic tie-breaker, mirroring the
@@ -571,8 +571,6 @@
     let maxHardware = null;
     let minInstall = null;
     let maxInstall = null;
-    let pbpConsumptionMin = null;
-    let pbpConsumptionMax = null;
     let pbpGenerationMin = null;
     let pbpGenerationMax = null;
 
@@ -619,15 +617,9 @@
           if (maxInstall === null || combo.installation_usd > maxInstall) maxInstall = combo.installation_usd;
 
           const pbp = paybackForCombo(combo, pricingCtx);
-          if (pbp) {
-            if (pbp.consumptionYears !== null) {
-              pbpConsumptionMin = pbpConsumptionMin === null ? pbp.consumptionYears : Math.min(pbpConsumptionMin, pbp.consumptionYears);
-              pbpConsumptionMax = pbpConsumptionMax === null ? pbp.consumptionYears : Math.max(pbpConsumptionMax, pbp.consumptionYears);
-            }
-            if (pbp.generationYears !== null) {
-              pbpGenerationMin = pbpGenerationMin === null ? pbp.generationYears : Math.min(pbpGenerationMin, pbp.generationYears);
-              pbpGenerationMax = pbpGenerationMax === null ? pbp.generationYears : Math.max(pbpGenerationMax, pbp.generationYears);
-            }
+          if (pbp && pbp.generationYears !== null) {
+            pbpGenerationMin = pbpGenerationMin === null ? pbp.generationYears : Math.min(pbpGenerationMin, pbp.generationYears);
+            pbpGenerationMax = pbpGenerationMax === null ? pbp.generationYears : Math.max(pbpGenerationMax, pbp.generationYears);
           }
           if (comboCount >= MAX_COMBOS) { truncated = true; break; }
         }
@@ -781,11 +773,6 @@
         const pbp = paybackForCombo(minCombo, pricingCtx);
         result.pbp = {
           ...pbpBase,
-          consumption: {
-            annual_savings_usd: round2(pbp.consumptionSavings),
-            annual_savings_khr: roundKhr(pbp.consumptionSavings * cfg.usdToKhr),
-            payback_years: round2(pbp.consumptionYears),
-          },
           generation: {
             annual_savings_usd: round2(pbp.generationSavings),
             annual_savings_khr: roundKhr(pbp.generationSavings * cfg.usdToKhr),
@@ -795,7 +782,6 @@
       } else {
         result.pbp_range = {
           ...pbpBase,
-          consumption: { min_years: round2(pbpConsumptionMin), max_years: round2(pbpConsumptionMax) },
           generation: { min_years: round2(pbpGenerationMin), max_years: round2(pbpGenerationMax) },
         };
       }

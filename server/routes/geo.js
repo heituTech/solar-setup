@@ -8,8 +8,15 @@ const router = express.Router();
 // so no giant payload ever hits the browser. Names resolve to the requested
 // language client-side: pick en/zh/km from each entry, others use en.
 
+// Cambodia and China are pinned to the top (Cambodia first) because that is
+// where the business operates; the rest keep the dataset order.
+const PINNED = ['KH', 'CN'];
+
 router.get('/countries', (req, res) => {
-  res.json(Country.getAllCountries().map((c) => ({
+  const all = Country.getAllCountries();
+  const pinned = PINNED.map((code) => all.find((c) => c.isoCode === code)).filter(Boolean);
+  const rest = all.filter((c) => !PINNED.includes(c.isoCode));
+  res.json(pinned.concat(rest).map((c) => ({
     code: c.isoCode,
     en: c.name,
     zh: names.COUNTRIES_ZH[c.isoCode] || c.name,

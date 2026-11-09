@@ -195,7 +195,6 @@
     document.getElementById('memberPanel').style.display = '';
     setHomeLink('/pv/member');
     document.getElementById('memberName').textContent = me.username || me.email || me.phone || '';
-    fillProfile();
     loadCases();
   }
 
@@ -523,35 +522,6 @@
     }
   });
 
-  /* ===================== Profile ===================== */
-
-  document.getElementById('toggleProfileBtn').addEventListener('click', () => {
-    const card = document.getElementById('profileCard');
-    card.style.display = card.style.display === 'none' ? '' : 'none';
-    if (card.style.display !== 'none') fillProfile();
-  });
-
-  function fillProfile() {
-    if (!me) return;
-    document.getElementById('p_name').value = me.full_name || '';
-    document.getElementById('p_phone').value = me.phone || '';
-    document.getElementById('p_email').value = me.email || '';
-  }
-
-  document.getElementById('saveProfileBtn').addEventListener('click', async () => {
-    const body = {
-      full_name: document.getElementById('p_name').value.trim(),
-      phone: document.getElementById('p_phone').value.trim(),
-    };
-    try {
-      const data = await api('/pv/api/auth/me', { method: 'PATCH', body });
-      me = data.user;
-      showToast(t('profile_saved'));
-    } catch (e) {
-      showToast(errMsg(e), true);
-    }
-  });
-
   /* ===================== Cases ===================== */
 
   let cases = [];
@@ -691,14 +661,14 @@
     try {
       const countries = await loadGeoCountries();
       fillGeoSelect(countrySel, countries, 'select_country', (x) => x.code);
-      if (c && c.country_code) {
-        countrySel.value = c.country_code;
-        await loadGeoStates(c.country_code);
-        if (c.state_code) {
-          document.getElementById('c_state').value = c.state_code;
-          await loadGeoCities(c.country_code, c.state_code);
-          if (c.city) document.getElementById('c_city').value = c.city;
-        }
+      // New projects start on Cambodia; existing ones keep their saved country.
+      const activeCode = (c && c.country_code) || 'KH';
+      countrySel.value = activeCode;
+      await loadGeoStates(activeCode);
+      if (c && c.state_code) {
+        document.getElementById('c_state').value = c.state_code;
+        await loadGeoCities(activeCode, c.state_code);
+        if (c.city) document.getElementById('c_city').value = c.city;
       }
     } catch (e) { /* geo endpoint unreachable: cascade stays empty, old address kept */ }
   }
@@ -821,9 +791,8 @@
     document.getElementById('backupLoadRow').style.display = isHybrid ? '' : 'none';
     document.getElementById('hybridLoadNote').style.display = isHybrid ? '' : 'none';
     setupLoadBuilder(c);
-    const card = document.getElementById('configuratorCard');
-    card.style.display = '';
-    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('configuratorModal').classList.add('active');
+    document.getElementById('configuratorModal').querySelector('.modal').scrollTop = 0;
 
     // Load the last saved recommendation for this case and restore it.
     let full = c;
@@ -872,7 +841,7 @@
   }
 
   function closeConfigurator() {
-    document.getElementById('configuratorCard').style.display = 'none';
+    document.getElementById('configuratorModal').classList.remove('active');
     activeCaseId = null;
   }
 
@@ -1444,13 +1413,10 @@
     if (d.pbp || d.pbp_range) {
       html += `<div class="pbp-card"><h3>${t('pbp')}</h3>`;
       if (d.pbp) {
-        html += `<div class="pbp-row"><span>${t('pbp_consumption')} · ${t('annual_savings')} ${fmtUsd(d.pbp.consumption.annual_savings_usd)}</span><strong>${fmtNum(d.pbp.consumption.payback_years)} ${t('payback_years')}</strong></div>
-          <div class="pbp-row"><span>${t('pbp_generation')} · ${t('annual_savings')} ${fmtUsd(d.pbp.generation.annual_savings_usd)}</span><strong>${fmtNum(d.pbp.generation.payback_years)} ${t('payback_years')}</strong></div>`;
+        html += `<div class="pbp-row"><span>${t('pbp_generation')} · ${t('annual_savings')} ${fmtUsd(d.pbp.generation.annual_savings_usd)}</span><strong>${fmtNum(d.pbp.generation.payback_years)} ${t('payback_years')}</strong></div>`;
       } else {
-        const c = d.pbp_range.consumption;
         const g = d.pbp_range.generation;
-        html += `<div class="pbp-row"><span>${t('pbp_consumption')}</span><strong>${fmtNum(c.min_years)} – ${fmtNum(c.max_years)} ${t('payback_years')}</strong></div>
-          <div class="pbp-row"><span>${t('pbp_generation')}</span><strong>${fmtNum(g.min_years)} – ${fmtNum(g.max_years)} ${t('payback_years')}</strong></div>`;
+        html += `<div class="pbp-row"><span>${t('pbp_generation')}</span><strong>${fmtNum(g.min_years)} – ${fmtNum(g.max_years)} ${t('payback_years')}</strong></div>`;
       }
       html += '</div>';
     } else if (d.pbp_unavailable_reason) {
@@ -1684,161 +1650,14 @@
       renderCatalogFilters();
       renderCatalogList();
     }
-    renderAiWelcome();
     renderGoogleBtn();
     });
   });
 
-  /* ================= AI assistant ================= */
-  // The dialog assembles the member's question together with both knowledge
-  // bases and copies the bundle, so the member can paste it into any free AI
-  // web chat. All of this runs client-side; the server only serves the two
-  // markdown files to authenticated members.
-  let aiKbPromise = null;
-  function loadAiKnowledge() {
-    if (!aiKbPromise) {
-      const opts = { headers: { Authorization: 'Bearer ' + token } };
-      aiKbPromise = Promise.all([
-        fetch('/pv/skill/member/app', opts).then((r) => { if (!r.ok) throw { status: r.status }; return r.text(); }),
-        fetch('/pv/skill/member/solar_config', opts).then((r) => { if (!r.ok) throw { status: r.status }; return r.text(); }),
-      ]).catch((e) => { aiKbPromise = null; throw e; });
-    }
-    return aiKbPromise;
-  }
-
-  function aiAppendMsg(role, text) {
-    const box = document.getElementById('aiMessages');
-    const div = document.createElement('div');
-    div.className = 'ai-msg ' + role;
-    div.textContent = text;
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
-  }
-
-  function renderAiWelcome() {
-    const box = document.getElementById('aiMessages');
-    if (!box || box.children.length) return; // keep the conversation on language switch
-    aiAppendMsg('bot', t('ai_welcome'));
-  }
-
-  function aiRequireLogin() {
-    if (me) return true;
-    showToast(t('ai_login_required'), true);
-    return false;
-  }
-
-  // navigator.clipboard only exists in secure contexts (HTTPS/localhost);
-  // fall back to a hidden textarea + execCommand on plain HTTP deployments.
-  function aiCopyText(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text);
-    }
-    return new Promise((resolve, reject) => {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try {
-        const ok = document.execCommand('copy');
-        document.body.removeChild(ta);
-        ok ? resolve() : reject(new Error('copy_failed'));
-      } catch (e) {
-        document.body.removeChild(ta);
-        reject(e);
-      }
-    });
-  }
-
-  function downloadTextFile(name, content) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([content], { type: 'text/markdown;charset=utf-8' }));
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
-
-  async function sendAi() {
-    if (!aiRequireLogin()) return;
-    const input = document.getElementById('aiInput');
-    const q = input.value.trim();
-    if (!q) return;
-    input.value = '';
-    aiAppendMsg('user', q);
-    let appMd, solarMd;
-    try {
-      [appMd, solarMd] = await loadAiKnowledge();
-    } catch (e) {
-      showToast(errMsg(e), true);
-      return;
-    }
-    const prompt = 'You are an assistant for the Solar Setup web app. Use the two knowledge bases below to answer the user question. Answer in the same language as the question.\n\n=== Knowledge base 1: App usage guide ===\n' + appMd + '\n\n=== Knowledge base 2: Solar system configuration ===\n' + solarMd + '\n\n=== User question ===\n' + q;
-    try {
-      await aiCopyText(prompt);
-      window.open('https://chat.openai.com/', '_blank');
-      aiAppendMsg('bot', t('ai_copied'));
-    } catch {
-      aiAppendMsg('bot', t('ai_copy_failed'));
-      const pre = document.createElement('pre');
-      pre.className = 'ai-prompt';
-      pre.textContent = prompt;
-      const box = document.getElementById('aiMessages');
-      box.appendChild(pre);
-      box.scrollTop = box.scrollHeight;
-    }
-  }
-
-  function initAi() {
-    renderAiWelcome();
-    // Collapse/expand the dock; it starts collapsed.
-    const dock = document.getElementById('aiDock');
-    const toggle = document.getElementById('aiToggle');
-    toggle.addEventListener('click', () => {
-      const open = dock.classList.toggle('open');
-      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    // Tapping the page area above the dock auto-collapses it.
-    document.addEventListener('click', (e) => {
-      if (!dock.classList.contains('open')) return;
-      if (dock.contains(e.target)) return;
-      dock.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
-    });
-    // Clear the conversation (client-side only; the server stores nothing).
-    document.getElementById('aiClear').addEventListener('click', () => {
-      document.getElementById('aiMessages').innerHTML = '';
-      renderAiWelcome();
-    });
-    document.getElementById('aiKbApp').addEventListener('click', async () => {
-      if (!aiRequireLogin()) return;
-      try {
-        const [appMd] = await loadAiKnowledge();
-        downloadTextFile('member-app.md', appMd);
-      } catch (e) { showToast(errMsg(e), true); }
-    });
-    document.getElementById('aiKbSolar').addEventListener('click', async () => {
-      if (!aiRequireLogin()) return;
-      try {
-        const [, solarMd] = await loadAiKnowledge();
-        downloadTextFile('solar-config.md', solarMd);
-      } catch (e) { showToast(errMsg(e), true); }
-    });
-    const input = document.getElementById('aiInput');
-    input.addEventListener('focus', () => {
-      if (!aiRequireLogin()) input.blur();
-    });
-    document.getElementById('aiSend').addEventListener('click', sendAi);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') sendAi();
-    });
-  }
   async function bootstrap() {
     // Render only after the dictionary is in memory (IndexedDB-backed).
     await window.I18N_READY;
     initLang();
-    initAi();
     updateAutonomyWarning();
     await loadCountries();
     fillPhoneCountries();

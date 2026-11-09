@@ -682,6 +682,15 @@ body {
   display: flex;
   gap: 6px;
 }
+.filter-actions {
+  flex: 0 0 auto;
+  max-width: none;
+  display: flex;
+  align-items: flex-end;
+}
+.filter-actions .btn {
+  padding: 10px 22px;
+}
 .show-more-wrap {
   display: flex;
   justify-content: center;

@@ -125,25 +125,35 @@
       ], filters.status || 'all', t);
     }
 
+    html += '<div class="filter-field filter-actions">' +
+      '<button type="button" class="btn btn-primary btn-sm" data-filter-action="search">' + esc(t('search')) + '</button>' +
+      '</div>';
+
     return html;
   }
 
-  // Bind every [data-filter] control inside `root` and keep `filters` in sync.
-  function bind(root, filters, onChange) {
-    var controls = root.querySelectorAll('[data-filter]');
-    Array.prototype.forEach.call(controls, function (el) {
-      var evt = el.tagName === 'SELECT' ? 'change' : 'input';
-      el.addEventListener(evt, function () {
+  // Filters apply only when the Search button is clicked (or Enter is pressed
+  // in the keyword box); changing a control never triggers a re-render by itself.
+  function bind(root, filters, onSearch) {
+    function apply() {
+      Array.prototype.forEach.call(root.querySelectorAll('[data-filter]'), function (el) {
         filters[el.dataset.filter] = el.value;
-        onChange();
       });
-    });
-    // A rebuilt brand list may no longer contain the previously selected brand.
-    Array.prototype.forEach.call(controls, function (el) {
-      if (el.tagName === 'SELECT' && el.value !== filters[el.dataset.filter]) {
-        filters[el.dataset.filter] = el.value;
-      }
-    });
+      onSearch();
+    }
+
+    var button = root.querySelector('[data-filter-action="search"]');
+    if (button) button.addEventListener('click', apply);
+
+    var keyword = root.querySelector('[data-filter="keyword"]');
+    if (keyword) {
+      keyword.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          apply();
+        }
+      });
+    }
   }
 
   root.ProductCatalog = {

@@ -184,15 +184,24 @@
     if (link) link.href = target;
   }
 
+  // Profile / Logout live in the top bar, between Home and the language picker.
+  function setMemberBarActions(visible) {
+    const display = visible ? '' : 'none';
+    document.getElementById('memberProfileLink').style.display = display;
+    document.getElementById('memberLogoutBtn').style.display = display;
+  }
+
   function showAuth() {
     document.getElementById('authBox').style.display = '';
     document.getElementById('memberPanel').style.display = 'none';
+    setMemberBarActions(false);
     setHomeLink('/pv');
   }
 
   function showPanel() {
     document.getElementById('authBox').style.display = 'none';
     document.getElementById('memberPanel').style.display = '';
+    setMemberBarActions(true);
     setHomeLink('/pv/member');
     document.getElementById('memberName').textContent = me.username || me.email || me.phone || '';
     loadCases();

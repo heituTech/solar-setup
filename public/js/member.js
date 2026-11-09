@@ -603,13 +603,24 @@
 
   /* ===================== Configurator (per-case) ===================== */
 
-  function openConfigurator(id) {
+  let snapshotNoteKey = null;
+
+  function setSnapshotNoteKey(key) {
+    snapshotNoteKey = key || null;
+    const el = document.getElementById('quoteSnapshotNote');
+    el.textContent = snapshotNoteKey ? t(snapshotNoteKey) : '';
+    el.style.display = snapshotNoteKey ? '' : 'none';
+  }
+
+  async function openConfigurator(id) {
     const c = cases.find((x) => x.id === id);
     if (!c) return;
     activeCaseId = id;
     selection = { inverter_id: null, battery_id: null, panel_id: null };
+    panelQty = null;
     lastQuote = null;
     document.getElementById('quoteResults').innerHTML = '';
+    setSnapshotNoteKey(null);
     document.getElementById('activeCaseLabel').textContent = caseLabel(c);
     const isHybrid = c.system_mode === 'hybrid';
     document.getElementById('backupLoadRow').style.display = isHybrid ? '' : 'none';
@@ -618,6 +629,51 @@
     const card = document.getElementById('configuratorCard');
     card.style.display = '';
     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Load the last saved recommendation for this case and restore it.
+    let full = c;
+    try {
+      full = await api('/pv/api/cases/' + id);
+    } catch (e) {
+      return;
+    }
+    if (activeCaseId !== id) return;
+    const idx = cases.findIndex((x) => x.id === id);
+    if (idx >= 0) cases[idx] = full;
+    setupLoadBuilder(full);
+    restoreQuoteSnapshot(full.quote);
+  }
+
+  // Re-apply the saved quote inputs after the load checklist recalculates totals.
+  function restoreQuoteSnapshot(snapshot) {
+    if (!snapshot || !snapshot.result) return;
+    const input = snapshot.input || {};
+    const setInput = (id, value) => {
+      if (value === null || value === undefined) return;
+      if (!Number.isFinite(Number(value))) return;
+      document.getElementById(id).value = String(Number(value));
+    };
+    setInput('dayPower', input.day_peak_power);
+    setInput('dayHours', input.day_hours);
+    setInput('nightPower', input.night_peak_power);
+    setInput('nightHours', input.night_hours);
+    setInput('backupPower', input.backup_peak_power);
+    setInput('autonomyDays', input.autonomy_days);
+    if (input.strategy !== undefined && input.strategy !== null) {
+      document.getElementById('strategy').value = String(input.strategy);
+    }
+    document.getElementById('batteryType').value = input.battery_type || '';
+    selection = {
+      inverter_id: input.inverter_id || null,
+      battery_id: input.battery_id || null,
+      panel_id: input.panel_id || null,
+    };
+    panelQty = input.panel_qty !== null && input.panel_qty !== undefined && Number.isFinite(Number(input.panel_qty))
+      ? Number(input.panel_qty) : null;
+    lastQuote = snapshot.result;
+    renderQuote(lastQuote);
+    updateAutonomyWarning();
+    setSnapshotNoteKey(snapshot.catalog_stale ? 'quote_catalog_changed' : 'quote_restored');
   }
 
   function closeConfigurator() {
@@ -956,29 +1012,93 @@
     return body;
   }
 
+  let quoting = false;
+
+  // The whole catalog, config and pricing algorithm are available in the browser,
+  // so the recommendation is computed locally and only the fetches are async.
+  async function loadPricingData() {
+    const [cfg, inverters, batteries, panels] = await Promise.all([
+      api('/pv/api/config', { auth: false }),
+      api('/pv/api/products/inverters', { auth: false }),
+      api('/pv/api/products/batteries', { auth: false }),
+      api('/pv/api/products/panels', { auth: false }),
+    ]);
+    return { config: cfg, products: { inverters, batteries, panels } };
+  }
+
+  function caseForActiveId() {
+    return cases.find((x) => x.id === activeCaseId) || null;
+  }
+
+  async function buildLocalQuote(body) {
+    if (!window.SolarPricing) throw { status: 500, error: 'pricing_unavailable' };
+    const data = await loadPricingData();
+    return window.SolarPricing.buildQuote(body, {
+      user: me ? { id: me.id, role: me.role } : null,
+      caseInfo: caseForActiveId(),
+      config: data.config,
+      products: data.products,
+    });
+  }
+
+  function quoteSnapshotInput(body, data) {
+    const input = data.input || {};
+    return {
+      day_peak_power: input.day_peak_power,
+      day_hours: input.day_hours,
+      night_peak_power: input.night_peak_power,
+      night_hours: input.night_hours,
+      backup_peak_power: input.backup_peak_power,
+      autonomy_days: input.autonomy_days,
+      strategy: input.strategy,
+      battery_type: input.battery_type,
+      inverter_id: body.inverter_id || null,
+      battery_id: body.battery_id || null,
+      panel_id: body.panel_id || null,
+      panel_qty: body.panel_id && body.panel_qty !== undefined && body.panel_qty !== ''
+        ? Number(body.panel_qty) : null,
+    };
+  }
+
   async function runQuote() {
+    if (quoting) return false;
     const body = collectQuoteBody();
     if (!body) return false;
     const btn = document.getElementById('quoteBtn');
-    const original = btn.textContent;
+    quoting = true;
     btn.disabled = true;
     btn.textContent = t('calculating');
     try {
-      const data = await api('/pv/api/quote', { method: 'POST', body });
+      const data = await buildLocalQuote(body);
       lastQuote = data;
       renderQuote(data);
+      setSnapshotNoteKey(null);
+      if (activeCaseId) {
+        // Persist this recommendation so reopening the case restores it.
+        try {
+          await api('/pv/api/cases/' + activeCaseId + '/quote', {
+            method: 'PUT',
+            body: { input: quoteSnapshotInput(body, data), result: data },
+          });
+        } catch (e) {
+          // A failed snapshot must never invalidate the quote itself.
+        }
+      }
       return true;
     } catch (e) {
+      if (e && e.status === 401) return false;
       document.getElementById('quoteResults').innerHTML = `<div class="card quote-error">${errMsg(e)}</div>`;
       showToast(errMsg(e), true);
       return false;
     } finally {
+      quoting = false;
       btn.disabled = false;
-      btn.textContent = original;
+      btn.textContent = t('calculate');
     }
   }
 
   document.getElementById('quoteBtn').addEventListener('click', () => {
+    if (quoting) return;
     selection = { inverter_id: null, battery_id: null, panel_id: null };
     panelQty = null;
     runQuote();
@@ -1307,6 +1427,7 @@
       refreshLoadSummary();
     }
     if (lastQuote) renderQuote(lastQuote);
+    if (snapshotNoteKey) setSnapshotNoteKey(snapshotNoteKey);
     if (catalogLoaded && document.getElementById('catalogBody').style.display !== 'none') loadCatalog();
   });
 

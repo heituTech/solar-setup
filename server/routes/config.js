@@ -9,6 +9,8 @@ const PUBLIC_KEYS = [
   'default_currency',
   'usd_to_khr',
   'installation_fee_percent',
+  'installation_fee_ground_percent',
+  'installation_fee_rooftop_percent',
   'installation_fee_min_usd',
   'battery_price_lfp_per_kwh',
   'battery_price_ternary_per_kwh',

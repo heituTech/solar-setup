@@ -1,5 +1,6 @@
 const express = require('express');
 const pool = require('../db');
+const catalog = require('../services/catalog');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -43,6 +44,22 @@ function sanitizeLoadItems(raw) {
     });
   }
   return out;
+}
+
+function parseJsonColumn(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'object') return value;
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    return null;
+  }
+}
+
+// Newest product change across all on-sale categories. A saved recommendation is
+// stale once any product is added or updated after it was generated.
+async function catalogUpdatedAt() {
+  return catalog.latestUpdatedAt();
 }
 
 function sanitize(row) {
@@ -128,6 +145,28 @@ router.get('/', async (req, res) => {
   res.json(rows.map(sanitize));
 });
 
+// Single case with the last saved recommendation (inputs + result) so the
+// configurator can restore it when reopened.
+router.get('/:id', async (req, res) => {
+  const [rows] = await pool.query('SELECT * FROM cases WHERE id = ? AND member_id = ?', [req.params.id, req.user.id]);
+  if (!rows.length) return res.status(404).json({ error: 'case_not_found' });
+  const row = rows[0];
+  const input = parseJsonColumn(row.quote_input);
+  const result = parseJsonColumn(row.quote_result);
+  let catalogStale = false;
+  if (row.quote_saved_at) {
+    const latest = await catalogUpdatedAt();
+    const saved = row.quote_catalog_ts || row.quote_saved_at;
+    catalogStale = Boolean(latest && saved && new Date(latest).getTime() > new Date(saved).getTime());
+  }
+  res.json({
+    ...sanitize(row),
+    quote: input || result
+      ? { input, result, saved_at: row.quote_saved_at, catalog_stale: catalogStale }
+      : null,
+  });
+});
+
 router.post('/', async (req, res) => {
   try {
     const data = validate(req.body, false);
@@ -155,6 +194,23 @@ router.put('/:id', async (req, res) => {
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
   }
+});
+
+// Quote snapshots are computed in the browser now, so the client stores the
+// inputs and result it produced for this case.
+router.put('/:id/quote', async (req, res) => {
+  const { input, result } = req.body || {};
+  if (!input || typeof input !== 'object' || !result || typeof result !== 'object') {
+    return res.status(400).json({ error: 'invalid_quote_snapshot' });
+  }
+  const [rows] = await pool.query('SELECT id FROM cases WHERE id = ? AND member_id = ?', [req.params.id, req.user.id]);
+  if (!rows.length) return res.status(404).json({ error: 'case_not_found' });
+  const catalogTs = await catalog.latestUpdatedAt();
+  await pool.query(
+    'UPDATE cases SET quote_input = ?, quote_result = ?, quote_saved_at = NOW(), quote_catalog_ts = ? WHERE id = ?',
+    [JSON.stringify(input), JSON.stringify(result), catalogTs, req.params.id]
+  );
+  res.json({ ok: true, saved_at: new Date().toISOString() });
 });
 
 router.delete('/:id', async (req, res) => {

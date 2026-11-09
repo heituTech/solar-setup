@@ -211,6 +211,21 @@ function tableForCategory(category) {
   return categoryConfig(category).table;
 }
 
+// Newest change across all on-sale products. A saved recommendation is stale
+// once any product is added or updated after it was generated.
+async function latestUpdatedAt(conn = pool) {
+  const [rows] = await conn.query(
+    `SELECT MAX(updated_at) AS ts FROM (
+       SELECT MAX(updated_at) AS updated_at FROM inverters WHERE sales_status = 'on_sale'
+       UNION ALL
+       SELECT MAX(updated_at) FROM batteries WHERE sales_status = 'on_sale'
+       UNION ALL
+       SELECT MAX(updated_at) FROM solar_panels WHERE sales_status = 'on_sale'
+     ) t`
+  );
+  return rows[0] ? rows[0].ts : null;
+}
+
 function categoryForTable(table) {
   const entry = Object.entries(CATEGORY_CONFIG).find(([, cfg]) => cfg.table === table);
   if (!entry) throw httpError('invalid_target_table');
@@ -228,5 +243,6 @@ module.exports = {
   tableForCategory,
   categoryForTable,
   normalizeProductPayload,
+  latestUpdatedAt,
   httpError,
 };

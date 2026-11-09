@@ -82,6 +82,30 @@
     </div>`;
   }
 
+  async function fetchJson(path) {
+    const r = await fetch(path);
+    if (!r.ok) throw { error: 'error' };
+    return r.json();
+  }
+
+  // Guest quotes are computed in the browser as well: the catalog is public and
+  // the sizing algorithm is shared with the member portal.
+  async function buildLocalQuote(body) {
+    if (!window.SolarPricing) throw { error: 'pricing_unavailable' };
+    const [config, inverters, batteries, panels] = await Promise.all([
+      fetchJson('/pv/api/config'),
+      fetchJson('/pv/api/products/inverters'),
+      fetchJson('/pv/api/products/batteries'),
+      fetchJson('/pv/api/products/panels'),
+    ]);
+    return window.SolarPricing.buildQuote(body, {
+      user: null,
+      caseInfo: null,
+      config,
+      products: { inverters, batteries, panels },
+    });
+  }
+
   async function calculate() {
     const dayPower = parseFloat(document.getElementById('dayPower').value);
     const dayHours = parseFloat(document.getElementById('dayHours').value);
@@ -137,21 +161,13 @@
       const batteryType = document.getElementById('batteryType').value;
       if (batteryType) body.battery_type = batteryType;
 
-      const r = await fetch('/pv/api/quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const data = await r.json();
-      if (r.ok) {
-        lastResult = data;
-        renderResult(data);
-        window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
-      } else {
-        document.getElementById('results').innerHTML = `<div class="card quote-error">${errMsg(data)}</div>`;
-      }
+      const data = await buildLocalQuote(body);
+      lastResult = data;
+      renderResult(data);
+      window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
     } catch (e) {
-      document.getElementById('results').innerHTML = `<div class="card empty-state">${t('error')}</div>`;
+      const message = e && e.error ? errMsg(e) : t('error');
+      document.getElementById('results').innerHTML = `<div class="card quote-error">${message}</div>`;
     } finally {
       btn.textContent = original;
       btn.disabled = false;

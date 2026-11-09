@@ -858,6 +858,13 @@ body:has(.ai-dock) .container {
   gap: 8px;
   margin-top: 8px;
 }
+/* Buttons share the row equally (1/2 each). A button whose text is wider
+   than half the row won't shrink below its content (min-width: min-content),
+   forcing its siblings to wrap; the long button then grows to fill the row. */
+.product-item .row-actions .btn {
+  flex: 1 1 calc(50% - 4px);
+  min-width: min-content;
+}
 .product-item h4 { font-size: 15px; margin-bottom: 4px; }
 .product-item .meta { font-size: 12px; color: var(--text-muted); overflow-wrap: anywhere; }
 
@@ -909,15 +916,18 @@ body:has(.ai-dock) .container {
   gap: 6px;
 }
 .filter-actions {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
   max-width: none;
   display: flex;
+  justify-content: flex-end;
   align-items: flex-end;
   gap: 8px;
   margin-left: auto;
 }
 .filter-actions .btn {
-  width: auto;
+  flex: 1 1 calc(50% - 4px);
+  min-width: 0;
   padding: 10px 22px;
 }
 .filter-footer {
@@ -927,6 +937,9 @@ body:has(.ai-dock) .container {
   justify-content: space-between;
   gap: 10px;
 }
+/* Inside a filter footer the add button sits on the left and the reset/search
+   actions take the remaining width; neutralize the global .btn-add auto margin. */
+.filter-footer .btn-add { margin-right: 0; flex: 0 0 auto; }
 .filter-footer .btn {
   width: auto;
   padding: 9px 18px;

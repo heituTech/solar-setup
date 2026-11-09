@@ -37,11 +37,12 @@ body {
   left: 0;
   right: 0;
   z-index: 60;
-  height: calc(var(--app-bar-h) + env(safe-area-inset-top, 0px));
+  min-height: calc(var(--app-bar-h) + env(safe-area-inset-top, 0px));
   padding: env(safe-area-inset-top, 0px) 10px 0;
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
   background: rgba(255, 255, 255, 0.94);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);

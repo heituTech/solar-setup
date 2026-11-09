@@ -125,16 +125,19 @@
       ], filters.status || 'all', t);
     }
 
-    html += '<div class="filter-field filter-actions">' +
-      '<button type="button" class="btn btn-primary btn-sm" data-filter-action="search">' + esc(t('search')) + '</button>' +
-      '</div>';
+    if (!(opts && opts.hideSearch)) {
+      html += '<div class="filter-field filter-actions">' +
+        '<button type="button" class="btn btn-secondary btn-sm" data-filter-action="reset">' + esc(t('reset_filters')) + '</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" data-filter-action="search">' + esc(t('search')) + '</button>' +
+        '</div>';
+    }
 
     return html;
   }
 
   // Filters apply only when the Search button is clicked (or Enter is pressed
   // in the keyword box); changing a control never triggers a re-render by itself.
-  function bind(root, filters, onSearch) {
+  function bind(root, filters, onSearch, onReset) {
     function apply() {
       Array.prototype.forEach.call(root.querySelectorAll('[data-filter]'), function (el) {
         filters[el.dataset.filter] = el.value;
@@ -144,6 +147,9 @@
 
     var button = root.querySelector('[data-filter-action="search"]');
     if (button) button.addEventListener('click', apply);
+
+    var reset = root.querySelector('[data-filter-action="reset"]');
+    if (reset) reset.addEventListener('click', function () { if (onReset) onReset(); });
 
     var keyword = root.querySelector('[data-filter="keyword"]');
     if (keyword) {
@@ -156,12 +162,30 @@
     }
   }
 
+  // Simple client-side pager: one page of results at a time.
+  function pagerHtml(page, pageCount, t) {
+    if (pageCount <= 1) return '';
+    return '<div class="pager">' +
+      '<button type="button" class="btn btn-secondary btn-sm" data-page="' + (page - 1) + '"' + (page <= 1 ? ' disabled' : '') + '>' + esc(t('prev_page')) + '</button>' +
+      '<span class="pager-info">' + page + ' / ' + pageCount + '</span>' +
+      '<button type="button" class="btn btn-secondary btn-sm" data-page="' + (page + 1) + '"' + (page >= pageCount ? ' disabled' : '') + '>' + esc(t('next_page')) + '</button>' +
+      '</div>';
+  }
+
+  function bindPager(root, onPage) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-page]'), function (btn) {
+      btn.addEventListener('click', function () { onPage(Number(btn.dataset.page)); });
+    });
+  }
+
   root.ProductCatalog = {
     PAGE_SIZE: PAGE_SIZE,
     defaultFilters: defaultFilters,
     filter: filter,
     barHtml: barHtml,
     bind: bind,
+    pagerHtml: pagerHtml,
+    bindPager: bindPager,
     esc: esc,
   };
 })(window);

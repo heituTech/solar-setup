@@ -113,8 +113,8 @@ CREATE TABLE IF NOT EXISTS sales_manager_links (
 
 CREATE TABLE IF NOT EXISTS approval_requests (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  request_type ENUM('product_create','product_update','product_delete','account_create','account_update','account_delete') NOT NULL,
-  requester_id INT NOT NULL,
+  request_type ENUM('product_create','product_update','product_delete','account_create','account_update','account_delete','account_register') NOT NULL,
+  requester_id INT DEFAULT NULL,
   approver_role ENUM('super_admin','sales_manager') NOT NULL,
   approver_id INT DEFAULT NULL,
   status ENUM('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',
@@ -131,10 +131,34 @@ CREATE TABLE IF NOT EXISTS approval_requests (
   CONSTRAINT fk_approvals_approver FOREIGN KEY (approver_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS approval_flows (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  request_type ENUM('product_create','product_update','product_delete','account_create','account_update','account_delete','account_register') NOT NULL,
+  requester_role ENUM('salesperson','sales_manager') NOT NULL,
+  approver_role ENUM('super_admin','sales_manager') NOT NULL,
+  require_approval TINYINT(1) NOT NULL DEFAULT 1,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_flows_type_role (request_type, requester_role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO approval_flows (name, request_type, requester_role, approver_role, require_approval, enabled) VALUES
+  ('Salesperson product create', 'product_create', 'salesperson', 'sales_manager', 1, 1),
+  ('Salesperson product update', 'product_update', 'salesperson', 'sales_manager', 1, 1),
+  ('Salesperson product delete', 'product_delete', 'salesperson', 'sales_manager', 1, 1),
+  ('Manager account create', 'account_create', 'sales_manager', 'super_admin', 1, 1),
+  ('Manager account update', 'account_update', 'sales_manager', 'super_admin', 1, 1),
+  ('Manager account delete', 'account_delete', 'sales_manager', 'super_admin', 1, 1),
+  ('Salesperson registration', 'account_register', 'salesperson', 'sales_manager', 1, 1),
+  ('Sales manager registration', 'account_register', 'sales_manager', 'super_admin', 1, 1)
+ON DUPLICATE KEY UPDATE request_type = VALUES(request_type);
+
 CREATE TABLE IF NOT EXISTS email_codes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(160) NOT NULL,
-  purpose ENUM('register','login','profile') NOT NULL DEFAULT 'register',
+  purpose ENUM('register','login','profile','password') NOT NULL DEFAULT 'register',
   code_hash CHAR(64) NOT NULL,
   expires_at DATETIME NOT NULL,
   consumed_at DATETIME DEFAULT NULL,

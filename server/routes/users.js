@@ -3,6 +3,7 @@ const pool = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const accounts = require('../services/accounts');
 const approvals = require('../services/approvals');
+const flows = require('../services/flows');
 
 const router = express.Router();
 
@@ -130,10 +131,25 @@ router.post('/subordinates', requireRole('sales_manager'), async (req, res) => {
       manager_id: req.user.id,
       password_hash: accounts.hashPassword(req.body.password),
     };
+    const route = await flows.routeRequest('account_create', 'sales_manager');
+    if (!route.requireApproval) {
+      const conn = await pool.getConnection();
+      try {
+        await conn.beginTransaction();
+        const id = await accounts.createStaff(conn, payload, ['salesperson']);
+        await conn.commit();
+        return res.status(201).json({ id });
+      } catch (e) {
+        try { await conn.rollback(); } catch {}
+        throw e;
+      } finally {
+        conn.release();
+      }
+    }
     const approvalId = await approvals.createRequest({
       requesterId: req.user.id,
       requestType: 'account_create',
-      approverRole: 'super_admin',
+      approverRole: route.approverRole,
       targetTable: 'users',
       payload,
       reason: req.body.reason || null,
@@ -164,10 +180,15 @@ router.put('/subordinates/:id', requireRole('sales_manager'), async (req, res) =
     }
     if (req.body.password) changes.password_hash = accounts.hashPassword(req.body.password);
     if (!Object.keys(changes).length) return res.status(400).json({ error: 'no_updates' });
+    const route = await flows.routeRequest('account_update', 'sales_manager');
+    if (!route.requireApproval) {
+      await accounts.updateStaff(pool, target.id, changes, ['salesperson']);
+      return res.json({ ok: true });
+    }
     const approvalId = await approvals.createRequest({
       requesterId: req.user.id,
       requestType: 'account_update',
-      approverRole: 'super_admin',
+      approverRole: route.approverRole,
       targetTable: 'users',
       targetId: target.id,
       payload: changes,
@@ -183,10 +204,15 @@ router.delete('/subordinates/:id', requireRole('sales_manager'), async (req, res
   try {
     const target = await findSubordinate(req.user.id, Number(req.params.id));
     if (!target) return res.status(404).json({ error: 'subordinate_not_found' });
+    const route = await flows.routeRequest('account_delete', 'sales_manager');
+    if (!route.requireApproval) {
+      await accounts.deleteStaff(pool, target.id, ['salesperson']);
+      return res.json({ ok: true });
+    }
     const approvalId = await approvals.createRequest({
       requesterId: req.user.id,
       requestType: 'account_delete',
-      approverRole: 'super_admin',
+      approverRole: route.approverRole,
       targetTable: 'users',
       targetId: target.id,
       payload: { username: target.username },

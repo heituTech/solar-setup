@@ -32,11 +32,14 @@ router.get('/', async (req, res) => {
         conditions.push('ar.requester_id = ?');
         params.push(req.user.id);
       } else {
-        conditions.push("ar.request_type LIKE 'product_%'");
         conditions.push('ar.status = ?');
         params.push('pending');
-        conditions.push('EXISTS (SELECT 1 FROM sales_manager_links l WHERE l.salesperson_id = ru.id AND l.manager_id = ?)');
-        params.push(req.user.id);
+        conditions.push(`(
+          (ar.status = 'pending' AND ar.request_type LIKE 'product_%' AND ar.approver_role = 'sales_manager'
+            AND EXISTS (SELECT 1 FROM sales_manager_links l WHERE l.salesperson_id = ru.id AND l.manager_id = ?))
+          OR (ar.request_type = 'account_register' AND ar.approver_role = 'sales_manager' AND ar.approver_id = ?)
+        )`);
+        params.push(req.user.id, req.user.id);
       }
     } else {
       conditions.push('ar.requester_id = ?');
@@ -54,9 +57,11 @@ router.get('/', async (req, res) => {
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const [rows] = await pool.query(
-      `SELECT ar.*, ru.username AS requester_username, au.username AS approver_username
+      `SELECT ar.*,
+         COALESCE(ru.username, JSON_UNQUOTE(JSON_EXTRACT(ar.payload, '$.username'))) AS requester_username,
+         au.username AS approver_username
        FROM approval_requests ar
-       JOIN users ru ON ru.id = ar.requester_id
+       LEFT JOIN users ru ON ru.id = ar.requester_id
        LEFT JOIN users au ON au.id = ar.approver_id
        ${where}
        ORDER BY ar.created_at DESC, ar.id DESC
@@ -74,7 +79,7 @@ async function loadForUpdate(conn, id) {
     `SELECT ar.*, ru.username AS requester_username,
        (SELECT l.manager_id FROM sales_manager_links l WHERE l.salesperson_id = ru.id) AS requester_manager_id
      FROM approval_requests ar
-     JOIN users ru ON ru.id = ar.requester_id
+     LEFT JOIN users ru ON ru.id = ar.requester_id
      WHERE ar.id = ? FOR UPDATE`,
     [id]
   );
@@ -84,7 +89,14 @@ async function loadForUpdate(conn, id) {
 function canReview(user, approval) {
   if (user.role === 'super_admin') return true;
   if (user.role !== 'sales_manager') return false;
-  if (approval.requester_id === user.id) return false;
+  if (Number(approval.requester_id) === Number(user.id)) return false;
+  if (approval.request_type === 'account_register') {
+    // A salesperson registration is reviewed by the sales manager they picked.
+    // Sales manager registrations use approver_role = super_admin, so they are
+    // never reviewable here.
+    return approval.approver_role === 'sales_manager'
+      && Number(approval.approver_id) === Number(user.id);
+  }
   return approval.approver_role === 'sales_manager'
     && String(approval.request_type).startsWith('product_')
     && Number(approval.requester_manager_id) === Number(user.id);

@@ -15,21 +15,24 @@
       <a class="app-bar-link" href="/pv/account" data-i18n="my_account">My Account</a>
       <div class="lang-picker app-bar-picker" id="langPicker">
         <button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">
-          <span id="langCurrentLabel">ខ្មែរ</span>
+          <img id="langCurrentFlag" class="lang-flag" src="img/flags/en.svg" alt="English">
           <svg class="lang-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
-        <div class="lang-menu" id="langMenu" role="listbox" hidden>
+                <div class="lang-menu" id="langMenu" role="listbox" hidden>
           <button class="lang-option" type="button" data-lang="km" role="option">ខ្មែរ</button>
           <button class="lang-option" type="button" data-lang="en" role="option">English</button>
           <button class="lang-option" type="button" data-lang="zh" role="option">中文</button>
+          <button class="lang-option" type="button" data-lang="es" role="option">Español</button>
+          <button class="lang-option" type="button" data-lang="de" role="option">Deutsch</button>
+          <button class="lang-option" type="button" data-lang="fr" role="option">Français</button>
+          <button class="lang-option" type="button" data-lang="ja" role="option">日本語</button>
+          <button class="lang-option" type="button" data-lang="ko" role="option">한국어</button>
+          <button class="lang-option" type="button" data-lang="th" role="option">ไทย</button>
+          <button class="lang-option" type="button" data-lang="vi" role="option">Tiếng Việt</button>
         </div>
       </div>
     </div>
   </div>
-
-  <header class="page-head" id="portalHead">
-    <h1 data-i18n="staff_portal">Staff Portal</h1>
-  </header>
 
   <div class="container container-wide">
     <!-- Staff auth -->
@@ -52,6 +55,18 @@
       </div>
 
       <div id="registerForm" style="display:none">
+        <div class="field">
+          <label data-i18n="role_label">Role</label>
+          <select id="sr_role">
+            <option value="salesperson" selected data-i18n="role_salesperson">Salesperson</option>
+            <option value="sales_manager" data-i18n="role_sales_manager">Sales Manager</option>
+          </select>
+        </div>
+        <div class="field" id="sr_managerField">
+          <label data-i18n="approver_manager">Approver (Sales Manager)</label>
+          <select id="sr_manager"></select>
+          <div class="select-note" data-i18n="manager_required_hint"></div>
+        </div>
         <div class="field">
           <label data-i18n="full_name">Name</label>
           <input id="sr_name" maxlength="100" autocomplete="name" />
@@ -102,6 +117,7 @@
         <button class="tab-btn active" data-tab="products" data-i18n="products">Products</button>
         <button class="tab-btn" data-tab="accounts" data-i18n="tab_accounts">Accounts</button>
         <button class="tab-btn" data-tab="approvals" data-i18n="tab_approvals">Approvals</button>
+        <button class="tab-btn" data-tab="flows" data-i18n="tab_flows">Approval Flows</button>
         <button class="tab-btn" data-tab="settings" data-i18n="settings">Settings</button>
       </div>
 
@@ -114,7 +130,6 @@
             <button class="tab-btn" data-cat="batteries" data-i18n="battery_tab">Batteries</button>
           </div>
           <div class="toolbar-actions">
-            <button class="btn btn-primary btn-sm" id="addProductBtn" style="width:auto" data-i18n="add_product">+ Add Product</button>
             <span class="inline-hint" id="productHint"></span>
           </div>
         </div>
@@ -126,8 +141,8 @@
       <div id="accountsPanel" style="display:none">
         <div class="card toolbar">
           <span class="inline-hint" id="accountHint"></span>
-          <button class="btn btn-primary btn-sm" id="addAccountBtn" style="width:auto" data-i18n="add_account">+ Add Account</button>
         </div>
+        <div id="accountFilters" class="filter-bar"></div>
         <div id="accountList"></div>
       </div>
 
@@ -139,7 +154,17 @@
             <button class="tab-btn" data-scope="mine" data-i18n="scope_mine">My Requests</button>
           </div>
         </div>
+        <div id="approvalFilters" class="filter-bar"></div>
         <div id="approvalList"></div>
+      </div>
+
+      <!-- Approval flows (super admin) -->
+      <div id="flowsPanel" style="display:none">
+        <div class="card toolbar">
+          <span class="inline-hint" data-i18n="flows_hint"></span>
+          <button class="btn btn-primary btn-sm btn-add" id="addFlowBtn" style="width:auto" data-i18n="add_flow">+ Add Flow</button>
+        </div>
+        <div id="flowList"></div>
       </div>
 
       <!-- Settings -->
@@ -182,6 +207,18 @@
       <div class="actions">
         <button class="btn btn-secondary" id="reviewCancel" data-i18n="cancel">Cancel</button>
         <button class="btn btn-danger" id="reviewConfirm" style="width:auto" data-i18n="reject">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flow modal -->
+  <div class="modal-overlay" id="flowModal">
+    <div class="modal">
+      <h2 id="flowModalTitle" data-i18n="add_flow">Add Flow</h2>
+      <div id="flowModalBody"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="flowCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary" id="flowSave" data-i18n="save">Save</button>
       </div>
     </div>
   </div>

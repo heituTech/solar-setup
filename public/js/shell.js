@@ -25,10 +25,21 @@
   }
 
   /* ===================== Language picker (opens upward) ===================== */
-  const LANG_NAMES = { km: 'ខ្មែរ', en: 'English', zh: '中文' };
+  const LANG_NAMES = {
+    km: 'ខ្មែរ',
+    en: 'English',
+    zh: '中文',
+    es: 'Español',
+    de: 'Deutsch',
+    fr: 'Français',
+    ja: '日本語',
+    ko: '한국어',
+    th: 'ไทย',
+    vi: 'Tiếng Việt',
+  };
   const langBtn = document.getElementById('langCurrentBtn');
   const langMenu = document.getElementById('langMenu');
-  const langLabel = document.getElementById('langCurrentLabel');
+  const langFlag = document.getElementById('langCurrentFlag');
 
   function closeLangMenu() {
     if (!langMenu || !langBtn) return;
@@ -36,8 +47,14 @@
     langBtn.setAttribute('aria-expanded', 'false');
   }
 
+  // The collapsed picker shows only the flag of the selected language;
+  // menu options stay text-only.
   window.updateLangPicker = function (lang) {
-    if (langLabel) langLabel.textContent = LANG_NAMES[lang] || LANG_NAMES.en;
+    if (langFlag) {
+      langFlag.src = 'img/flags/' + lang + '.svg';
+      langFlag.alt = LANG_NAMES[lang] || LANG_NAMES.en;
+      langFlag.title = LANG_NAMES[lang] || LANG_NAMES.en;
+    }
     if (!langMenu) return;
     langMenu.querySelectorAll('.lang-option').forEach(function (opt) {
       const selected = opt.dataset.lang === lang;

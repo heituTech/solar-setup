@@ -13,7 +13,7 @@
   let catalogLoaded = false;
   let catalogData = [];
   let catalogFilters = ProductCatalog.defaultFilters('inverters');
-  let catalogVisible = ProductCatalog.PAGE_SIZE;
+  let catalogPage = 1;
   let codeTimer = null;
   let loginCodeTimer = null;
   let countries = [];
@@ -285,6 +285,61 @@
     localStorage.setItem(TOKEN_KEY, token);
     showPanel();
     return true;
+  }
+
+  /* ===================== Google sign-in ===================== */
+
+  const GOOGLE_CLIENT_ID = '6141571543-urkb0dl5k9s6rtdbf9q7qv3udk6n752b.apps.googleusercontent.com';
+
+  function googleLocale() {
+    const map = { km: 'km', en: 'en', zh: 'zh-CN', es: 'es', de: 'de', fr: 'fr', ja: 'ja', ko: 'ko', th: 'th', vi: 'vi' };
+    return map[getCurrentLang()] || 'en';
+  }
+
+  async function onGoogleCredential(resp) {
+    if (!resp || !resp.credential) {
+      showToast(t('google_login_failed'), true);
+      return;
+    }
+    try {
+      const data = await api('/pv/api/auth/google', {
+        method: 'POST',
+        body: { credential: resp.credential },
+        auth: false,
+      });
+      enterSession(data);
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
+  function renderGoogleBtn() {
+    const el = document.getElementById('googleBtn');
+    if (!el || !(window.google && google.accounts && google.accounts.id)) return false;
+    google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
+    el.innerHTML = '';
+    const width = Math.max(200, Math.min(el.clientWidth || 320, 400));
+    google.accounts.id.renderButton(el, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      shape: 'rectangular',
+      text: 'signin_with',
+      logo_alignment: 'left',
+      width,
+      locale: googleLocale(),
+    });
+    return true;
+  }
+
+  // The GIS script loads asynchronously; retry briefly while it arrives.
+  function initGoogleBtn() {
+    if (renderGoogleBtn()) return;
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      if (renderGoogleBtn() || tries > 40) clearInterval(timer);
+    }, 250);
   }
 
   document.getElementById('memberLoginBtn').addEventListener('click', async () => {
@@ -1355,7 +1410,7 @@
       btn.classList.add('active');
       catalogCat = btn.dataset.cat;
       catalogFilters = ProductCatalog.defaultFilters(catalogCat);
-      catalogVisible = ProductCatalog.PAGE_SIZE;
+      catalogPage = 1;
       loadCatalog();
     });
   });
@@ -1375,13 +1430,18 @@
     }
   }
 
-  // Filtering and 8-per-page loading happen in the browser; the public catalog
-  // is already fully fetched, so "Show more" never hits the server again.
+  // Filtering and paging happen in the browser; the public catalog is already
+  // fully fetched, so page changes never hit the server again.
   function renderCatalogFilters() {
     const bar = document.getElementById('catalogFilters');
     bar.innerHTML = ProductCatalog.barHtml(catalogCat, catalogData, catalogFilters, t);
     ProductCatalog.bind(bar, catalogFilters, () => {
-      catalogVisible = ProductCatalog.PAGE_SIZE;
+      catalogPage = 1;
+      renderCatalogList();
+    }, () => {
+      catalogFilters = ProductCatalog.defaultFilters(catalogCat);
+      catalogPage = 1;
+      renderCatalogFilters();
       renderCatalogList();
     });
   }
@@ -1395,22 +1455,21 @@
       more.innerHTML = '';
       return;
     }
-    const shown = filtered.slice(0, catalogVisible);
+    const pageSize = ProductCatalog.PAGE_SIZE;
+    const pageCount = Math.ceil(filtered.length / pageSize);
+    if (catalogPage > pageCount) catalogPage = pageCount;
+    if (catalogPage < 1) catalogPage = 1;
+    const shown = filtered.slice((catalogPage - 1) * pageSize, catalogPage * pageSize);
     list.innerHTML = shown.map((p) => `<div class="catalog-card">
         <h4>${productTitle(catalogCat, p)}</h4>
         <div class="meta">${catalogMeta(p)}</div>
         <div class="price">${fmtUsd(p.price_usd)}${Number(p.price_khr) > 0 ? ' / ' + fmtKhr(p.price_khr) : ''}</div>
       </div>`).join('');
-    const remaining = filtered.length - catalogVisible;
-    if (remaining > 0) {
-      more.innerHTML = `<button class="btn btn-secondary btn-sm" id="catalogShowMore">${t('show_more')} (${remaining})</button>`;
-      document.getElementById('catalogShowMore').addEventListener('click', () => {
-        catalogVisible += ProductCatalog.PAGE_SIZE;
-        renderCatalogList();
-      });
-    } else {
-      more.innerHTML = '';
-    }
+    more.innerHTML = ProductCatalog.pagerHtml(catalogPage, pageCount, t);
+    ProductCatalog.bindPager(more, (page) => {
+      catalogPage = page;
+      renderCatalogList();
+    });
   }
 
   function catalogMeta(p) {
@@ -1454,7 +1513,7 @@
   }
 
   document.addEventListener('lang:change', (e) => {
-    setLang(e.detail.lang);
+    setLang(e.detail.lang).then(() => {
     initLang();
     renderCaseList();
     updateScenarioHint();
@@ -1467,11 +1526,165 @@
     }
     if (lastQuote) renderQuote(lastQuote);
     if (snapshotNoteKey) setSnapshotNoteKey(snapshotNoteKey);
-    if (catalogLoaded && document.getElementById('catalogBody').style.display !== 'none') loadCatalog();
+    if (catalogLoaded && document.getElementById('catalogBody').style.display !== 'none') {
+      renderCatalogFilters();
+      renderCatalogList();
+    }
+    renderAiWelcome();
+    renderGoogleBtn();
+    });
   });
 
+  /* ================= AI assistant ================= */
+  // The dialog assembles the member's question together with both knowledge
+  // bases and copies the bundle, so the member can paste it into any free AI
+  // web chat. All of this runs client-side; the server only serves the two
+  // markdown files to authenticated members.
+  let aiKbPromise = null;
+  function loadAiKnowledge() {
+    if (!aiKbPromise) {
+      const opts = { headers: { Authorization: 'Bearer ' + token } };
+      aiKbPromise = Promise.all([
+        fetch('/pv/skill/member/app', opts).then((r) => { if (!r.ok) throw { status: r.status }; return r.text(); }),
+        fetch('/pv/skill/member/solar_config', opts).then((r) => { if (!r.ok) throw { status: r.status }; return r.text(); }),
+      ]).catch((e) => { aiKbPromise = null; throw e; });
+    }
+    return aiKbPromise;
+  }
+
+  function aiAppendMsg(role, text) {
+    const box = document.getElementById('aiMessages');
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + role;
+    div.textContent = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function renderAiWelcome() {
+    const box = document.getElementById('aiMessages');
+    if (!box || box.children.length) return; // keep the conversation on language switch
+    aiAppendMsg('bot', t('ai_welcome'));
+  }
+
+  function aiRequireLogin() {
+    if (me) return true;
+    showToast(t('ai_login_required'), true);
+    return false;
+  }
+
+  // navigator.clipboard only exists in secure contexts (HTTPS/localhost);
+  // fall back to a hidden textarea + execCommand on plain HTTP deployments.
+  function aiCopyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise((resolve, reject) => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('copy_failed'));
+      } catch (e) {
+        document.body.removeChild(ta);
+        reject(e);
+      }
+    });
+  }
+
+  function downloadTextFile(name, content) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type: 'text/markdown;charset=utf-8' }));
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function sendAi() {
+    if (!aiRequireLogin()) return;
+    const input = document.getElementById('aiInput');
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = '';
+    aiAppendMsg('user', q);
+    let appMd, solarMd;
+    try {
+      [appMd, solarMd] = await loadAiKnowledge();
+    } catch (e) {
+      showToast(errMsg(e), true);
+      return;
+    }
+    const prompt = 'You are an assistant for the Solar Setup web app. Use the two knowledge bases below to answer the user question. Answer in the same language as the question.\n\n=== Knowledge base 1: App usage guide ===\n' + appMd + '\n\n=== Knowledge base 2: Solar system configuration ===\n' + solarMd + '\n\n=== User question ===\n' + q;
+    try {
+      await aiCopyText(prompt);
+      window.open('https://chat.openai.com/', '_blank');
+      aiAppendMsg('bot', t('ai_copied'));
+    } catch {
+      aiAppendMsg('bot', t('ai_copy_failed'));
+      const pre = document.createElement('pre');
+      pre.className = 'ai-prompt';
+      pre.textContent = prompt;
+      const box = document.getElementById('aiMessages');
+      box.appendChild(pre);
+      box.scrollTop = box.scrollHeight;
+    }
+  }
+
+  function initAi() {
+    renderAiWelcome();
+    // Collapse/expand the dock; it starts collapsed.
+    const dock = document.getElementById('aiDock');
+    const toggle = document.getElementById('aiToggle');
+    toggle.addEventListener('click', () => {
+      const open = dock.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    // Tapping the page area above the dock auto-collapses it.
+    document.addEventListener('click', (e) => {
+      if (!dock.classList.contains('open')) return;
+      if (dock.contains(e.target)) return;
+      dock.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+    // Clear the conversation (client-side only; the server stores nothing).
+    document.getElementById('aiClear').addEventListener('click', () => {
+      document.getElementById('aiMessages').innerHTML = '';
+      renderAiWelcome();
+    });
+    document.getElementById('aiKbApp').addEventListener('click', async () => {
+      if (!aiRequireLogin()) return;
+      try {
+        const [appMd] = await loadAiKnowledge();
+        downloadTextFile('member-app.md', appMd);
+      } catch (e) { showToast(errMsg(e), true); }
+    });
+    document.getElementById('aiKbSolar').addEventListener('click', async () => {
+      if (!aiRequireLogin()) return;
+      try {
+        const [, solarMd] = await loadAiKnowledge();
+        downloadTextFile('solar-config.md', solarMd);
+      } catch (e) { showToast(errMsg(e), true); }
+    });
+    const input = document.getElementById('aiInput');
+    input.addEventListener('focus', () => {
+      if (!aiRequireLogin()) input.blur();
+    });
+    document.getElementById('aiSend').addEventListener('click', sendAi);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendAi();
+    });
+  }
   async function bootstrap() {
+    // Render only after the dictionary is in memory (IndexedDB-backed).
+    await window.I18N_READY;
     initLang();
+    initAi();
     updateAutonomyWarning();
     await loadCountries();
     fillPhoneCountries();
@@ -1479,8 +1692,12 @@
     updateLoginMethod();
     await loadConfig();
     const user = await loadMe();
-    if (user) showPanel();
-    else showAuth();
+    if (user) {
+      showPanel();
+    } else {
+      showAuth();
+      initGoogleBtn();
+    }
   }
 
   if (document.readyState === 'complete') {

@@ -223,8 +223,9 @@
   }
 
   document.addEventListener('lang:change', (e) => {
-    setLang(e.detail.lang);
-    initLang();
+    // setLang resolves once the new dictionary is loaded (dict files replace
+    // the previous one client-side); re-render after that.
+    setLang(e.detail.lang).then(initLang);
   });
 
   document.getElementById('calcBtn').addEventListener('click', calculate);
@@ -245,7 +246,8 @@
   });
 
   function bootstrap() {
-    initLang();
+    // Render only after the dictionary is in memory (IndexedDB-backed).
+    window.I18N_READY.then(initLang);
   }
   if (document.readyState === 'complete') {
     bootstrap();

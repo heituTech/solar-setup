@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#772432" />
   <title>HEITU TECHNOLOGY</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=7" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <div class="app-bar">
@@ -14,21 +15,24 @@
       <a class="app-bar-link" href="/pv" data-i18n="home">Home</a>
       <div class="lang-picker app-bar-picker" id="langPicker">
         <button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">
-          <span id="langCurrentLabel">ខ្មែរ</span>
+          <img id="langCurrentFlag" class="lang-flag" src="img/flags/en.svg" alt="English">
           <svg class="lang-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
-        <div class="lang-menu" id="langMenu" role="listbox" hidden>
+                <div class="lang-menu" id="langMenu" role="listbox" hidden>
           <button class="lang-option" type="button" data-lang="km" role="option">ខ្មែរ</button>
           <button class="lang-option" type="button" data-lang="en" role="option">English</button>
           <button class="lang-option" type="button" data-lang="zh" role="option">中文</button>
+          <button class="lang-option" type="button" data-lang="es" role="option">Español</button>
+          <button class="lang-option" type="button" data-lang="de" role="option">Deutsch</button>
+          <button class="lang-option" type="button" data-lang="fr" role="option">Français</button>
+          <button class="lang-option" type="button" data-lang="ja" role="option">日本語</button>
+          <button class="lang-option" type="button" data-lang="ko" role="option">한국어</button>
+          <button class="lang-option" type="button" data-lang="th" role="option">ไทย</button>
+          <button class="lang-option" type="button" data-lang="vi" role="option">Tiếng Việt</button>
         </div>
       </div>
     </div>
   </div>
-
-  <header class="page-head">
-    <h1 data-i18n="member_portal">Member Portal</h1>
-  </header>
 
   <div class="container container-wide">
     <!-- Auth -->
@@ -75,6 +79,9 @@
             <div class="select-note" id="devHintLogin" style="display:none" data-i18n="dev_mode_hint"></div>
             <button class="btn btn-primary" id="codeLoginBtn" data-i18n="login">Login</button>
           </div>
+
+          <div class="auth-divider"><span data-i18n="or">or</span></div>
+          <div class="google-btn" id="googleBtn" role="button" aria-label="Sign in with Google"></div>
         </div>
 
         <div id="registerForm" style="display:none">
@@ -147,9 +154,9 @@
       </div>
 
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="display:flex;justify-content:flex-start;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
           <h2 class="card-title" style="margin:0" data-i18n="my_cases">My Cases</h2>
-          <button class="btn btn-secondary btn-sm" id="addCaseBtn" style="width:auto" data-i18n="add_case">+ Add Case</button>
+          <button class="btn btn-secondary btn-sm btn-add" id="addCaseBtn" style="width:auto" data-i18n="add_case">+ Add Case</button>
         </div>
         <div id="caseList"></div>
       </div>
@@ -168,7 +175,7 @@
             <h3 data-i18n="load_builder_title">Scenario Load Checklist</h3>
             <div class="load-builder-tools">
               <span class="select-note" id="loadSaveStatus" style="margin:0"></span>
-              <button type="button" class="btn btn-secondary btn-sm" id="addLoadRow" style="width:auto" data-i18n="add_device">+ Add device</button>
+              <button type="button" class="btn btn-secondary btn-sm btn-add" id="addLoadRow" style="width:auto" data-i18n="add_device">+ Add device</button>
             </div>
           </div>
           <div class="select-note" id="scenarioGuide"></div>
@@ -320,6 +327,29 @@
     </div>
   </div>
 
+  <!-- AI assistant dock: fixed at the viewport bottom, collapsed by default.
+       The conversation lives only in this page; the server stores nothing. -->
+  <div class="ai-dock" id="aiDock">
+    <button type="button" class="ai-toggle" id="aiToggle" aria-expanded="false" aria-controls="aiCard">
+      <span data-i18n="ai_assistant">AI Assistant</span>
+      <svg class="ai-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="card ai-card" id="aiCard">
+      <div class="ai-head">
+        <div class="ai-kb-links">
+          <button type="button" class="ai-kb-chip" id="aiKbApp" data-i18n="ai_kb_app">App usage guide</button>
+          <button type="button" class="ai-kb-chip" id="aiKbSolar" data-i18n="ai_kb_solar">Solar config guide</button>
+        </div>
+        <button type="button" class="ai-clear" id="aiClear" data-i18n="ai_clear">Clear</button>
+      </div>
+      <div class="ai-messages" id="aiMessages"></div>
+      <div class="ai-input-row">
+        <input type="text" id="aiInput" data-i18n-placeholder="ai_input_placeholder" placeholder="Ask about the app or solar configuration…">
+        <button class="btn btn-primary" id="aiSend" data-i18n="ai_send">Send</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Phone ambiguity modal -->
   <div class="modal-overlay" id="phonePickModal">
     <div class="modal">
@@ -337,7 +367,7 @@
   <script src="js/shell.js"></script>
   <script src="js/pricing-core.js"></script>
   <script src="js/product-catalog.js"></script>
-  <script src="js/member.js"></script>
+  <script src="js/member.js?v=5"></script>
   <script src="js/select.js"></script>
 </body>
 </html>

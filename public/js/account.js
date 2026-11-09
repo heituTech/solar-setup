@@ -6,6 +6,7 @@
   let me = null;
   let countries = [];
   let codeTimer = null;
+  let pwdTimer = null;
 
   /* ===================== Helpers ===================== */
 
@@ -95,6 +96,24 @@
     }, 1000);
   }
 
+  function startPwdCooldown(btn, seconds) {
+    if (pwdTimer) clearInterval(pwdTimer);
+    let left = seconds;
+    btn.disabled = true;
+    btn.textContent = left + 's';
+    pwdTimer = setInterval(() => {
+      left -= 1;
+      if (left <= 0) {
+        clearInterval(pwdTimer);
+        pwdTimer = null;
+        btn.disabled = false;
+        btn.textContent = t('send_code');
+      } else {
+        btn.textContent = left + 's';
+      }
+    }, 1000);
+  }
+
   /* ===================== Form state ===================== */
 
   function phoneChanged() {
@@ -134,6 +153,7 @@
     document.getElementById('a_email').value = me.email || '';
     document.getElementById('a_code').value = '';
     document.getElementById('a_devHint').style.display = 'none';
+    document.getElementById('p_email').value = me.email || '';
     updateCodeField();
   }
 
@@ -212,6 +232,54 @@
     location.replace('/pv/admin');
   }
 
+  /* ===================== Change login password ===================== */
+
+  document.getElementById('p_sendCode').addEventListener('click', async () => {
+    if (!me || !me.email) {
+      showToast(t('email_required'), true);
+      return;
+    }
+    const btn = document.getElementById('p_sendCode');
+    try {
+      const { data } = await api('/pv/api/auth/password-code', { method: 'POST', body: {} });
+      showToast(t('code_sent'));
+      if (data.dev_mode) document.getElementById('p_devHint').style.display = '';
+      startPwdCooldown(btn, 60);
+    } catch (e) {
+      if (e.status === 401) return redirectToLogin();
+      showToast(errMsg(e), true);
+    }
+  });
+
+  document.getElementById('p_save').addEventListener('click', async () => {
+    const code = document.getElementById('p_code').value.trim();
+    const password = document.getElementById('p_password').value;
+    const confirm = document.getElementById('p_confirm').value;
+    if (!/^\d{6}$/.test(code)) {
+      showToast(t('invalid_code'), true);
+      return;
+    }
+    if (password.length < 8) {
+      showToast(t('password_too_short'), true);
+      return;
+    }
+    if (password !== confirm) {
+      showToast(t('password_mismatch'), true);
+      return;
+    }
+    try {
+      await api('/pv/api/auth/password', { method: 'PATCH', body: { code, new_password: password } });
+      document.getElementById('p_code').value = '';
+      document.getElementById('p_password').value = '';
+      document.getElementById('p_confirm').value = '';
+      document.getElementById('p_devHint').style.display = 'none';
+      showToast(t('password_updated'));
+    } catch (e) {
+      if (e.status === 401) return redirectToLogin();
+      showToast(errMsg(e), true);
+    }
+  });
+
   document.getElementById('accountLogoutBtn').addEventListener('click', redirectToLogin);
 
   /* ===================== Language / bootstrap ===================== */
@@ -223,9 +291,11 @@
   }
 
   document.addEventListener('lang:change', (e) => {
-    setLang(e.detail.lang);
-    initLang();
-    updateIdentity();
+    // Re-render only after the new dictionary file has been loaded client-side.
+    setLang(e.detail.lang).then(() => {
+      initLang();
+      updateIdentity();
+    });
   });
 
   async function loadMe() {
@@ -236,6 +306,8 @@
   }
 
   async function bootstrap() {
+    // Render only after the dictionary is in memory (IndexedDB-backed).
+    await window.I18N_READY;
     initLang();
     try {
       const { data } = await api('/pv/api/config/countries', { auth: false });

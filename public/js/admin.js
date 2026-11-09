@@ -10,10 +10,20 @@
 
   let productsCache = {};
   let productFilters = ProductCatalog.defaultFilters('inverters');
-  let productVisible = ProductCatalog.PAGE_SIZE;
+  let productPage = 1;
   let accountsCache = [];
+  let accountsLoaded = false;
+  let accountFilters = { keyword: '', role: '', status: '' };
+  let accountPage = 1;
+  let approvalsCache = [];
+  let approvalsLoaded = false;
+  let approvalFilters = { type: '', status: '' };
+  let approvalPage = 1;
+  let settingsCache = null;
+  let flowsCache = [];
   let editingProductId = null;
   let editingAccountId = null;
+  let editingFlowId = null;
   let rejectApprovalId = null;
 
   const TECH_OPTIONS = ['N type', 'P type', 'Topcon', 'HTJ', 'BC'];
@@ -81,6 +91,7 @@
       account_create: 'req_account_create',
       account_update: 'req_account_update',
       account_delete: 'req_account_delete',
+      account_register: 'req_account_register',
     };
     return map[type] ? t(map[type]) : type;
   }
@@ -134,7 +145,6 @@
     localStorage.removeItem(TOKEN_KEY);
     document.getElementById('loginBox').style.display = '';
     document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('portalHead').style.display = '';
     document.getElementById('loginPassword').value = '';
     if (!silent) showToast(t('logged_out'));
   }
@@ -159,11 +169,35 @@
     });
     document.getElementById('loginForm').style.display = mode === 'login' ? '' : 'none';
     document.getElementById('registerForm').style.display = mode === 'register' ? '' : 'none';
+    if (mode === 'register') {
+      loadManagers();
+      updateRegisterRole();
+    }
   }
 
   document.querySelectorAll('#authTabs button').forEach((b) => {
     b.addEventListener('click', () => setAuthMode(b.dataset.mode));
   });
+
+  async function loadManagers() {
+    try {
+      const { data } = await api('/pv/api/auth/managers', { auth: false });
+      const list = Array.isArray(data.managers) ? data.managers : [];
+      const select = document.getElementById('sr_manager');
+      select.innerHTML = list.length
+        ? list.map((m) => `<option value="${m.id}">${escapeHtml(m.username)}${m.full_name ? ' · ' + escapeHtml(m.full_name) : ''}</option>`).join('')
+        : `<option value="">${escapeHtml(t('manager_none'))}</option>`;
+    } catch (e) {
+      // Leave the select empty; the submit handler blocks salesperson registration.
+    }
+  }
+
+  function updateRegisterRole() {
+    const role = document.getElementById('sr_role').value;
+    document.getElementById('sr_managerField').style.display = role === 'salesperson' ? '' : 'none';
+  }
+
+  document.getElementById('sr_role').addEventListener('change', updateRegisterRole);
 
   function fillPhoneCountries() {
     const select = document.getElementById('sr_phone_country');
@@ -213,8 +247,15 @@
   });
 
   document.getElementById('registerBtn').addEventListener('click', async () => {
+    const role = document.getElementById('sr_role').value;
+    const managerId = role === 'salesperson' ? Number(document.getElementById('sr_manager').value) : null;
+    if (role === 'salesperson' && !managerId) {
+      showToast(t('manager_required'), true);
+      return;
+    }
     const body = {
-      role: 'salesperson',
+      role,
+      manager_id: managerId,
       full_name: document.getElementById('sr_name').value.trim(),
       username: document.getElementById('sr_username').value.trim(),
       phone_country: document.getElementById('sr_phone_country').value,
@@ -224,7 +265,15 @@
       password: document.getElementById('sr_password').value,
     };
     try {
-      const { data } = await api('/pv/api/auth/register', { method: 'POST', body, auth: false });
+      const result = await api('/pv/api/auth/register', { method: 'POST', body, auth: false });
+      if (result.status === 202) {
+        showToast(t('registration_pending'));
+        document.getElementById('sr_code').value = '';
+        document.getElementById('sr_password').value = '';
+        setAuthMode('login');
+        return;
+      }
+      const { data } = result;
       token = data.token;
       me = data.user;
       localStorage.setItem(TOKEN_KEY, token);
@@ -252,7 +301,6 @@
 
   function showPanel() {
     document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('portalHead').style.display = 'none';
     document.getElementById('adminPanel').style.display = '';
     document.getElementById('userName').textContent = me.username || me.email || '';
     const badge = document.getElementById('userRoleBadge');
@@ -262,6 +310,7 @@
     toggleTab('accounts', me.role === 'super_admin' || me.role === 'sales_manager');
     toggleTab('settings', me.role === 'super_admin' || me.role === 'sales_manager');
     toggleTab('approvals', true);
+    toggleTab('flows', me.role === 'super_admin');
 
     document.querySelectorAll('#mainTabs .tab-btn').forEach((b) => b.classList.remove('active'));
     document.querySelector('#mainTabs .tab-btn[data-tab="products"]').classList.add('active');
@@ -289,10 +338,12 @@
     document.getElementById('productsPanel').style.display = tab === 'products' ? '' : 'none';
     document.getElementById('accountsPanel').style.display = tab === 'accounts' ? '' : 'none';
     document.getElementById('approvalsPanel').style.display = tab === 'approvals' ? '' : 'none';
+    document.getElementById('flowsPanel').style.display = tab === 'flows' ? '' : 'none';
     document.getElementById('settingsPanel').style.display = tab === 'settings' ? '' : 'none';
     if (tab === 'products') loadProducts();
     if (tab === 'accounts') loadAccounts();
     if (tab === 'approvals') loadApprovals();
+    if (tab === 'flows') loadFlows();
     if (tab === 'settings') loadSettings();
   }
 
@@ -304,7 +355,7 @@
       btn.classList.add('active');
       currentCategory = btn.dataset.cat;
       productFilters = ProductCatalog.defaultFilters(currentCategory);
-      productVisible = ProductCatalog.PAGE_SIZE;
+      productPage = 1;
       loadProducts();
     });
   });
@@ -318,7 +369,6 @@
       hint.textContent = '';
       hint.style.display = 'none';
     }
-    document.getElementById('addProductBtn').style.display = '';
   }
 
   async function loadProducts() {
@@ -335,16 +385,29 @@
     }
   }
 
-  // Filters and progressive loading run entirely in the browser: the full
-  // catalog is already cached, only the first 8 matches are shown at a time.
+  // Filters and paging run entirely in the browser: the full catalog is
+  // already cached, only one page of matches is shown at a time.
   function renderProductFilters() {
     const bar = document.getElementById('productFilters');
     const data = productsCache[currentCategory] || [];
-    bar.innerHTML = ProductCatalog.barHtml(currentCategory, data, productFilters, t, { status: true });
+    bar.innerHTML = ProductCatalog.barHtml(currentCategory, data, productFilters, t, { status: true, hideSearch: true }) +
+      `<div class="filter-footer">
+        <button type="button" class="btn btn-primary btn-sm btn-add" id="addProductBtn">${escapeHtml(t('add_product'))}</button>
+        <div class="filter-actions">
+          <button type="button" class="btn btn-secondary btn-sm" data-filter-action="reset">${escapeHtml(t('reset_filters'))}</button>
+          <button type="button" class="btn btn-primary btn-sm" data-filter-action="search">${escapeHtml(t('search'))}</button>
+        </div>
+      </div>`;
     ProductCatalog.bind(bar, productFilters, () => {
-      productVisible = ProductCatalog.PAGE_SIZE;
+      productPage = 1;
+      renderProductList();
+    }, () => {
+      productFilters = ProductCatalog.defaultFilters(currentCategory);
+      productPage = 1;
+      renderProductFilters();
       renderProductList();
     });
+    document.getElementById('addProductBtn').addEventListener('click', () => openProductModal(null));
   }
 
   function renderProductList() {
@@ -355,21 +418,17 @@
       list.innerHTML = `<div class="card empty-state">${t('no_data')}</div>`;
       return;
     }
-    const shown = filtered.slice(0, productVisible);
-    let html = shown.map(renderProduct).join('');
-    const remaining = filtered.length - productVisible;
-    if (remaining > 0) {
-      html += `<div class="show-more-wrap"><button class="btn btn-secondary btn-sm" id="productShowMore">${t('show_more')} (${remaining})</button></div>`;
-    }
-    list.innerHTML = html;
+    const pageSize = ProductCatalog.PAGE_SIZE;
+    const pageCount = Math.ceil(filtered.length / pageSize);
+    if (productPage > pageCount) productPage = pageCount;
+    if (productPage < 1) productPage = 1;
+    const shown = filtered.slice((productPage - 1) * pageSize, productPage * pageSize);
+    list.innerHTML = shown.map(renderProduct).join('') + ProductCatalog.pagerHtml(productPage, pageCount, t);
     bindProductActions();
-    const more = document.getElementById('productShowMore');
-    if (more) {
-      more.addEventListener('click', () => {
-        productVisible += ProductCatalog.PAGE_SIZE;
-        renderProductList();
-      });
-    }
+    ProductCatalog.bindPager(list, (page) => {
+      productPage = page;
+      renderProductList();
+    });
   }
 
   function parUnits(n) {
@@ -436,7 +495,6 @@
     }
   }
 
-  document.getElementById('addProductBtn').addEventListener('click', () => openProductModal(null));
   document.getElementById('productCancel').addEventListener('click', closeProductModal);
   document.getElementById('productSave').addEventListener('click', saveProduct);
 
@@ -707,11 +765,25 @@
 
   /* ===================== Accounts ===================== */
 
-  document.getElementById('addAccountBtn').addEventListener('click', () => openAccountModal(null));
   document.getElementById('accountCancel').addEventListener('click', closeAccountModal);
   document.getElementById('accountSave').addEventListener('click', saveAccount);
 
   async function loadAccounts() {
+    updateAccountHint();
+    const list = document.getElementById('accountList');
+    list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
+    try {
+      const path = me.role === 'super_admin' ? '/pv/api/admin/users' : '/pv/api/admin/users/subordinates';
+      const { data } = await api(path);
+      accountsCache = data;
+      accountsLoaded = true;
+      renderAccounts();
+    } catch (e) {
+      list.innerHTML = `<div class="card empty-state">${errMsg(e)}</div>`;
+    }
+  }
+
+  function updateAccountHint() {
     const hint = document.getElementById('accountHint');
     if (me.role === 'sales_manager') {
       hint.textContent = t('account_needs_approval');
@@ -720,21 +792,97 @@
       hint.textContent = '';
       hint.style.display = 'none';
     }
-    const list = document.getElementById('accountList');
-    list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
-    try {
-      const path = me.role === 'super_admin' ? '/pv/api/admin/users' : '/pv/api/admin/users/subordinates';
-      const { data } = await api(path);
-      accountsCache = data;
-      if (!data.length) {
-        list.innerHTML = `<div class="card empty-state">${t('no_accounts')}</div>`;
-        return;
+  }
+
+  // Re-render from the cached list so switching language never hits the API again.
+  function renderAccounts() {
+    renderAccountFilters();
+    renderAccountList();
+  }
+
+  function matchesAccount(u) {
+    const kw = accountFilters.keyword.trim().toLowerCase();
+    if (accountFilters.role && u.role !== accountFilters.role) return false;
+    if (accountFilters.status && u.status !== accountFilters.status) return false;
+    if (!kw) return true;
+    const text = [u.username, u.email, u.phone, u.full_name, u.manager_username].filter(Boolean).join(' ').toLowerCase();
+    return text.indexOf(kw) !== -1;
+  }
+
+  function renderAccountFilters() {
+    const bar = document.getElementById('accountFilters');
+    bar.innerHTML = `
+      <div class="filter-field">
+        <label>${escapeHtml(t('account_keyword'))}</label>
+        <input id="acc_kw" value="${escapeHtml(accountFilters.keyword)}" placeholder="${escapeHtml(t('search_accounts'))}" />
+      </div>
+      <div class="filter-field">
+        <label>${escapeHtml(t('role'))}</label>
+        <select id="acc_role">
+          <option value="">${escapeHtml(t('filter_all'))}</option>
+          <option value="super_admin" ${accountFilters.role === 'super_admin' ? 'selected' : ''}>${escapeHtml(t('role_super_admin'))}</option>
+          <option value="sales_manager" ${accountFilters.role === 'sales_manager' ? 'selected' : ''}>${escapeHtml(t('role_sales_manager'))}</option>
+          <option value="salesperson" ${accountFilters.role === 'salesperson' ? 'selected' : ''}>${escapeHtml(t('role_salesperson'))}</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label>${escapeHtml(t('status'))}</label>
+        <select id="acc_status">
+          <option value="">${escapeHtml(t('filter_all'))}</option>
+          <option value="active" ${accountFilters.status === 'active' ? 'selected' : ''}>${escapeHtml(t('status_active'))}</option>
+          <option value="disabled" ${accountFilters.status === 'disabled' ? 'selected' : ''}>${escapeHtml(t('status_disabled'))}</option>
+        </select>
+      </div>
+      <div class="filter-footer">
+        <button type="button" class="btn btn-primary btn-sm btn-add" id="addAccountBtn">${escapeHtml(t('add_account'))}</button>
+        <div class="filter-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="accReset">${escapeHtml(t('reset_filters'))}</button>
+          <button type="button" class="btn btn-primary btn-sm" id="accSearch">${escapeHtml(t('search'))}</button>
+        </div>
+      </div>`;
+    document.getElementById('addAccountBtn').addEventListener('click', () => openAccountModal(null));
+    document.getElementById('accSearch').addEventListener('click', () => {
+      accountFilters = {
+        keyword: document.getElementById('acc_kw').value,
+        role: document.getElementById('acc_role').value,
+        status: document.getElementById('acc_status').value,
+      };
+      accountPage = 1;
+      renderAccountList();
+    });
+    document.getElementById('accReset').addEventListener('click', () => {
+      accountFilters = { keyword: '', role: '', status: '' };
+      accountPage = 1;
+      renderAccountFilters();
+      renderAccountList();
+    });
+    document.getElementById('acc_kw').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('accSearch').click();
       }
-      list.innerHTML = data.map(renderAccount).join('');
-      bindAccountActions();
-    } catch (e) {
-      list.innerHTML = `<div class="card empty-state">${errMsg(e)}</div>`;
+    });
+  }
+
+  function renderAccountList() {
+    const list = document.getElementById('accountList');
+    if (!accountsLoaded) return;
+    const filtered = accountsCache.filter(matchesAccount);
+    if (!filtered.length) {
+      list.innerHTML = `<div class="card empty-state">${t('no_accounts')}</div>`;
+      return;
     }
+    const pageSize = ProductCatalog.PAGE_SIZE;
+    const pageCount = Math.ceil(filtered.length / pageSize);
+    if (accountPage > pageCount) accountPage = pageCount;
+    if (accountPage < 1) accountPage = 1;
+    const shown = filtered.slice((accountPage - 1) * pageSize, accountPage * pageSize);
+    list.innerHTML = shown.map(renderAccount).join('') + ProductCatalog.pagerHtml(accountPage, pageCount, t);
+    bindAccountActions();
+    ProductCatalog.bindPager(list, (page) => {
+      accountPage = page;
+      renderAccountList();
+    });
   }
 
   function renderAccount(u) {
@@ -921,6 +1069,7 @@
       document.querySelectorAll('#approvalScopeTabs .tab-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       approvalScope = btn.dataset.scope;
+      approvalPage = 1;
       loadApprovals();
     });
   });
@@ -929,6 +1078,9 @@
     if (a.status !== 'pending') return false;
     if (me.role === 'super_admin') return true;
     if (me.role === 'sales_manager') {
+      if (a.request_type === 'account_register') {
+        return a.approver_role === 'sales_manager' && Number(a.approver_id) === Number(me.id);
+      }
       return a.approver_role === 'sales_manager'
         && String(a.request_type).startsWith('product_')
         && Number(a.requester_id) !== Number(me.id);
@@ -944,15 +1096,94 @@
     list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
     try {
       const { data } = await api('/pv/api/approvals?scope=' + scope);
-      if (!data.length) {
-        list.innerHTML = `<div class="card empty-state">${t('no_approvals')}</div>`;
-        return;
-      }
-      list.innerHTML = data.map(renderApproval).join('');
-      bindApprovalActions();
+      approvalsCache = data;
+      approvalsLoaded = true;
+      renderApprovals();
     } catch (e) {
       list.innerHTML = `<div class="card empty-state">${errMsg(e)}</div>`;
     }
+  }
+
+  // Re-render from cache so a language switch does not refetch approvals.
+  function renderApprovals() {
+    renderApprovalFilters();
+    renderApprovalList();
+  }
+
+  function matchesApproval(a) {
+    if (approvalFilters.type && a.request_type !== approvalFilters.type) return false;
+    if (approvalFilters.status && a.status !== approvalFilters.status) return false;
+    return true;
+  }
+
+  function renderApprovalFilters() {
+    const bar = document.getElementById('approvalFilters');
+    const types = [
+      'product_create',
+      'product_update',
+      'product_delete',
+      'account_create',
+      'account_update',
+      'account_delete',
+      'account_register',
+    ];
+    bar.innerHTML = `
+      <div class="filter-field">
+        <label>${escapeHtml(t('request_type'))}</label>
+        <select id="ap_type">
+          <option value="">${escapeHtml(t('filter_all'))}</option>
+          ${types.map((type) => `<option value="${type}" ${approvalFilters.type === type ? 'selected' : ''}>${escapeHtml(requestTypeLabel(type))}</option>`).join('')}
+        </select>
+      </div>
+      <div class="filter-field">
+        <label>${escapeHtml(t('status'))}</label>
+        <select id="ap_status">
+          <option value="">${escapeHtml(t('filter_all'))}</option>
+          <option value="pending" ${approvalFilters.status === 'pending' ? 'selected' : ''}>${escapeHtml(t('pending'))}</option>
+          <option value="approved" ${approvalFilters.status === 'approved' ? 'selected' : ''}>${escapeHtml(t('approved'))}</option>
+          <option value="rejected" ${approvalFilters.status === 'rejected' ? 'selected' : ''}>${escapeHtml(t('rejected'))}</option>
+          <option value="cancelled" ${approvalFilters.status === 'cancelled' ? 'selected' : ''}>${escapeHtml(t('cancelled'))}</option>
+        </select>
+      </div>
+      <div class="filter-field filter-actions">
+        <button type="button" class="btn btn-secondary btn-sm" id="apReset">${escapeHtml(t('reset_filters'))}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="apSearch">${escapeHtml(t('search'))}</button>
+      </div>`;
+    document.getElementById('apSearch').addEventListener('click', () => {
+      approvalFilters = {
+        type: document.getElementById('ap_type').value,
+        status: document.getElementById('ap_status').value,
+      };
+      approvalPage = 1;
+      renderApprovalList();
+    });
+    document.getElementById('apReset').addEventListener('click', () => {
+      approvalFilters = { type: '', status: '' };
+      approvalPage = 1;
+      renderApprovalFilters();
+      renderApprovalList();
+    });
+  }
+
+  function renderApprovalList() {
+    const list = document.getElementById('approvalList');
+    if (!approvalsLoaded) return;
+    const filtered = approvalsCache.filter(matchesApproval);
+    if (!filtered.length) {
+      list.innerHTML = `<div class="card empty-state">${t('no_approvals')}</div>`;
+      return;
+    }
+    const pageSize = ProductCatalog.PAGE_SIZE;
+    const pageCount = Math.ceil(filtered.length / pageSize);
+    if (approvalPage > pageCount) approvalPage = pageCount;
+    if (approvalPage < 1) approvalPage = 1;
+    const shown = filtered.slice((approvalPage - 1) * pageSize, approvalPage * pageSize);
+    list.innerHTML = shown.map(renderApproval).join('') + ProductCatalog.pagerHtml(approvalPage, pageCount, t);
+    bindApprovalActions();
+    ProductCatalog.bindPager(list, (page) => {
+      approvalPage = page;
+      renderApprovalList();
+    });
   }
 
   function renderApproval(a) {
@@ -961,6 +1192,8 @@
     if (String(a.request_type).startsWith('product_')) {
       detail = [`${p.brand || ''}${p.model ? ' ' + p.model : ''}`, p.rated_power ? p.rated_power + 'W' : '', p.mppt_channels ? 'MPPT×' + p.mppt_channels : '', p.mppt_max_current_a ? fmtDec1(p.mppt_max_current_a) + 'A' : '', p.mppt_max_voltage_v ? fmtDec1(p.mppt_max_voltage_v) + 'V' : '', p.voc_v ? 'Voc ' + fmtDec1(p.voc_v) + 'V' : '', p.isc_a ? 'Isc ' + fmtDec1(p.isc_a) + 'A' : '', p.capacity_kwh ? p.capacity_kwh + 'kWh' : '', p.price_usd ? '$' + p.price_usd : '']
         .filter(Boolean).join(' · ');
+    } else if (a.request_type === 'account_register') {
+      detail = [p.username, p.email, p.phone, p.role ? t('role_' + p.role) : ''].filter(Boolean).join(' · ');
     } else {
       detail = [p.username, p.email, p.phone].filter(Boolean).join(' · ');
     }
@@ -1047,6 +1280,151 @@
     }
   });
 
+  /* ===================== Approval flows ===================== */
+
+  const FLOW_REQUEST_TYPES = [
+    'product_create',
+    'product_update',
+    'product_delete',
+    'account_create',
+    'account_update',
+    'account_delete',
+    'account_register',
+  ];
+
+  document.getElementById('addFlowBtn').addEventListener('click', () => openFlowModal(null));
+  document.getElementById('flowCancel').addEventListener('click', closeFlowModal);
+  document.getElementById('flowSave').addEventListener('click', saveFlow);
+
+  async function loadFlows() {
+    const list = document.getElementById('flowList');
+    list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
+    try {
+      const { data } = await api('/pv/api/admin/flows');
+      flowsCache = Array.isArray(data) ? data : [];
+      renderFlows();
+    } catch (e) {
+      list.innerHTML = `<div class="card empty-state">${errMsg(e)}</div>`;
+    }
+  }
+
+  function renderFlows() {
+    const list = document.getElementById('flowList');
+    if (!flowsCache.length) {
+      list.innerHTML = `<div class="card empty-state">${t('no_flows')}</div>`;
+      return;
+    }
+    list.innerHTML = flowsCache.map(renderFlow).join('');
+    bindFlowActions();
+  }
+
+  function renderFlow(f) {
+    const enabled = Number(f.enabled) === 1;
+    return `<div class="product-item">
+      <h4>${escapeHtml(f.name)}
+        <span class="status-badge ${enabled ? 'on_sale' : 'discontinued'}">${t(enabled ? 'status_active' : 'status_disabled')}</span>
+      </h4>
+      <div class="meta">${requestTypeLabel(f.request_type)} · ${t('requester_role')}: ${t('role_' + f.requester_role)} · ${t('approver_role')}: ${t('role_' + f.approver_role)}</div>
+      <div class="meta">${t('require_approval')}: ${Number(f.require_approval) ? t('yes') : t('no')}</div>
+      <div class="row-actions">
+        <button class="btn btn-secondary btn-sm edit-flow" data-id="${f.id}">${t('edit_flow')}</button>
+        <button class="btn btn-danger del-flow" data-id="${f.id}">${t('delete')}</button>
+      </div>
+    </div>`;
+  }
+
+  function bindFlowActions() {
+    document.querySelectorAll('#flowList .edit-flow').forEach((b) => {
+      b.addEventListener('click', () => openFlowModal(Number(b.dataset.id)));
+    });
+    document.querySelectorAll('#flowList .del-flow').forEach((b) => {
+      b.addEventListener('click', () => deleteFlow(Number(b.dataset.id)));
+    });
+  }
+
+  async function deleteFlow(id) {
+    if (!confirm(t('confirm_delete_flow'))) return;
+    try {
+      await api('/pv/api/admin/flows/' + id, { method: 'DELETE' });
+      showToast(t('saved'));
+      loadFlows();
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
+  function openFlowModal(id) {
+    editingFlowId = id;
+    const flow = id ? flowsCache.find((f) => Number(f.id) === id) : null;
+    document.getElementById('flowModalTitle').textContent = id ? t('edit_flow') : t('add_flow');
+    document.getElementById('flowModalBody').innerHTML = `
+      <div class="field"><label>${t('flow_name')}</label>
+        <input id="fl_name" maxlength="100" value="${flow ? escapeHtml(flow.name) : ''}" placeholder="${t('flow_name_placeholder')}" /></div>
+      <div class="field"><label>${t('request_type')}</label>
+        <select id="fl_request_type">
+          ${FLOW_REQUEST_TYPES.map((type) => `<option value="${type}" ${flow && flow.request_type === type ? 'selected' : ''}>${requestTypeLabel(type)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>${t('requester_role')}</label>
+        <select id="fl_requester_role">
+          <option value="salesperson" ${flow && flow.requester_role === 'salesperson' ? 'selected' : ''}>${t('role_salesperson')}</option>
+          <option value="sales_manager" ${flow && flow.requester_role === 'sales_manager' ? 'selected' : ''}>${t('role_sales_manager')}</option>
+        </select>
+      </div>
+      <div class="field"><label>${t('approver_role')}</label>
+        <select id="fl_approver_role">
+          <option value="sales_manager" ${flow && flow.approver_role === 'sales_manager' ? 'selected' : ''}>${t('role_sales_manager')}</option>
+          <option value="super_admin" ${flow && flow.approver_role === 'super_admin' ? 'selected' : ''}>${t('role_super_admin')}</option>
+        </select>
+        <div class="select-note">${t('approver_sales_manager_hint')}</div>
+      </div>
+      <div class="field"><label>${t('require_approval')}</label>
+        <select id="fl_require_approval">
+          <option value="1" ${!flow || Number(flow.require_approval) ? 'selected' : ''}>${t('yes')}</option>
+          <option value="0" ${flow && !Number(flow.require_approval) ? 'selected' : ''}>${t('no')}</option>
+        </select>
+      </div>
+      <div class="field"><label>${t('status')}</label>
+        <select id="fl_enabled">
+          <option value="1" ${!flow || Number(flow.enabled) ? 'selected' : ''}>${t('status_active')}</option>
+          <option value="0" ${flow && !Number(flow.enabled) ? 'selected' : ''}>${t('status_disabled')}</option>
+        </select>
+      </div>`;
+    document.getElementById('flowModal').classList.add('active');
+  }
+
+  function closeFlowModal() {
+    document.getElementById('flowModal').classList.remove('active');
+    editingFlowId = null;
+  }
+
+  async function saveFlow() {
+    const body = {
+      name: document.getElementById('fl_name').value.trim(),
+      request_type: document.getElementById('fl_request_type').value,
+      requester_role: document.getElementById('fl_requester_role').value,
+      approver_role: document.getElementById('fl_approver_role').value,
+      require_approval: Number(document.getElementById('fl_require_approval').value),
+      enabled: Number(document.getElementById('fl_enabled').value),
+    };
+    if (!body.name) {
+      showToast(t('required'), true);
+      return;
+    }
+    try {
+      if (editingFlowId) {
+        await api('/pv/api/admin/flows/' + editingFlowId, { method: 'PUT', body });
+      } else {
+        await api('/pv/api/admin/flows', { method: 'POST', body });
+      }
+      closeFlowModal();
+      showToast(t('saved'));
+      loadFlows();
+    } catch (e) {
+      showToast(errMsg(e), true);
+    }
+  }
+
   /* ===================== Settings ===================== */
 
   async function loadSettings() {
@@ -1054,7 +1432,19 @@
     panel.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
     try {
       const { data } = await api('/pv/api/config', { auth: false });
-      panel.innerHTML = `
+      settingsCache = data;
+      renderSettings();
+    } catch (e) {
+      panel.innerHTML = `<div class="card empty-state">${t('error')}</div>`;
+    }
+  }
+
+  // Re-render the settings form from cache on language change.
+  function renderSettings() {
+    if (!settingsCache) return;
+    const panel = document.getElementById('settingsPanel');
+    const data = settingsCache;
+    panel.innerHTML = `
         <div class="card">
           <div class="field"><label>${t('peak_sun_hours')}</label>
             <input id="s_psh" type="number" step="0.1" value="${data.default_peak_sun_hours || 5}" /></div>
@@ -1082,10 +1472,7 @@
             <input id="s_batt_lead" type="number" step="1" value="${data.battery_price_lead_acid_per_kwh || 85}" /></div>
           <button class="btn btn-primary" id="saveSettings">${t('save_settings')}</button>
         </div>`;
-      document.getElementById('saveSettings').addEventListener('click', saveSettings);
-    } catch (e) {
-      panel.innerHTML = `<div class="card empty-state">${t('error')}</div>`;
-    }
+    document.getElementById('saveSettings').addEventListener('click', saveSettings);
   }
 
   async function saveSettings() {
@@ -1116,20 +1503,37 @@
   }
 
   document.addEventListener('lang:change', (e) => {
-    setLang(e.detail.lang);
-    initLang();
-    if (me) {
+    // Re-render only after the new dictionary file has been loaded client-side.
+    setLang(e.detail.lang).then(() => {
+      initLang();
+      if (!me) return;
       document.getElementById('userRoleBadge').textContent = t('role_' + me.role);
+      // Every page keeps its data in memory, so a language switch only re-renders
+      // text from the in-browser dictionary and never calls the API again.
       if (currentTab === 'products') {
         updateProductHint();
-        loadProducts();
-      } else {
-        switchTab(currentTab);
+        if (productsCache[currentCategory]) {
+          renderProductFilters();
+          renderProductList();
+        }
+      } else if (currentTab === 'accounts') {
+        if (accountsLoaded) {
+          updateAccountHint();
+          renderAccounts();
+        }
+      } else if (currentTab === 'approvals') {
+        if (approvalsLoaded) renderApprovals();
+      } else if (currentTab === 'flows') {
+        renderFlows();
+      } else if (currentTab === 'settings') {
+        renderSettings();
       }
-    }
+    });
   });
 
   async function bootstrap() {
+    // Render only after the dictionary is in memory (IndexedDB-backed).
+    await window.I18N_READY;
     initLang();
     setAuthMode('login');
     try {

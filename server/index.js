@@ -5,7 +5,9 @@ const configRouter = require('./routes/config');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
 const approvalsRouter = require('./routes/approvals');
+const flowsRouter = require('./routes/flows');
 const casesRouter = require('./routes/cases');
+const skillsRouter = require('./routes/skills');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,7 +45,9 @@ app.use('/pv/api/config', configRouter);
 app.use('/pv/api/auth', authRouter);
 app.use('/pv/api/admin/users', usersRouter);
 app.use('/pv/api/approvals', approvalsRouter);
+app.use('/pv/api/admin/flows', flowsRouter);
 app.use('/pv/api/cases', casesRouter);
+app.use('/pv/skill/member', skillsRouter);
 
 // Health check
 app.get('/pv/api/health', (req, res) => res.json({ status: 'ok' }));

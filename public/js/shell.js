@@ -4,6 +4,17 @@
   const menuBtn = document.getElementById('menuBtn');
   const closeBtn = document.getElementById('sidebarClose');
 
+  /* Keep the fixed app bar from covering content: when translated text wraps
+     the header onto a second row (or the viewport resizes), sync body padding. */
+  function syncAppBarHeight() {
+    const bar = document.querySelector('.app-bar');
+    if (bar) document.body.style.paddingTop = bar.offsetHeight + 'px';
+  }
+  window.addEventListener('resize', syncAppBarHeight);
+  window.addEventListener('orientationchange', () => setTimeout(syncAppBarHeight, 100));
+  if (document.readyState === 'complete') syncAppBarHeight();
+  else window.addEventListener('load', syncAppBarHeight);
+
   function openSidebar() {
     sidebar.classList.add('open');
     backdrop.classList.add('show');

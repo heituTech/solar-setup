@@ -7,7 +7,7 @@
   const LANGS = ['km', 'en', 'zh', 'es', 'de', 'fr', 'ja', 'ko', 'th', 'vi'];
   // Bump this whenever js/i18n/all.js content changes so browsers refresh
   // their IndexedDB cache from the new bundle.
-  const DICT_VERSION = 9;
+  const DICT_VERSION = 10;
   const DB_NAME = 'solar_i18n';
   const STORE_DICTS = 'dicts';
   const STORE_META = 'meta';
@@ -41,6 +41,11 @@
       const key = el.getAttribute('data-i18n-placeholder');
       el.setAttribute('placeholder', window.t(key));
     });
+    // Translated text can be longer (e.g. Spanish/French) and wrap the fixed
+    // app bar onto a second row; keep body top padding in sync with its height
+    // so page content is never hidden behind a taller header.
+    const bar = document.querySelector('.app-bar');
+    if (bar) document.body.style.paddingTop = bar.offsetHeight + 'px';
   };
 
   /* ===================== IndexedDB helpers ===================== */

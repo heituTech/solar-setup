@@ -278,7 +278,7 @@
     }
   });
 
-  document.getElementById('accountLogoutBtn').addEventListener('click', redirectToLogin);
+  document.getElementById('profileLogoutBtn').addEventListener('click', redirectToLogin);
 
   /* ===================== Language / bootstrap ===================== */
 

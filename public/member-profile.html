@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#772432" />
   <title>HEITU TECHNOLOGY</title>
-  <link rel="stylesheet" href="/pv/css/style.css?v=16" />
+  <link rel="stylesheet" href="/pv/css/style.css?v=17" />
 </head>
 <body>
   <div class="app-bar">
     <a href="/pv/member"><img class="app-bar-logo" src="/pv/img/logo.png" alt="HEITU Technology" /></a>
     <div class="app-bar-actions">
+      <button class="app-bar-link app-bar-link-compact" id="profileLogoutBtn" type="button" data-i18n="logout">Logout</button>
       <div class="lang-picker app-bar-picker" id="langPicker">
         <button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">
           <img id="langCurrentFlag" class="lang-flag" src="/pv/img/flags/en.svg" alt="English">
@@ -37,10 +38,6 @@
       <div class="user-info">
         <span id="accountName" class="user-name"></span>
         <span class="role-badge role-member" data-i18n="role_member">Member</span>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a class="btn btn-secondary btn-sm" href="/pv/member" style="width:auto" data-i18n="my_cases">My Cases</a>
-        <button class="btn btn-secondary btn-sm" id="accountLogoutBtn" style="width:auto" data-i18n="logout">Logout</button>
       </div>
     </div>
 
@@ -120,8 +117,8 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="/pv/js/i18n.js?v=5"></script>
-  <script src="/pv/js/shell.js?v=4"></script>
+  <script src="/pv/js/i18n.js?v=6"></script>
+  <script src="/pv/js/shell.js?v=5"></script>
   <script src="/pv/js/ai-dock.js"></script>
   <script src="/pv/js/member-profile.js"></script>
   <script src="/pv/js/select.js"></script>

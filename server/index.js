@@ -14,34 +14,37 @@ const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
 app.use(express.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname, '..', 'public'), { index: false }));
+app.use('/pv', express.static(path.join(__dirname, '..', 'public'), { index: false }));
 
 // API routes
-app.use('/api/products', productsRouter);
-app.use('/api/config', configRouter);
-app.use('/api/recommend', recommendRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/admin/users', usersRouter);
-app.use('/api/approvals', approvalsRouter);
-app.use('/api/quote', quoteRouter);
-app.use('/api/cases', casesRouter);
+app.use('/pv/api/products', productsRouter);
+app.use('/pv/api/config', configRouter);
+app.use('/pv/api/recommend', recommendRouter);
+app.use('/pv/api/auth', authRouter);
+app.use('/pv/api/admin/users', usersRouter);
+app.use('/pv/api/approvals', approvalsRouter);
+app.use('/pv/api/quote', quoteRouter);
+app.use('/pv/api/cases', casesRouter);
 
 // Health check
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/pv/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Customer pages
-app.get('/home', (req, res) => {
+app.get('/pv', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'home.html'));
 });
-app.get('/tool', (req, res) => {
+app.get('/pv/home', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'home.html'));
+});
+app.get('/pv/tool', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'tool.html'));
 });
-app.get('/member', (req, res) => {
+app.get('/pv/member', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'member.html'));
 });
 
 // Staff pages
-app.get('/admin', (req, res) => {
+app.get('/pv/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
 });
 

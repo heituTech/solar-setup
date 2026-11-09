@@ -192,7 +192,7 @@
   async function loadMe() {
     if (!token) return null;
     try {
-      const data = await api('/api/auth/me');
+      const data = await api('/pv/api/auth/me');
       if (!data.user || data.user.role !== 'member') {
         clearSession();
         return null;
@@ -219,7 +219,7 @@
 
   async function loadCountries() {
     try {
-      const data = await api('/api/config/countries', { auth: false });
+      const data = await api('/pv/api/config/countries', { auth: false });
       countries = Array.isArray(data.countries) ? data.countries : [];
     } catch {
       countries = [];
@@ -262,7 +262,7 @@
     if (data.user.role !== 'member') {
       localStorage.setItem('staff_token', data.token);
       showToast(t('staff_redirect'));
-      location.href = '/admin';
+      location.href = '/pv/admin';
       return false;
     }
     token = data.token;
@@ -280,7 +280,7 @@
       return;
     }
     try {
-      const data = await api('/api/auth/login', {
+      const data = await api('/pv/api/auth/login', {
         method: 'POST',
         body: { identifier, password },
         auth: false,
@@ -329,7 +329,7 @@
     pendingPhoneLogin = null;
     document.getElementById('phonePickModal').classList.remove('active');
     try {
-      const data = await api('/api/auth/login', {
+      const data = await api('/pv/api/auth/login', {
         method: 'POST',
         body: { identifier: ctx.identifier, password: ctx.password, phone_country: checked.value },
         auth: false,
@@ -348,7 +348,7 @@
     }
     const btn = document.getElementById('sendCodeBtn');
     try {
-      const data = await api('/api/auth/request-code', {
+      const data = await api('/pv/api/auth/request-code', {
         method: 'POST',
         body: { email },
         auth: false,
@@ -369,7 +369,7 @@
     }
     const btn = document.getElementById('sendLoginCodeBtn');
     try {
-      const data = await api('/api/auth/request-code', {
+      const data = await api('/pv/api/auth/request-code', {
         method: 'POST',
         body: { email, purpose: 'login' },
         auth: false,
@@ -390,7 +390,7 @@
       return;
     }
     try {
-      const data = await api('/api/auth/login-code', {
+      const data = await api('/pv/api/auth/login-code', {
         method: 'POST',
         body: { email, code },
         auth: false,
@@ -435,7 +435,7 @@
       password: document.getElementById('r_password').value,
     };
     try {
-      const data = await api('/api/auth/register', { method: 'POST', body, auth: false });
+      const data = await api('/pv/api/auth/register', { method: 'POST', body, auth: false });
       if (enterSession(data)) showToast(t('saved'));
     } catch (e) {
       showToast(errMsg(e), true);
@@ -463,7 +463,7 @@
       phone: document.getElementById('p_phone').value.trim(),
     };
     try {
-      const data = await api('/api/auth/me', { method: 'PATCH', body });
+      const data = await api('/pv/api/auth/me', { method: 'PATCH', body });
       me = data.user;
       showToast(t('profile_saved'));
     } catch (e) {
@@ -513,7 +513,7 @@
 
   async function loadCases() {
     try {
-      cases = await api('/api/cases');
+      cases = await api('/pv/api/cases');
       renderCaseList();
     } catch (e) {
       cases = [];
@@ -629,9 +629,9 @@
     };
     try {
       if (editingCaseId) {
-        await api('/api/cases/' + editingCaseId, { method: 'PUT', body });
+        await api('/pv/api/cases/' + editingCaseId, { method: 'PUT', body });
       } else {
-        await api('/api/cases', { method: 'POST', body });
+        await api('/pv/api/cases', { method: 'POST', body });
       }
       closeCaseModal();
       showToast(t('saved'));
@@ -657,7 +657,7 @@
       if (!confirm(t('confirm_delete_case'))) return;
       try {
         const id = Number(delBtn.dataset.id);
-        await api('/api/cases/' + id, { method: 'DELETE' });
+        await api('/pv/api/cases/' + id, { method: 'DELETE' });
         if (activeCaseId === id) {
           closeConfigurator();
           document.getElementById('quoteResults').innerHTML = '';
@@ -804,7 +804,7 @@
   async function saveLoadItems() {
     if (!activeCaseId) return;
     try {
-      const data = await api('/api/cases/' + activeCaseId, { method: 'PUT', body: { load_items: loadItems } });
+      const data = await api('/pv/api/cases/' + activeCaseId, { method: 'PUT', body: { load_items: loadItems } });
       const idx = cases.findIndex((x) => x.id === activeCaseId);
       if (idx >= 0) cases[idx] = data;
       document.getElementById('loadSaveStatus').textContent = t('auto_saved');
@@ -952,7 +952,7 @@
     btn.disabled = true;
     btn.textContent = t('calculating');
     try {
-      const data = await api('/api/quote', { method: 'POST', body });
+      const data = await api('/pv/api/quote', { method: 'POST', body });
       lastQuote = data;
       renderQuote(data);
       return true;
@@ -1208,7 +1208,7 @@
     const list = document.getElementById('catalogList');
     list.innerHTML = `<div class="empty-state">${t('loading')}</div>`;
     try {
-      const data = await api('/api/products/' + catalogCat, { auth: false });
+      const data = await api('/pv/api/products/' + catalogCat, { auth: false });
       catalogLoaded = true;
       if (!data.length) {
         list.innerHTML = `<div class="empty-state">${t('no_data')}</div>`;
@@ -1251,7 +1251,7 @@
 
   async function loadConfig() {
     try {
-      const r = await fetch('/api/config');
+      const r = await fetch('/pv/api/config');
       config = await r.json();
     } catch (e) {
       config = { usd_to_khr: 4100 };

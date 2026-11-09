@@ -108,7 +108,7 @@
       return;
     }
     try {
-      const { data } = await api('/api/auth/login', {
+      const { data } = await api('/pv/api/auth/login', {
         method: 'POST',
         body: { identifier, password },
         auth: false,
@@ -198,7 +198,7 @@
     }
     const btn = document.getElementById('sr_sendCode');
     try {
-      const { data } = await api('/api/auth/request-code', {
+      const { data } = await api('/pv/api/auth/request-code', {
         method: 'POST',
         body: { email },
         auth: false,
@@ -223,7 +223,7 @@
       password: document.getElementById('sr_password').value,
     };
     try {
-      const { data } = await api('/api/auth/register', { method: 'POST', body, auth: false });
+      const { data } = await api('/pv/api/auth/register', { method: 'POST', body, auth: false });
       token = data.token;
       me = data.user;
       localStorage.setItem(TOKEN_KEY, token);
@@ -237,7 +237,7 @@
   async function loadMe() {
     if (!token) return null;
     try {
-      const { data } = await api('/api/auth/me');
+      const { data } = await api('/pv/api/auth/me');
       if (!data.user || data.user.role === 'member') {
         logout(true);
         return null;
@@ -322,7 +322,7 @@
     const list = document.getElementById('productList');
     list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
     try {
-      const { data } = await api('/api/products/admin/' + currentCategory + '?status=all');
+      const { data } = await api('/pv/api/products/admin/' + currentCategory + '?status=all');
       productsCache[currentCategory] = data;
       if (!data.length) {
         list.innerHTML = `<div class="card empty-state">${t('no_data')}</div>`;
@@ -391,7 +391,7 @@
   async function deleteProduct(id) {
     if (!confirm(t('confirm_delete'))) return;
     try {
-      const { status } = await api(`/api/products/${currentCategory}/${id}`, { method: 'DELETE' });
+      const { status } = await api(`/pv/api/products/${currentCategory}/${id}`, { method: 'DELETE' });
       showToast(status === 202 ? t('submitted_for_approval') : t('saved'));
       loadProducts();
     } catch (e) {
@@ -656,7 +656,7 @@
       showToast(t('required'), true);
       return;
     }
-    const path = '/api/products/' + currentCategory + (editingProductId ? '/' + editingProductId : '');
+    const path = '/pv/api/products/' + currentCategory + (editingProductId ? '/' + editingProductId : '');
     const method = editingProductId ? 'PUT' : 'POST';
     try {
       const { status } = await api(path, { method, body });
@@ -686,7 +686,7 @@
     const list = document.getElementById('accountList');
     list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
     try {
-      const path = me.role === 'super_admin' ? '/api/admin/users' : '/api/admin/users/subordinates';
+      const path = me.role === 'super_admin' ? '/pv/api/admin/users' : '/pv/api/admin/users/subordinates';
       const { data } = await api(path);
       accountsCache = data;
       if (!data.length) {
@@ -732,7 +732,7 @@
   async function deleteAccount(id) {
     if (!confirm(t('confirm_delete_account'))) return;
     const isSuper = me.role === 'super_admin';
-    const path = isSuper ? '/api/admin/users/' + id : '/api/admin/users/subordinates/' + id;
+    const path = isSuper ? '/pv/api/admin/users/' + id : '/pv/api/admin/users/subordinates/' + id;
     try {
       const { status } = await api(path, { method: 'DELETE' });
       showToast(status === 202 ? t('submitted_for_approval') : t('saved'));
@@ -852,18 +852,18 @@
     let method;
     if (isSuper) {
       if (editingAccountId) {
-        path = '/api/admin/users/' + editingAccountId;
+        path = '/pv/api/admin/users/' + editingAccountId;
         method = 'PUT';
       } else {
-        path = '/api/admin/users';
+        path = '/pv/api/admin/users';
         method = 'POST';
         body.role = role;
       }
       if (role === 'salesperson') body.manager_id = managerId ? Number(managerId) : null;
     } else {
       path = editingAccountId
-        ? '/api/admin/users/subordinates/' + editingAccountId
-        : '/api/admin/users/subordinates';
+        ? '/pv/api/admin/users/subordinates/' + editingAccountId
+        : '/pv/api/admin/users/subordinates';
       method = editingAccountId ? 'PUT' : 'POST';
     }
 
@@ -906,7 +906,7 @@
     const list = document.getElementById('approvalList');
     list.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
     try {
-      const { data } = await api('/api/approvals?scope=' + scope);
+      const { data } = await api('/pv/api/approvals?scope=' + scope);
       if (!data.length) {
         list.innerHTML = `<div class="card empty-state">${t('no_approvals')}</div>`;
         return;
@@ -960,7 +960,7 @@
 
   async function approveRequest(id) {
     try {
-      await api('/api/approvals/' + id + '/approve', { method: 'POST' });
+      await api('/pv/api/approvals/' + id + '/approve', { method: 'POST' });
       showToast(t('approved'));
       loadApprovals();
     } catch (e) {
@@ -971,7 +971,7 @@
   async function cancelRequest(id) {
     if (!confirm(t('confirm_cancel_request'))) return;
     try {
-      await api('/api/approvals/' + id + '/cancel', { method: 'POST' });
+      await api('/pv/api/approvals/' + id + '/cancel', { method: 'POST' });
       showToast(t('cancelled'));
       loadApprovals();
     } catch (e) {
@@ -997,7 +997,7 @@
       return;
     }
     try {
-      await api('/api/approvals/' + rejectApprovalId + '/reject', {
+      await api('/pv/api/approvals/' + rejectApprovalId + '/reject', {
         method: 'POST',
         body: { review_note: note },
       });
@@ -1016,7 +1016,7 @@
     const panel = document.getElementById('settingsPanel');
     panel.innerHTML = `<div class="card empty-state">${t('loading')}</div>`;
     try {
-      const { data } = await api('/api/config', { auth: false });
+      const { data } = await api('/pv/api/config', { auth: false });
       panel.innerHTML = `
         <div class="card">
           <div class="field"><label>${t('peak_sun_hours')}</label>
@@ -1063,7 +1063,7 @@
       battery_price_lead_acid_per_kwh: document.getElementById('s_batt_lead').value,
     };
     try {
-      await api('/api/config', { method: 'PUT', body: { updates } });
+      await api('/pv/api/config', { method: 'PUT', body: { updates } });
       showToast(t('saved'));
     } catch (e) {
       showToast(errMsg(e), true);
@@ -1096,7 +1096,7 @@
     initLang();
     setAuthMode('login');
     try {
-      const { data } = await api('/api/config/countries', { auth: false });
+      const { data } = await api('/pv/api/config/countries', { auth: false });
       countries = Array.isArray(data.countries) ? data.countries : [];
     } catch (e) {
       countries = [];

@@ -86,6 +86,7 @@ curl.exe -s -o NUL -w "%{http_code}\n" https://www.heitu.tech/pv/member/profile
 ## 6. 备注
 
 - **静态资源必须用 `/pv/...` 绝对路径**：页面挂载在无尾斜杠的 `/pv`、`/pv/member` 等路由上，相对路径会被解析到上一级目录（曾导致生产首页完全无样式、国旗 404）。
-- HTTPS 证书：Let's Encrypt，`/etc/letsencrypt/live/www.heitu.tech/`，nginx 配置 `/etc/nginx/conf.d/solar-setup.conf`（改动前先备份），续期由 `/etc/cron.d/certbot-renew` 每天 03:17 执行。
-- 生产 nginx 的 CSP 目前为 `script-src 'self'`，会拦截 `accounts.google.com`，Google 登录在生产不可用。
+- HTTPS 证书：Let's Encrypt，`/etc/letsencrypt/live/www.heitu.tech/`，nginx 配置 `/etc/nginx/conf.d/solar-setup.conf`（改动前先备份）。
+- 证书续期：脚本 [`scripts/renew-cert.sh`](scripts/renew-cert.sh) 部署到服务器 `/usr/local/bin/renew-heitu-cert.sh`，由 `/etc/cron.d/certbot-renew` 每天 03:17 执行；手动验证用 `--test`（强制重新签发，会消耗一次重复证书额度）。更新脚本后需重新上传并 `sudo install -m 755` 到 `/usr/local/bin/`。
+- 生产 nginx 的 CSP 已放行 `accounts.google.com`（Google 第三方登录）与 `flagcdn.com`（手机号国家旗帜）；改动 CSP 后同样需要 `nginx -t` + reload。
 - 修改 nginx 后必须 `sudo nginx -t` 再 `sudo systemctl reload nginx`。

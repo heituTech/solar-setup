@@ -1370,9 +1370,11 @@
     if (d.recommended) {
       const rec = d.recommended;
       const reasonKey = rec.reason === 'best_roi' ? 'recommended_best_roi' : 'recommended_lowest_cost';
-      const recItems = (rec.items || []).map((item) =>
-        `${categoryLabel(item.category)} × ${item.quantity} · ${item.product.brand}${item.product.model ? ' ' + item.product.model : ''}`
-      ).join(' ・ ');
+      const recItems = (rec.items || []).map((item) => {
+        const name = `${categoryLabel(item.category)} × ${item.quantity} · ${item.product.brand}${item.product.model ? ' ' + item.product.model : ''}`;
+        const subtotal = item.subtotal_usd === undefined ? '' : fmtUsd(item.subtotal_usd);
+        return `<div class="rec-item"><span class="rec-item-name">${escapeHtml(name)}</span><span class="rec-item-price">${subtotal}</span></div>`;
+      }).join('');
       const pbpHtml = rec.payback_years !== null
         ? `<span class="rec-pbp">${t('payback_years')}: ${fmtNum(rec.payback_years)}</span>`
         : '';
@@ -1381,7 +1383,7 @@
           <span class="rec-badge">${t('recommended')}</span>
           <span class="rec-reason">${t(reasonKey)}</span>
         </div>
-        <div class="rec-items">${escapeHtml(recItems)}</div>
+        <div class="rec-items">${recItems}</div>
         <div class="rec-foot">
           <span class="rec-total">${t('total')}: ${fmtUsd(rec.total_usd)}</span>
           ${pbpHtml}
@@ -1469,11 +1471,15 @@
   }
 
   // Quantity is fixed by the recommendation: the exact configuration's own
-  // quantity when the product is selected, otherwise the sizing requirement.
+  // quantity when the product is selected, otherwise the recommended combo's
+  // quantity, then the sizing requirement as the last fallback.
   function candidateQty(category, p, d, selected) {
-    const exactKey = category === 'inverters' ? 'inverter' : category === 'batteries' ? 'battery' : 'panel';
-    const exactQty = selected && d.exact && d.exact.quantities ? Number(d.exact.quantities[exactKey]) : 0;
+    const itemKey = category === 'inverters' ? 'inverter' : category === 'batteries' ? 'battery' : 'panel';
+    const exactQty = selected && d.exact && d.exact.quantities ? Number(d.exact.quantities[itemKey]) : 0;
     if (exactQty > 0) return exactQty;
+    const recItems = d.recommended && d.recommended.items ? d.recommended.items : [];
+    const rec = recItems.find((it) => it.category === itemKey && it.product && it.product.id === p.id);
+    if (rec && Number(rec.quantity) > 0) return Number(rec.quantity);
     return Math.max(1, Number(p.required_qty) || 1);
   }
 

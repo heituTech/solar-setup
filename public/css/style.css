@@ -817,6 +817,8 @@ body:has(.ai-dock) .container {
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 8px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 .notes li { margin-left: 16px; margin-bottom: 4px; }
 
@@ -1242,9 +1244,10 @@ body:has(.ai-dock) .container {
   flex-wrap: wrap;
 }
 .range-amount {
-  font-size: 26px;
+  font-size: clamp(21px, 6.5vw, 26px);
   font-weight: 800;
   color: var(--primary-dark);
+  overflow-wrap: anywhere;
 }
 .range-sep { color: var(--primary-dark); font-weight: 700; }
 .range-meta {
@@ -1252,19 +1255,21 @@ body:has(.ai-dock) .container {
   color: var(--primary-dark);
   opacity: 0.75;
   margin-top: 4px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 8px;
   margin-bottom: 14px;
 }
 .metric {
   background: #fafafa;
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 9px 11px;
   min-width: 0;
   overflow: hidden;
 }
@@ -1276,8 +1281,9 @@ body:has(.ai-dock) .container {
   overflow-wrap: anywhere;
 }
 .metric .value {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
@@ -1294,13 +1300,15 @@ body:has(.ai-dock) .container {
 }
 .candidate {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  padding: 8px 10px;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 12px;
+  line-height: 1.45;
   cursor: pointer;
   background: #fff;
 }
@@ -1317,6 +1325,7 @@ body:has(.ai-dock) .container {
   display: flex;
   align-items: center;
   gap: 5px;
+  margin-left: auto;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1328,7 +1337,7 @@ body:has(.ai-dock) .container {
   color: var(--text-muted);
   font-weight: 600;
 }
-.candidate-main { min-width: 0; flex: 1 1 auto; }
+.candidate-main { min-width: 0; flex: 1 1 150px; }
 .candidate-main strong { display: block; font-size: 13px; overflow-wrap: anywhere; }
 .candidate-main span { color: var(--text-muted); overflow-wrap: anywhere; }
 .candidate.recommended {
@@ -1347,6 +1356,7 @@ body:has(.ai-dock) .container {
   border-radius: 10px;
   vertical-align: 1px;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 .rec-card {
   background: linear-gradient(180deg, #fff8ec 0%, #fffbf2 100%);
@@ -1358,8 +1368,9 @@ body:has(.ai-dock) .container {
 .rec-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-bottom: 8px;
 }
 .rec-head .rec-badge { margin-left: 0; }
 .rec-reason {
@@ -1368,10 +1379,26 @@ body:has(.ai-dock) .container {
   font-weight: 600;
 }
 .rec-items {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   font-size: 13px;
   color: var(--text);
-  line-height: 1.6;
-  margin-bottom: 8px;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+.rec-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rec-item-name { min-width: 0; overflow-wrap: anywhere; }
+.rec-item-price {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--primary-dark);
+  white-space: nowrap;
 }
 .rec-foot {
   display: flex;
@@ -1438,10 +1465,15 @@ body:has(.ai-dock) .container {
 .pbp-row {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
   padding: 6px 0;
   font-size: 13px;
+  line-height: 1.45;
   border-bottom: 1px dashed #cfe9dd;
 }
+.pbp-row > span { min-width: 0; overflow-wrap: anywhere; }
+.pbp-row > strong { flex-shrink: 0; }
 .pbp-row:last-child { border-bottom: none; }
 .pbp-row strong { color: var(--success); }
 .catalog-grid,
@@ -1605,5 +1637,11 @@ body:has(.ai-dock) .container {
 }
 @media (max-width: 400px) {
   .page-head h1 { font-size: 19px; }
+  .modal-overlay { padding: 6px; }
+  .modal { padding: 12px; }
+  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .range-box { padding: 12px; }
+  .rec-card { padding: 11px 12px; }
+  .candidate { padding: 9px 10px; }
 }
 

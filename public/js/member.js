@@ -8,7 +8,6 @@
   let config = { usd_to_khr: 4100 };
   let lastQuote = null;
   let selection = { inverter_id: null, battery_id: null, panel_id: null };
-  let panelQty = null;
   let catalogCat = 'inverters';
   let catalogLoaded = false;
   let catalogData = [];
@@ -144,18 +143,6 @@
 
   function round1(value) {
     return Math.round(Number(value) * 10) / 10;
-  }
-
-  // Every string must have the same panel count: qty has to split into equal
-  // strings, each within the MPPT voltage limit, and no more strings than the
-  // inverter's MPPT inputs allow.
-  function qtyFormsStrings(qty, s) {
-    if (!s) return true;
-    const maxStrings = Math.min(Number(s.max_strings) || 0, qty);
-    for (let strings = 1; strings <= maxStrings; strings += 1) {
-      if (qty % strings === 0 && qty / strings <= Number(s.max_series)) return true;
-    }
-    return false;
   }
 
   function categoryLabel(category) {
@@ -791,7 +778,6 @@
     if (!c) return;
     activeCaseId = id;
     selection = { inverter_id: null, battery_id: null, panel_id: null };
-    panelQty = null;
     lastQuote = null;
     document.getElementById('quoteResults').innerHTML = '';
     setSnapshotNoteKey(null);
@@ -841,8 +827,6 @@
       battery_id: input.battery_id || null,
       panel_id: input.panel_id || null,
     };
-    panelQty = input.panel_qty !== null && input.panel_qty !== undefined && Number.isFinite(Number(input.panel_qty))
-      ? Number(input.panel_qty) : null;
     lastQuote = snapshot.result;
     renderQuote(lastQuote);
     updateAutonomyWarning();
@@ -1186,7 +1170,6 @@
     if (selection.inverter_id) body.inverter_id = selection.inverter_id;
     if (selection.battery_id) body.battery_id = selection.battery_id;
     if (selection.panel_id) body.panel_id = selection.panel_id;
-    if (selection.panel_id && panelQty !== null) body.panel_qty = panelQty;
     return body;
   }
 
@@ -1234,8 +1217,7 @@
       inverter_id: body.inverter_id || null,
       battery_id: body.battery_id || null,
       panel_id: body.panel_id || null,
-      panel_qty: body.panel_id && body.panel_qty !== undefined && body.panel_qty !== ''
-        ? Number(body.panel_qty) : null,
+      panel_qty: null,
     };
   }
 
@@ -1291,7 +1273,6 @@
   document.getElementById('quoteBtn').addEventListener('click', () => {
     if (quoting) return;
     selection = { inverter_id: null, battery_id: null, panel_id: null };
-    panelQty = null;
     runQuote();
   });
 
@@ -1299,7 +1280,6 @@
     const prev = Object.assign({}, selection);
     const key = SELECT_KEYS[category];
     selection[key] = selection[key] === id ? null : id;
-    if (category === 'panels') panelQty = null;
     const ok = await runQuote();
     if (!ok) {
       selection = prev;
@@ -1308,7 +1288,6 @@
   }
 
   document.getElementById('quoteResults').addEventListener('click', (e) => {
-    if (e.target.closest('.qty-input')) return;
     const target = e.target.closest('.candidate');
     if (target && target.dataset.id) {
       changeSelection(target.dataset.cat, Number(target.dataset.id));
@@ -1316,30 +1295,8 @@
     }
     if (e.target.closest('.reset-selection')) {
       selection = { inverter_id: null, battery_id: null, panel_id: null };
-      panelQty = null;
       runQuote();
     }
-  });
-
-  document.getElementById('quoteResults').addEventListener('change', (e) => {
-    const input = e.target.closest('.qty-input');
-    if (!input) return;
-    const qty = Math.floor(Number(input.value));
-    const s = lastQuote && lastQuote.strings;
-    const maxQty = s ? Number(s.max_qty) : 200;
-    if (!Number.isFinite(qty) || qty < 1 || qty > maxQty) {
-      input.value = input.dataset.prev || input.value;
-      showToast(t('invalid_panel_qty').replace('{max}', maxQty), true);
-      return;
-    }
-    if (!qtyFormsStrings(qty, s)) {
-      input.value = input.dataset.prev || input.value;
-      showToast(t('panel_qty_string_mismatch'), true);
-      return;
-    }
-    panelQty = qty;
-    input.dataset.prev = String(qty);
-    runQuote();
   });
 
   function renderQuote(d) {
@@ -1497,16 +1454,11 @@
     const items = list.map((p) => {
       const selected = selection[key] === p.id;
       const recBadge = p.recommended ? `<span class="rec-badge">${t('recommended')}</span>` : '';
-      let priceHtml = `<span class="price">${fmtUsd(p.price_usd)}</span>`;
-      if (category === 'panels' && selected) {
-        const qty = panelQty !== null ? panelQty : (Number(p.required_qty) || 1);
-        const maxQty = d.strings ? Number(d.strings.max_qty) : 200;
-        priceHtml = `<span class="price-wrap">
+      const priceHtml = `<span class="price-wrap">
           <span class="price">${fmtUsd(p.price_usd)}</span>
           <span class="qty-x">×</span>
-          <input class="qty-input" type="number" min="1" max="${maxQty}" step="1" value="${qty}" data-prev="${qty}" aria-label="${escapeHtml(t('quantity'))}" />
+          <span class="qty-value">${candidateQty(category, p, d, selected)}</span>
         </span>`;
-      }
       return `<div class="candidate${selected ? ' selected' : ''}${p.recommended ? ' recommended' : ''}" data-cat="${category}" data-id="${p.id}">
         <div class="candidate-main"><strong>${productTitle(category, p)}</strong>${recBadge}<span>${candidateMeta(category, p)}</span></div>
         ${priceHtml}
@@ -1514,6 +1466,15 @@
     }).join('');
 
     return `<div class="candidate-group"><h4>${title}</h4><div class="candidate-list">${items}</div></div>`;
+  }
+
+  // Quantity is fixed by the recommendation: the exact configuration's own
+  // quantity when the product is selected, otherwise the sizing requirement.
+  function candidateQty(category, p, d, selected) {
+    const exactKey = category === 'inverters' ? 'inverter' : category === 'batteries' ? 'battery' : 'panel';
+    const exactQty = selected && d.exact && d.exact.quantities ? Number(d.exact.quantities[exactKey]) : 0;
+    if (exactQty > 0) return exactQty;
+    return Math.max(1, Number(p.required_qty) || 1);
   }
 
   function parUnits(n) {

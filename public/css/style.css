@@ -1320,19 +1320,9 @@ body:has(.ai-dock) .container {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.candidate .qty-input {
-  width: 48px;
-  padding: 3px 5px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 13px;
-  text-align: center;
+.candidate .qty-value {
+  font-weight: 600;
   color: var(--text);
-  background: #fff;
-}
-.candidate .qty-input:focus {
-  border-color: var(--primary);
-  outline: none;
 }
 .candidate .qty-x {
   color: var(--text-muted);
@@ -1581,8 +1571,7 @@ body:has(.ai-dock) .container {
 .field input,
 .field select,
 .field textarea,
-.load-row input,
-.candidate .qty-input {
+.load-row input {
   font-size: 16px;
 }
 .card {

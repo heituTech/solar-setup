@@ -833,6 +833,7 @@
         }),
         batteries: batteries.map((p) => {
           const exp = exportProduct('batteries', p, cfg.usdToKhr);
+          exp.required_qty = batteryQtyNeeded(p, preCtx);
           exp.recommended = p.id === recBatId;
           return exp;
         }),

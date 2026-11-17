@@ -1,0 +1,248 @@
+'use strict';
+
+const { withTransaction, enqueueEvent } = require('@solar/service-kit');
+const { EVENTS } = require('@solar/contracts');
+const { num, salesScopeFor, scopeClause } = require('../../lib/finance');
+
+function toSettlement(row) {
+  return {
+    ...row,
+    id: Number(row.id),
+    user_id: Number(row.user_id),
+    base_salary: num(row.base_salary),
+    deposit_commission_total: num(row.deposit_commission_total),
+    settlement_commission_total: num(row.settlement_commission_total),
+    commission_total: num(row.commission_total),
+    adjustment_total: num(row.adjustment_total),
+    first_order_reward: num(row.first_order_reward),
+    referral_reward: num(row.referral_reward),
+    diligence_reward: num(row.diligence_reward),
+    champion_reward: num(row.champion_reward),
+    deduction_total: num(row.deduction_total),
+    survey_count: Number(row.survey_count || 0),
+    payable: num(row.payable),
+  };
+}
+
+function round2(value) {
+  return Math.round(Number(value || 0) * 100) / 100;
+}
+
+function assertUserScope(ctx, userId) {
+  const scope = salesScopeFor(ctx.state.user);
+  if (scope !== null && !scope.includes(Number(userId))) ctx.throw(403, 'forbidden');
+}
+
+async function loadSettlement(ctx, id) {
+  const [rows] = await ctx.app.db.query('SELECT * FROM settlements WHERE id = ?', [id]);
+  if (!rows.length) ctx.throw(404, 'settlement_not_found');
+  assertUserScope(ctx, rows[0].user_id);
+  return rows[0];
+}
+
+module.exports = {
+  async list(ctx) {
+    const params = [];
+    let sql = 'SELECT * FROM settlements WHERE 1 = 1';
+    sql += scopeClause('user_id', salesScopeFor(ctx.state.user), params);
+    if (ctx.query.period) { sql += ' AND period = ?'; params.push(String(ctx.query.period)); }
+    sql += ' ORDER BY period DESC, id DESC LIMIT 300';
+    const [rows] = await ctx.app.db.query(sql, params);
+    ctx.body = { settlements: rows.map(toSettlement) };
+  },
+
+  async detail(ctx) {
+    const settlement = await loadSettlement(ctx, Number(ctx.params.id));
+    const [items] = await ctx.app.db.query('SELECT * FROM settlement_items WHERE settlement_id = ? ORDER BY id', [settlement.id]);
+    const [payouts] = await ctx.app.db.query('SELECT * FROM payouts WHERE settlement_id = ? ORDER BY id', [settlement.id]);
+    ctx.body = {
+      settlement: toSettlement(settlement),
+      items: items.map((row) => ({ ...row, id: Number(row.id), settlement_id: Number(row.settlement_id), order_id: row.order_id ? Number(row.order_id) : null, amount: num(row.amount) })),
+      payouts: payouts.map((row) => ({ ...row, id: Number(row.id), settlement_id: Number(row.settlement_id), user_id: Number(row.user_id), amount: num(row.amount) })),
+    };
+  },
+
+  async generate(ctx) {
+    const body = ctx.request.body || {};
+    const period = String(body.period || '');
+    if (!/^\d{4}-\d{2}$/.test(period)) ctx.throw(400, 'invalid_period');
+    const baseSalary = body.base_salary === undefined || body.base_salary === null || body.base_salary === ''
+      ? 300 : Number(body.base_salary);
+    const [candidates] = await ctx.app.db.query(
+      `SELECT l.salesperson_id AS user_id, MAX(l.salesperson_name) AS name
+       FROM order_ledger l
+       WHERE l.status = 'accepted' AND l.outstanding <= 0 AND l.settled_at IS NULL AND l.salesperson_id IS NOT NULL
+         AND DATE_FORMAT(l.accepted_at, '%Y-%m') = ?
+       GROUP BY l.salesperson_id`, [period]
+    );
+    const [adjustUsers] = await ctx.app.db.query(
+      `SELECT DISTINCT salesperson_id AS user_id FROM commission_adjustments WHERE DATE_FORMAT(created_at, '%Y-%m') = ?`,
+      [period]
+    );
+    const users = new Map();
+    for (const row of candidates) users.set(Number(row.user_id), row.name);
+    for (const row of adjustUsers) if (!users.has(Number(row.user_id))) users.set(Number(row.user_id), null);
+
+    for (const [userId, name] of users) {
+      await withTransaction(ctx.app.db, async (connection) => {
+        const [ledger] = await connection.query(
+          `SELECT * FROM order_ledger
+           WHERE salesperson_id = ? AND status = 'accepted' AND outstanding <= 0 AND settled_at IS NULL
+             AND DATE_FORMAT(accepted_at, '%Y-%m') = ? FOR UPDATE`,
+          [userId, period]
+        );
+        const [adjustments] = await connection.query(
+          `SELECT * FROM commission_adjustments
+           WHERE salesperson_id = ? AND DATE_FORMAT(created_at, '%Y-%m') = ?`,
+          [userId, period]
+        );
+        if (!ledger.length && !adjustments.length) return;
+        const [configRows] = await connection.query('SELECT * FROM compensation_config WHERE id = 1');
+        const config = configRows[0] || {};
+        const depositCommissionTotal = round2(ledger.reduce((sum, row) => sum + num(row.deposit_commission), 0));
+        const settlementCommissionTotal = round2(ledger.reduce((sum, row) => sum + num(row.settlement_commission), 0));
+        const commissionTotal = round2(depositCommissionTotal + settlementCommissionTotal);
+        const referralBase = ledger.filter((row) => Number(row.referral_flag) === 1)
+          .reduce((sum, row) => sum + num(row.received_amount), 0);
+        const referralReward = round2(referralBase * num(config.referral_rate));
+        const [[surveyTotals]] = await connection.query(
+          "SELECT COUNT(*) AS total FROM survey_records WHERE salesperson_id = ? AND is_valid = 1 AND DATE_FORMAT(survey_date, '%Y-%m') = ?",
+          [userId, period]
+        );
+        const surveyCount = Number(surveyTotals.total || 0);
+        const diligenceReward = surveyCount >= 15 ? num(config.survey_reward) : 0;
+        const awardTotal = round2(adjustments.filter((row) => row.type === 'award')
+          .reduce((sum, row) => sum + num(row.amount), 0));
+        const [[prior]] = await connection.query(
+          'SELECT COUNT(*) AS total FROM settlements WHERE user_id = ? AND period < ?', [userId, period]
+        );
+        const autoFirstOrder = Number(prior.total) === 0 && ledger.length ? num(config.first_order_reward) : 0;
+        const firstOrderReward = round2(awardTotal + autoFirstOrder);
+        const championReward = 0;
+        const deductionTotal = round2(adjustments.filter((row) => row.type !== 'award')
+          .reduce((sum, row) => sum + num(row.amount), 0));
+        const adjustmentTotal = round2(firstOrderReward + referralReward + diligenceReward + championReward - deductionTotal);
+        const payable = round2(baseSalary + commissionTotal + adjustmentTotal);
+        const [existing] = await connection.query(
+          'SELECT * FROM settlements WHERE period = ? AND user_id = ? FOR UPDATE', [period, userId]
+        );
+        if (existing.length && existing[0].status !== 'draft') return;
+        let settlementId;
+        if (existing.length) {
+          settlementId = Number(existing[0].id);
+          await connection.query(
+            'DELETE FROM settlement_items WHERE settlement_id = ?', [settlementId]
+          );
+          await connection.query(
+            `UPDATE settlements SET user_name = ?, base_salary = ?, deposit_commission_total = ?,
+               settlement_commission_total = ?, commission_total = ?, adjustment_total = ?, first_order_reward = ?,
+               referral_reward = ?, diligence_reward = ?, champion_reward = ?, deduction_total = ?, survey_count = ?,
+               payable = ?, created_by = ? WHERE id = ?`,
+            [name || existing[0].user_name, baseSalary, depositCommissionTotal, settlementCommissionTotal,
+              commissionTotal, adjustmentTotal, firstOrderReward, referralReward, diligenceReward, championReward,
+              deductionTotal, surveyCount, payable, Number(ctx.state.user.id), settlementId]
+          );
+        } else {
+          const [inserted] = await connection.query(
+            `INSERT INTO settlements (period, user_id, user_name, base_salary, deposit_commission_total,
+               settlement_commission_total, commission_total, adjustment_total, first_order_reward, referral_reward,
+               diligence_reward, champion_reward, deduction_total, survey_count, payable, status, created_by)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            [period, userId, name, baseSalary, depositCommissionTotal, settlementCommissionTotal, commissionTotal,
+              adjustmentTotal, firstOrderReward, referralReward, diligenceReward, championReward, deductionTotal,
+              surveyCount, payable, 'draft', Number(ctx.state.user.id)]
+          );
+          settlementId = Number(inserted.insertId);
+        }
+        for (const row of ledger) {
+          await connection.query(
+            'INSERT INTO settlement_items (settlement_id, order_id, order_no, kind, amount, note) VALUES (?,?,?,?,?,?)',
+            [settlementId, Number(row.order_id), row.order_no, 'commission', num(row.commission_amount), 'Sales commission']
+          );
+        }
+        if (autoFirstOrder > 0) {
+          await connection.query(
+            'INSERT INTO settlement_items (settlement_id, order_id, order_no, kind, amount, note) VALUES (?,?,?,?,?,?)',
+            [settlementId, null, null, 'reward', autoFirstOrder, 'First order reward']
+          );
+        }
+        if (referralReward > 0) {
+          await connection.query(
+            'INSERT INTO settlement_items (settlement_id, order_id, order_no, kind, amount, note) VALUES (?,?,?,?,?,?)',
+            [settlementId, null, null, 'reward', referralReward, 'Referral reward']
+          );
+        }
+        if (diligenceReward > 0) {
+          await connection.query(
+            'INSERT INTO settlement_items (settlement_id, order_id, order_no, kind, amount, note) VALUES (?,?,?,?,?,?)',
+            [settlementId, null, null, 'reward', diligenceReward, 'Diligence reward']
+          );
+        }
+        for (const row of adjustments) {
+          const isAward = row.type === 'award';
+          await connection.query(
+            'INSERT INTO settlement_items (settlement_id, order_id, order_no, kind, amount, note) VALUES (?,?,?,?,?,?)',
+            [settlementId, row.order_id ? Number(row.order_id) : null, null,
+              isAward ? 'reward' : 'deduction', isAward ? num(row.amount) : -num(row.amount),
+              `${row.type}: ${row.reason}`]
+          );
+        }
+      });
+    }
+    const params = [period];
+    const [rows] = await ctx.app.db.query('SELECT * FROM settlements WHERE period = ? ORDER BY id', params);
+    ctx.body = { settlements: rows.map(toSettlement) };
+  },
+
+  async confirm(ctx) {
+    const id = Number(ctx.params.id);
+    await loadSettlement(ctx, id);
+    const [result] = await ctx.app.db.query(
+      "UPDATE settlements SET status = 'confirmed' WHERE id = ? AND status = 'draft'", [id]
+    );
+    if (!result.affectedRows) ctx.throw(409, 'settlement_not_draft');
+    ctx.body = { id, status: 'confirmed' };
+  },
+
+  async pay(ctx) {
+    const id = Number(ctx.params.id);
+    const settlement = await loadSettlement(ctx, id);
+    if (settlement.status !== 'confirmed') ctx.throw(409, 'settlement_not_confirmed');
+    const body = ctx.request.body || {};
+    const type = ['actual', 'pending', 'recovered'].includes(body.type) ? body.type : 'actual';
+    await withTransaction(ctx.app.db, async (connection) => {
+      await connection.query(
+        "UPDATE settlements SET status = 'paid' WHERE id = ?", [id]
+      );
+      await connection.query(
+        `INSERT INTO payouts (settlement_id, user_id, amount, type, note, created_by) VALUES (?,?,?,?,?,?)`,
+        [id, Number(settlement.user_id), num(settlement.payable), type, body.note || null, Number(ctx.state.user.id)]
+      );
+      const [items] = await connection.query(
+        "SELECT DISTINCT order_id FROM settlement_items WHERE settlement_id = ? AND order_id IS NOT NULL", [id]
+      );
+      if (items.length) {
+        const ids = items.map((row) => Number(row.order_id));
+        await connection.query(
+          `UPDATE order_ledger SET settled_at = NOW(), paid_commission = paid_commission + commission_amount
+           WHERE order_id IN (${ids.map(() => '?').join(',')})`, ids
+        );
+      }
+      await enqueueEvent(connection, {
+        type: EVENTS.PAYOUT_CHANGED,
+        aggregateId: id,
+        actorId: ctx.state.user.id,
+        requestId: ctx.state.requestId,
+        destinations: ['sales'],
+        payload: {
+          settlement_id: id,
+          user_id: Number(settlement.user_id),
+          amount: num(settlement.payable),
+          type,
+          period: settlement.period,
+        },
+      });
+    });
+    ctx.body = { id, status: 'paid' };
+  },
+};

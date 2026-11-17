@@ -1,0 +1,202 @@
+2026-11-17 22:59:46,697 ERROR 5840 [-/undefined/-/10005ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 5840
+hostname: MC
+
+2026-11-17 23:01:35,499 ERROR 5840 [-/127.0.0.1/-/1448ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:29:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:15:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE order_ledger SET status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE order_id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 5840
+hostname: MC
+
+2026-11-17 23:01:42,350 ERROR 5840 [-/127.0.0.1/-/1699ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:29:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:15:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE order_ledger SET status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE order_id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 5840
+hostname: MC
+
+2026-11-17 23:01:50,537 ERROR 5840 [-/127.0.0.1/-/1749ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:29:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:15:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE order_ledger SET status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE order_id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 5840
+hostname: MC
+
+2026-11-17 23:02:01,947 ERROR 5840 [-/127.0.0.1/-/936ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:29:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:15:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE order_ledger SET status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE order_id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 5840
+hostname: MC
+
+2026-11-17 23:02:22,403 ERROR 5840 [-/127.0.0.1/-/1638ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:29:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:15:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE order_ledger SET status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE order_id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 5840
+hostname: MC
+
+2026-11-17 23:02:57,709 ERROR 5840 [-/127.0.0.1/-/934ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:29:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:15:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE order_ledger SET status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE order_id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 5840
+hostname: MC
+
+2026-11-17 23:04:04,185 ERROR 5840 [-/127.0.0.1/-/1890ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:29:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\finance-service\app\controller\internal.js:15:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE order_ledger SET status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE order_id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 5840
+hostname: MC
+
+2026-11-17 23:18:26,678 ERROR 12132 [-/127.0.0.1/-/8006ms GET /pv/api/workbench/finance/summary] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.summary (D:\workspace\github\solar-setup\services\finance-service\app\controller\ledger.js:23:41)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 12132
+hostname: MC
+
+2026-11-17 23:38:09,741 ERROR 12132 [-/127.0.0.1/-/8015ms GET /pv/api/workbench/compensation-config] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.getConfig (D:\workspace\github\solar-setup\services\finance-service\app\controller\commissions.js:9:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 12132
+hostname: MC
+
+2026-11-17 23:53:18,620 ERROR 13596 [-/undefined/-/8013ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 13596
+hostname: MC
+

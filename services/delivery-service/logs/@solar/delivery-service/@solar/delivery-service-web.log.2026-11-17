@@ -1,0 +1,191 @@
+2026-11-17 22:00:40,756 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:43,707 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:47,981 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:50,886 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:53,750 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:56,228 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:58,955 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:02,203 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:05,098 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:09,300 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:11,043 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:13,813 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:17,819 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:19,802 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:24,247 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:27,397 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:28,782 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:32,338 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:36,858 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:37,860 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:41,006 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:43,910 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:46,918 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:49,956 WARN 10464 outbox publish failed: Access denied for user 'solar_delivery'@'175.100.46.226' (using password: YES)
+2026-11-17 22:59:41,628 ERROR 15836 [-/127.0.0.1/-/10279ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 15836
+hostname: MC
+
+2026-11-17 22:59:44,427 WARN 15836 outbox publish failed: connect ETIMEDOUT
+2026-11-17 22:59:53,440 WARN 15836 outbox publish failed: connect ETIMEDOUT
+2026-11-17 22:59:56,445 WARN 15836 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:01:17,630 ERROR 15836 [-/127.0.0.1/-/10015ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 15836
+hostname: MC
+
+2026-11-17 23:10:41,307 WARN 6000 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:10:50,291 WARN 6000 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:17,357 WARN 6000 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:18,794 ERROR 6000 [-/127.0.0.1/-/10004ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 6000
+hostname: MC
+
+2026-11-17 23:11:20,358 WARN 6000 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:29,513 ERROR 6000 [-/127.0.0.1/-/10006ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 6000
+hostname: MC
+
+2026-11-17 23:15:00,956 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:01,825 ERROR 2664 [-/127.0.0.1/-/8003ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 2664
+hostname: MC
+
+2026-11-17 23:15:03,971 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:08,971 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:12,973 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:16,989 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:22,856 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:25,022 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:31,007 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:37,038 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:40,040 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:52,141 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:16:04,059 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:16:07,058 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:16:10,073 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:27:32,539 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:46:20,195 WARN 2664 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:12,745 ERROR 10944 [-/127.0.0.1/-/8015ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 10944
+hostname: MC
+
+2026-11-17 23:53:18,620 WARN 10944 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:21,624 WARN 10944 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:24,641 WARN 10944 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:26,627 ERROR 10944 [-/127.0.0.1/-/11854ms POST /pv/api/workbench/projects/5/assign] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at loadProject (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:40:35)
+    at Object.assign (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:98:43)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:5)
+    at async authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 10944
+hostname: MC
+
+2026-11-17 23:53:30,663 WARN 10944 outbox publish failed: connect ETIMEDOUT

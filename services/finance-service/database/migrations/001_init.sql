@@ -1,0 +1,140 @@
+CREATE TABLE IF NOT EXISTS order_ledger (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  order_no VARCHAR(40) NOT NULL,
+  customer_id BIGINT UNSIGNED NOT NULL,
+  customer_name VARCHAR(160) NOT NULL,
+  salesperson_id BIGINT UNSIGNED NULL,
+  salesperson_name VARCHAR(120) NULL,
+  order_amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+  received_amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+  outstanding DECIMAL(14,2) NOT NULL DEFAULT 0,
+  commission_rate DECIMAL(6,4) NOT NULL DEFAULT 0.0300,
+  commission_amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+  status VARCHAR(30) NOT NULL DEFAULT 'initializing',
+  accepted_at DATETIME NULL,
+  settled_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_ledger_order (order_id),
+  KEY idx_ledger_salesperson (salesperson_id),
+  KEY idx_ledger_status (status),
+  KEY idx_ledger_accepted (accepted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS payments (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  amount DECIMAL(14,2) NOT NULL,
+  direction VARCHAR(10) NOT NULL DEFAULT 'in',
+  method VARCHAR(40) NULL,
+  reference VARCHAR(120) NULL,
+  received_at DATETIME NOT NULL,
+  recorded_by BIGINT UNSIGNED NULL,
+  note VARCHAR(500) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_payments_order (order_id),
+  KEY idx_payments_received (received_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS commission_adjustments (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NULL,
+  salesperson_id BIGINT UNSIGNED NOT NULL,
+  type VARCHAR(20) NOT NULL,
+  amount DECIMAL(14,2) NOT NULL,
+  reason VARCHAR(500) NOT NULL,
+  created_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_adjustments_user (salesperson_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS compensation_config (
+  id TINYINT UNSIGNED NOT NULL,
+  base_rate DECIMAL(6,4) NOT NULL DEFAULT 0.0300,
+  remaining_rate DECIMAL(6,4) NOT NULL DEFAULT 0.7000,
+  referral_rate DECIMAL(6,4) NOT NULL DEFAULT 0.0100,
+  first_order_reward DECIMAL(14,2) NOT NULL DEFAULT 0,
+  survey_reward DECIMAL(14,2) NOT NULL DEFAULT 0,
+  updated_by BIGINT UNSIGNED NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO compensation_config (id) VALUES (1);
+
+CREATE TABLE IF NOT EXISTS settlements (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  period CHAR(7) NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  user_name VARCHAR(120) NULL,
+  base_salary DECIMAL(14,2) NOT NULL DEFAULT 0,
+  commission_total DECIMAL(14,2) NOT NULL DEFAULT 0,
+  adjustment_total DECIMAL(14,2) NOT NULL DEFAULT 0,
+  payable DECIMAL(14,2) NOT NULL DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'draft',
+  created_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_settlements_period_user (period, user_id),
+  KEY idx_settlements_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS settlement_items (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  settlement_id BIGINT UNSIGNED NOT NULL,
+  order_id BIGINT UNSIGNED NULL,
+  order_no VARCHAR(40) NULL,
+  kind VARCHAR(20) NOT NULL,
+  amount DECIMAL(14,2) NOT NULL,
+  note VARCHAR(300) NULL,
+  PRIMARY KEY (id),
+  KEY idx_settlement_items_settlement (settlement_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS payouts (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  settlement_id BIGINT UNSIGNED NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  amount DECIMAL(14,2) NOT NULL,
+  type VARCHAR(20) NOT NULL DEFAULT 'actual',
+  note VARCHAR(300) NULL,
+  created_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_payouts_settlement (settlement_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS event_outbox (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  event_id CHAR(36) NOT NULL,
+  event_type VARCHAR(60) NOT NULL,
+  aggregate_id VARCHAR(80) NOT NULL,
+  customer_id BIGINT UNSIGNED NULL,
+  destination VARCHAR(30) NOT NULL,
+  payload JSON NOT NULL,
+  actor_id BIGINT UNSIGNED NULL,
+  request_id VARCHAR(80) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  attempts INT NOT NULL DEFAULT 0,
+  next_retry_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_error VARCHAR(1000) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  published_at DATETIME NULL,
+  PRIMARY KEY (id),
+  KEY idx_outbox_status (status, next_retry_at),
+  KEY idx_outbox_event (event_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS event_inbox (
+  event_id CHAR(36) NOT NULL,
+  event_type VARCHAR(60) NOT NULL,
+  payload JSON NOT NULL,
+  received_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (event_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

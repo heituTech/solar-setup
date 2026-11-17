@@ -1,0 +1,123 @@
+:root {
+  --solar-green: #1f7a4d;
+  --solar-green-dark: #145c39;
+  --solar-amber: #e9a13b;
+  --solar-ink: #14251d;
+  --solar-muted: #61756b;
+  --solar-bg: #f5f8f5;
+  --solar-border: #dfe7e1;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app { height: 100%; margin: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--solar-bg);
+  color: var(--solar-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--solar-green); text-decoration: none; }
+
+.public-shell { display: flex; flex-direction: column; min-height: 100%; }
+
+.public-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 32px; background: #fff; border-bottom: 1px solid var(--solar-border);
+  position: sticky; top: 0; z-index: 20;
+}
+
+.brand { display: flex; align-items: center; font-weight: 700; font-size: 18px; color: var(--solar-ink); }
+
+.public-nav { display: flex; align-items: center; gap: 18px; }
+.public-nav a { color: var(--solar-muted); font-weight: 500; }
+.public-nav a.router-link-active { color: var(--solar-green); }
+
+.public-main { flex: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 32px 24px 56px; }
+.public-footer { padding: 22px 32px; text-align: center; color: var(--solar-muted); font-size: 13px; border-top: 1px solid var(--solar-border); background: #fff; }
+
+.hero {
+  display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 40px; align-items: center;
+  padding: 48px 0 40px;
+}
+.hero h1 { font-size: 40px; line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.5px; }
+.hero p { color: var(--solar-muted); font-size: 17px; line-height: 1.7; margin: 0 0 24px; }
+.hero-card {
+  background: #fff; border: 1px solid var(--solar-border); border-radius: 18px;
+  padding: 26px; box-shadow: 0 20px 50px rgba(20, 37, 29, 0.08);
+}
+.hero-card h3 { margin: 0 0 14px; font-size: 16px; }
+.chain { display: flex; flex-wrap: wrap; gap: 8px; }
+.chain span {
+  background: #eef6f0; color: var(--solar-green-dark); border-radius: 999px;
+  padding: 6px 12px; font-size: 13px; font-weight: 600;
+}
+
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 28px; }
+.feature { background: #fff; border: 1px solid var(--solar-border); border-radius: 14px; padding: 20px; }
+.feature h4 { margin: 0 0 8px; font-size: 15px; }
+.feature p { margin: 0; color: var(--solar-muted); font-size: 14px; line-height: 1.6; }
+
+.auth-card { max-width: 460px; margin: 20px auto; }
+.auth-switch { text-align: center; margin-top: 14px; color: var(--solar-muted); font-size: 14px; }
+
+.staff-shell { display: flex; min-height: 100vh; }
+.staff-aside {
+  width: 224px; flex: 0 0 224px; background: #12251c; color: #dcebe1;
+  display: flex; flex-direction: column; padding: 18px 14px; position: sticky; top: 0; height: 100vh;
+}
+.staff-brand { display: flex; align-items: center; padding: 6px 8px 18px; font-weight: 700; color: #fff; }
+.staff-menu { flex: 1; overflow-y: auto; border: none; background: transparent; }
+.staff-menu .el-menu-item { color: #b9cec1; border-radius: 8px; margin-bottom: 2px; height: 42px; }
+.staff-menu .el-menu-item:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.staff-menu .el-menu-item.is-active { background: var(--solar-green); color: #fff; }
+.staff-aside-footer { font-size: 12px; color: #7e9a8b; padding: 10px 8px 0; }
+
+.staff-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.staff-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: #fff; border-bottom: 1px solid var(--solar-border); padding: 12px 26px;
+  position: sticky; top: 0; z-index: 10;
+}
+.staff-header h2 { font-size: 18px; margin: 0; }
+.staff-user { display: flex; align-items: center; gap: 12px; color: var(--solar-muted); font-size: 14px; }
+.staff-content { padding: 24px 26px 48px; }
+
+.page-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.page-toolbar h3 { margin: 0; font-size: 17px; }
+.toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 22px; }
+.kpi-card { background: #fff; border: 1px solid var(--solar-border); border-radius: 12px; padding: 18px; }
+.kpi-label { font-size: 13px; color: var(--solar-muted); margin-bottom: 8px; }
+.kpi-value { font-size: 24px; font-weight: 700; letter-spacing: -0.4px; }
+.kpi-hint { font-size: 12px; color: var(--solar-muted); margin-top: 6px; }
+
+.panel { background: #fff; border: 1px solid var(--solar-border); border-radius: 12px; padding: 18px; }
+.panel + .panel { margin-top: 16px; }
+.panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.panel-title h3 { margin: 0; font-size: 16px; }
+
+.detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 18px; }
+.detail-item { font-size: 14px; }
+.detail-item span { color: var(--solar-muted); display: block; font-size: 12px; margin-bottom: 3px; }
+
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 16px; }
+.form-grid .span-2 { grid-column: span 2; }
+.item-row { display: grid; grid-template-columns: 1fr 90px 120px 70px; gap: 8px; margin-bottom: 8px; }
+.muted { color: var(--solar-muted); font-size: 13px; }
+.mono { font-variant-numeric: tabular-nums; }
+.section-gap { margin-top: 18px; }
+
+.el-table { --el-table-border-color: var(--solar-border); }
+.el-button--primary { --el-button-bg-color: var(--solar-green); --el-button-border-color: var(--solar-green); --el-button-hover-bg-color: var(--solar-green-dark); --el-button-hover-border-color: var(--solar-green-dark); }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .staff-aside { width: 180px; flex-basis: 180px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .span-2 { grid-column: span 1; }
+}

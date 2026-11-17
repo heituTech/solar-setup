@@ -1,0 +1,94 @@
+'use strict';
+
+const bcrypt = require('bcryptjs');
+const { withTransaction, enqueueEvent } = require('@solar/service-kit');
+const { EVENTS, ROLES } = require('@solar/contracts');
+const { toUser, loadUser } = require('../../lib/users');
+
+const ASSIGNABLE = new Set(ROLES);
+
+module.exports = {
+  async directory(ctx) {
+    const [rows] = await ctx.app.db.query(
+      "SELECT id, name, role FROM users WHERE status = 'active' AND role <> 'member' ORDER BY role, name"
+    );
+    ctx.body = { users: rows.map((row) => ({ id: Number(row.id), name: row.name, role: row.role })) };
+  },
+
+  async list(ctx) {
+    const user = ctx.state.user;
+    let sql = 'SELECT id,name,email,phone,role,status,manager_id,created_at FROM users';
+    const params = [];
+    if (user.role === 'sales_manager') {
+      sql += " WHERE manager_id = ? OR id = ?";
+      params.push(Number(user.id), Number(user.id));
+    }
+    sql += ' ORDER BY id DESC LIMIT 500';
+    const [rows] = await ctx.app.db.query(sql, params);
+    ctx.body = { users: rows.map(toUser) };
+  },
+
+  async create(ctx) {
+    const body = ctx.request.body || {};
+    const name = String(body.name || '').trim();
+    const email = String(body.email || '').trim().toLowerCase() || null;
+    const phone = String(body.phone || '').trim() || null;
+    const role = String(body.role || 'salesperson');
+    const password = String(body.password || '');
+    if (!name) ctx.throw(400, 'name_required');
+    if (!email && !phone) ctx.throw(400, 'email_or_phone_required');
+    if (!ASSIGNABLE.has(role)) ctx.throw(400, 'invalid_role');
+    if (password.length < 8) ctx.throw(400, 'password_too_short');
+    const [exists] = await ctx.app.db.query(
+      'SELECT id FROM users WHERE (email IS NOT NULL AND email = ?) OR (phone IS NOT NULL AND phone = ?) LIMIT 1',
+      [email, phone]
+    );
+    if (exists.length) ctx.throw(409, 'account_exists');
+    const hash = await bcrypt.hash(password, 10);
+    const managerId = body.manager_id ? Number(body.manager_id) : null;
+    const [result] = await ctx.app.db.query(
+      'INSERT INTO users (name, email, phone, password_hash, role, status, manager_id) VALUES (?,?,?,?,?,?,?)',
+      [name, email, phone, hash, role, 'active', managerId]
+    );
+    const user = await loadUser(ctx.app.db, result.insertId);
+    ctx.status = 201;
+    ctx.body = { user };
+  },
+
+  async update(ctx) {
+    const id = Number(ctx.params.id);
+    const body = ctx.request.body || {};
+    const [rows] = await ctx.app.db.query('SELECT * FROM users WHERE id = ?', [id]);
+    if (!rows.length) ctx.throw(404, 'user_not_found');
+    const current = rows[0];
+    if (Number(ctx.state.user.id) === id && body.status === 'disabled') ctx.throw(400, 'cannot_disable_self');
+    const next = {
+      name: body.name !== undefined ? String(body.name).trim() : current.name,
+      role: body.role !== undefined ? String(body.role) : current.role,
+      status: body.status !== undefined ? String(body.status) : current.status,
+      manager_id: body.manager_id !== undefined ? (body.manager_id ? Number(body.manager_id) : null) : current.manager_id,
+    };
+    if (!ASSIGNABLE.has(next.role)) ctx.throw(400, 'invalid_role');
+    if (!['active', 'disabled'].includes(next.status)) ctx.throw(400, 'invalid_status');
+    let passwordHash = current.password_hash;
+    if (body.password) {
+      if (String(body.password).length < 8) ctx.throw(400, 'password_too_short');
+      passwordHash = await bcrypt.hash(String(body.password), 10);
+    }
+    await withTransaction(ctx.app.db, async (connection) => {
+      await connection.query(
+        'UPDATE users SET name = ?, role = ?, status = ?, manager_id = ?, password_hash = ? WHERE id = ?',
+        [next.name, next.role, next.status, next.manager_id, passwordHash, id]
+      );
+      await enqueueEvent(connection, {
+        type: EVENTS.USER_CHANGED,
+        aggregateId: id,
+        actorId: ctx.state.user.id,
+        requestId: ctx.state.requestId,
+        destinations: ['sales', 'delivery', 'finance'],
+        payload: { user_id: id, name: next.name, role: next.role, status: next.status },
+      });
+    });
+    ctx.body = { user: await loadUser(ctx.app.db, id) };
+  },
+};

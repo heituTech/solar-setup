@@ -1,0 +1,140 @@
+2026-11-17 22:59:41,627 ERROR 15836 [-/127.0.0.1/-/10279ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 15836
+hostname: MC
+
+2026-11-17 23:01:17,630 ERROR 15836 [-/127.0.0.1/-/10015ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 15836
+hostname: MC
+
+2026-11-17 23:11:18,794 ERROR 6000 [-/127.0.0.1/-/10004ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 6000
+hostname: MC
+
+2026-11-17 23:11:29,513 ERROR 6000 [-/127.0.0.1/-/10006ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 6000
+hostname: MC
+
+2026-11-17 23:15:01,825 ERROR 2664 [-/127.0.0.1/-/8003ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 2664
+hostname: MC
+
+2026-11-17 23:53:12,745 ERROR 10944 [-/127.0.0.1/-/8015ms GET /pv/api/workbench/projects] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:58:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 10944
+hostname: MC
+
+2026-11-17 23:53:26,627 ERROR 10944 [-/127.0.0.1/-/11854ms POST /pv/api/workbench/projects/5/assign] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at loadProject (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:40:35)
+    at Object.assign (D:\workspace\github\solar-setup\services\delivery-service\app\controller\projects.js:98:43)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:5)
+    at async authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 10944
+hostname: MC
+

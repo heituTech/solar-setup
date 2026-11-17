@@ -1,0 +1,23 @@
+{
+  "name": "@solar/finance-service",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Payments, sales ledger, commissions and payroll microservice",
+  "scripts": {
+    "dev": "egg-bin dev",
+    "start": "egg-bin dev",
+    "migrate": "node ../../packages/service-kit/migrate.js"
+  },
+  "dependencies": {
+    "@solar/contracts": "1.0.0",
+    "@solar/service-kit": "1.0.0",
+    "dotenv": "^16.4.5",
+    "egg": "^3.29.0",
+    "exceljs": "^4.4.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.11.0"
+  },
+  "devDependencies": {
+    "egg-bin": "^6.1.0"
+  }
+}

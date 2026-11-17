@@ -1,0 +1,309 @@
+{
+  "keys": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+  "security": {
+    "csrf": {
+      "enable": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "type": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "ignoreJSON": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "useSession": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "cookieName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "sessionName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "headerName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "bodyName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "queryName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "rotateWhenInvalid": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "supportedRequests": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "refererWhiteList": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "cookieOptions": {
+        "signed": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+      }
+    },
+    "domainWhiteList": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+    "protocolWhiteList": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+    "defaultMiddleware": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+    "xframe": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "value": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "hsts": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.local.js",
+      "maxAge": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "includeSubdomains": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "dta": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "methodnoallow": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "noopen": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "nosniff": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "referrerPolicy": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "value": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "xssProtection": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "value": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "csp": {
+      "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "policy": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    },
+    "ssrf": {
+      "ipBlackList": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "ipExceptionList": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "hostnameExceptionList": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js",
+      "checkAddress": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+    }
+  },
+  "bodyParser": {
+    "jsonLimit": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "encoding": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "formLimit": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "textLimit": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "strict": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "queryString": {
+      "arrayLimit": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "depth": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "parameterLimit": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    },
+    "onerror": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+  },
+  "middleware": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+  "cluster": {
+    "listen": {
+      "port": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "hostname": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "path": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    }
+  },
+  "logger": {
+    "level": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "disableConsoleAfterReady": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "dir": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "encoding": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "env": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "consoleLevel": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "outputJSON": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "buffer": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "appLogName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "coreLogName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "agentLogName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "errorLogName": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "coreLogger": {
+      "consoleLevel": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.local.js"
+    },
+    "allowDebugAtProd": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "enablePerformanceTimer": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "enableFastContextLogger": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+  },
+  "serviceName": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+  "internal": {
+    "secret": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "services": {
+      "identity": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "sales": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "delivery": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "finance": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js"
+    }
+  },
+  "outbox": {
+    "maxAttempts": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js"
+  },
+  "identity": {
+    "jwtPublicKey": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "jwtPrivateKey": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "tokenTtl": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "teamRoles": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js"
+  },
+  "session": {
+    "maxAge": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-session\\config\\config.default.js",
+    "key": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-session\\config\\config.default.js",
+    "httpOnly": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-session\\config\\config.default.js",
+    "encrypt": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-session\\config\\config.default.js",
+    "logValue": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-session\\config\\config.default.js"
+  },
+  "helper": {
+    "shtml": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-security\\config\\config.default.js"
+  },
+  "jsonp": {
+    "limit": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-jsonp\\config\\config.default.js",
+    "callback": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-jsonp\\config\\config.default.js",
+    "csrf": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-jsonp\\config\\config.default.js"
+  },
+  "onerror": {
+    "errorPageUrl": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-onerror\\config\\config.default.js",
+    "appErrorFilter": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-onerror\\config\\config.default.js",
+    "templatePath": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-onerror\\config\\config.default.js"
+  },
+  "i18n": {
+    "defaultLocale": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-i18n\\config\\config.default.js",
+    "dirs": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-i18n\\config\\config.default.js",
+    "queryField": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-i18n\\config\\config.default.js",
+    "cookieField": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-i18n\\config\\config.default.js",
+    "cookieDomain": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-i18n\\config\\config.default.js",
+    "cookieMaxAge": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-i18n\\config\\config.default.js"
+  },
+  "watcher": {
+    "type": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-watcher\\config\\config.local.js",
+    "eventSources": {
+      "default": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-watcher\\config\\config.default.js",
+      "development": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-watcher\\config\\config.default.js"
+    }
+  },
+  "customLogger": {
+    "scheduleLogger": {
+      "consoleLevel": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-schedule\\config\\config.default.js",
+      "file": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-schedule\\config\\config.default.js"
+    }
+  },
+  "schedule": {
+    "directory": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-schedule\\config\\config.default.js"
+  },
+  "multipart": {
+    "mode": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "autoFields": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "defaultCharset": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "defaultParamCharset": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "fieldNameSize": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "fieldSize": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "fields": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "fileSize": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "files": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "fileExtensions": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "whitelist": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "allowArrayField": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "tmpdir": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+    "cleanSchedule": {
+      "cron": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js",
+      "disable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-multipart\\config\\config.default.js"
+    }
+  },
+  "development": {
+    "watchDirs": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-development\\config\\config.default.js",
+    "ignoreDirs": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-development\\config\\config.default.js",
+    "fastReady": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-development\\config\\config.default.js",
+    "reloadOnDebug": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-development\\config\\config.default.js",
+    "overrideDefault": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-development\\config\\config.default.js",
+    "overrideIgnore": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-development\\config\\config.default.js"
+  },
+  "logrotator": {
+    "filesRotateByHour": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-logrotator\\config\\config.default.js",
+    "hourDelimiter": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-logrotator\\config\\config.default.js",
+    "filesRotateBySize": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-logrotator\\config\\config.default.js",
+    "maxFileSize": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-logrotator\\config\\config.default.js",
+    "maxFiles": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-logrotator\\config\\config.default.js",
+    "rotateDuration": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-logrotator\\config\\config.default.js",
+    "maxDays": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-logrotator\\config\\config.default.js"
+  },
+  "static": {
+    "prefix": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-static\\config\\config.default.js",
+    "dir": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-static\\config\\config.default.js",
+    "dynamic": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-static\\config\\config.default.js",
+    "preload": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-static\\config\\config.default.js",
+    "buffer": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-static\\config\\config.default.js",
+    "maxFiles": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-static\\config\\config.default.js"
+  },
+  "view": {
+    "root": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-view\\config\\config.default.js",
+    "cache": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-view\\config\\config.local.js",
+    "defaultExtension": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-view\\config\\config.default.js",
+    "defaultViewEngine": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-view\\config\\config.default.js",
+    "mapping": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-view\\config\\config.default.js"
+  },
+  "env": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "name": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "cookies": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "proxy": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "maxIpsCount": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "maxProxyCount": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "protocolHeaders": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "ipHeaders": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "hostHeaders": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "pkg": {
+    "name": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "version": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "private": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "description": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "scripts": {
+      "dev": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "start": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "migrate": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "seed": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    },
+    "dependencies": {
+      "@solar/contracts": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "@solar/service-kit": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "bcryptjs": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "dotenv": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "egg": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "jsonwebtoken": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "mysql2": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    },
+    "devDependencies": {
+      "egg-bin": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    }
+  },
+  "baseDir": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "HOME": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "rundir": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "dump": {
+    "ignore": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "timing": {
+      "slowBootActionMinDuration": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    }
+  },
+  "confusedConfigurations": {
+    "bodyparser": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "notFound": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "sitefile": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "middlewares": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "httpClient": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+  },
+  "notfound": {
+    "pageUrl": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+  },
+  "siteFile": {
+    "/favicon.ico": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "cacheControl": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+  },
+  "httpclient": {
+    "enableDNSCache": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "dnsCacheLookupInterval": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "dnsCacheMaxLength": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "request": {
+      "timeout": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    },
+    "httpAgent": {
+      "keepAlive": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "freeSocketTimeout": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "maxSockets": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "maxFreeSockets": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    },
+    "httpsAgent": {
+      "keepAlive": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "freeSocketTimeout": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "maxSockets": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+      "maxFreeSockets": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+    },
+    "useHttpClientNext": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+  },
+  "meta": {
+    "enable": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "logging": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+  },
+  "coreMiddleware": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "workerStartTimeout": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "serverTimeout": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+  "clusterClient": {
+    "maxWaitTime": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js",
+    "responseTimeout": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+  },
+  "onClientError": "D:\\workspace\\github\\solar-setup\\node_modules\\egg\\config\\config.default.js"
+}

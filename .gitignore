@@ -11,3 +11,5 @@ coverage/
 test-results/
 keys/
 database/local/
+services/*/logs/
+services/*/run/

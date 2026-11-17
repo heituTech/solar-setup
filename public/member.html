@@ -5,35 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#772432" />
   <title>HEITU TECHNOLOGY</title>
-  <link rel="stylesheet" href="/pv/css/style.css?v=20" />
+  <link rel="stylesheet" href="/pv/css/style.css?v=21" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <div class="app-bar">
-    <a id="logoLink" href="/pv"><img class="app-bar-logo" src="/pv/img/logo.png" alt="HEITU Technology" /></a>
-    <div class="app-bar-actions">
-      <a class="app-bar-link app-bar-link-compact" id="memberProfileLink" href="/pv/member/profile" style="display:none" data-i18n="profile">Profile</a>
-      <button class="app-bar-link app-bar-link-compact" id="memberLogoutBtn" type="button" style="display:none" data-i18n="logout">Logout</button>
-      <div class="lang-picker app-bar-picker" id="langPicker">
-        <button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">
-          <img id="langCurrentFlag" class="lang-flag" src="/pv/img/flags/en.svg" alt="English">
-          <svg class="lang-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-                <div class="lang-menu" id="langMenu" role="listbox" hidden>
-          <button class="lang-option" type="button" data-lang="km" role="option">ខ្មែរ</button>
-          <button class="lang-option" type="button" data-lang="en" role="option">English</button>
-          <button class="lang-option" type="button" data-lang="zh" role="option">中文</button>
-          <button class="lang-option" type="button" data-lang="es" role="option">Español</button>
-          <button class="lang-option" type="button" data-lang="de" role="option">Deutsch</button>
-          <button class="lang-option" type="button" data-lang="fr" role="option">Français</button>
-          <button class="lang-option" type="button" data-lang="ja" role="option">日本語</button>
-          <button class="lang-option" type="button" data-lang="ko" role="option">한국어</button>
-          <button class="lang-option" type="button" data-lang="th" role="option">ไทย</button>
-          <button class="lang-option" type="button" data-lang="vi" role="option">Tiếng Việt</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="app-bar" data-nav="member" data-logo-href="/pv" data-logo-id="logoLink"></div>
 
   <div class="container container-wide">
     <!-- Auth -->
@@ -70,7 +46,7 @@
               <label data-i18n="email">Email</label>
               <div class="row">
                 <input id="cl_email" type="email" autocomplete="email" />
-                <button class="btn btn-secondary btn-sm" id="sendLoginCodeBtn" style="width:auto" data-i18n="send_code">Send Code</button>
+                <button class="btn btn-secondary btn-sm" id="sendLoginCodeBtn" data-i18n="send_code">Send Code</button>
               </div>
             </div>
             <div class="field">
@@ -106,7 +82,7 @@
             <label data-i18n="email">Email</label>
             <div class="row">
               <input id="r_email" type="email" autocomplete="email" placeholder="testmember@example.com" />
-              <button class="btn btn-secondary btn-sm" id="sendCodeBtn" style="width:auto" data-i18n="send_code">Send Code</button>
+              <button class="btn btn-secondary btn-sm" id="sendCodeBtn" data-i18n="send_code">Send Code</button>
             </div>
           </div>
           <div class="field">
@@ -134,9 +110,9 @@
       </div>
 
       <div class="card">
-        <div style="display:flex;justify-content:flex-start;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-          <h2 class="card-title" style="margin:0" data-i18n="my_cases">My Cases</h2>
-          <button class="btn btn-secondary btn-sm btn-add" id="addCaseBtn" style="width:auto" data-i18n="add_case">Add Case</button>
+        <div class="card-head card-head-start">
+          <h2 class="card-title" data-i18n="my_cases">My Cases</h2>
+          <button class="btn btn-secondary btn-sm btn-add" id="addCaseBtn" data-i18n="add_case">Add Case</button>
         </div>
         <div id="caseList"></div>
       </div>
@@ -145,20 +121,20 @@
       <div class="modal-overlay" id="configuratorModal">
         <div class="modal modal-wide">
           <div id="configuratorCard">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-              <h2 class="card-title" style="margin:0" data-i18n="app_title">Solar System Configurator</h2>
-              <button class="btn btn-secondary btn-sm" id="closeConfigurator" style="width:auto" data-i18n="cancel">Cancel</button>
+            <div class="card-head">
+              <h2 class="card-title" data-i18n="app_title">Solar System Configurator</h2>
+              <button class="btn btn-secondary btn-sm" id="closeConfigurator" data-i18n="cancel">Cancel</button>
             </div>
-            <div class="select-note" id="activeCaseLabel" style="margin-bottom:12px"></div>
-            <div class="select-note" id="quoteSnapshotNote" style="display:none;margin-bottom:12px"></div>
+            <div class="select-note note-block" id="activeCaseLabel"></div>
+            <div class="select-note note-block" id="quoteSnapshotNote" style="display:none"></div>
             <div class="scope-notice" data-i18n="scope_notice"></div>
 
             <div id="loadBuilderCard" class="load-builder" style="display:none">
               <div class="load-builder-head">
                 <h3 data-i18n="load_builder_title">Scenario Load Checklist</h3>
                 <div class="load-builder-tools">
-                  <span class="select-note" id="loadSaveStatus" style="margin:0"></span>
-                  <button type="button" class="btn btn-secondary btn-sm btn-add" id="addLoadRow" style="width:auto" data-i18n="add_device">Add device</button>
+                  <span class="select-note" id="loadSaveStatus"></span>
+                  <button type="button" class="btn btn-secondary btn-sm btn-add" id="addLoadRow" data-i18n="add_device">Add device</button>
                 </div>
               </div>
               <div class="select-note" id="scenarioGuide"></div>
@@ -186,7 +162,7 @@
                 <input type="number" id="nightHours" min="0" max="16" step="0.1" />
               </div>
             </div>
-            <div class="select-note" id="hybridLoadNote" style="display:none;margin-bottom:10px" data-i18n="hybrid_load_note"></div>
+            <div class="select-note note-block" id="hybridLoadNote" style="display:none" data-i18n="hybrid_load_note"></div>
             <div class="row" id="backupLoadRow" style="display:none">
               <div class="field">
                 <label><span data-i18n="backup_peak_power">Backup Critical Load Peak (W)</span> <button type="button" class="info-btn" data-tip="backup" title="?">?</button></label>
@@ -226,18 +202,18 @@
       </div>
 
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 class="card-title" style="margin:0" data-i18n="product_catalog">On-sale Products</h2>
-          <button class="btn btn-secondary btn-sm" id="catalogToggle" style="width:auto" data-i18n="browse_products">Browse Products</button>
+        <div class="card-head">
+          <h2 class="card-title" data-i18n="product_catalog">On-sale Products</h2>
+          <button class="btn btn-secondary btn-sm" id="catalogToggle" data-i18n="browse_products">Browse Products</button>
         </div>
-        <div id="catalogBody" style="display:none;margin-top:12px">
+        <div id="catalogBody" class="catalog-body" style="display:none">
           <div class="tabs sub-tabs" id="catalogTabs">
             <button class="tab-btn active" data-cat="inverters" data-i18n="inverter_tab">Inverters</button>
             <button class="tab-btn" data-cat="panels" data-i18n="panel_tab">Solar Panels</button>
             <button class="tab-btn" data-cat="batteries" data-i18n="battery_tab">Batteries</button>
           </div>
           <div id="catalogFilters" class="filter-bar"></div>
-          <div id="catalogList" class="catalog-grid" style="margin-top:10px"></div>
+          <div id="catalogList" class="catalog-grid"></div>
           <div id="catalogMore" class="show-more-wrap"></div>
         </div>
       </div>
@@ -328,7 +304,7 @@
   </div>
 
   <script src="/pv/js/i18n.js?v=6"></script>
-  <script src="/pv/js/shell.js?v=5"></script>
+  <script src="/pv/js/shell.js?v=6"></script>
   <script src="/pv/js/pricing-core.js?v=5"></script>
   <script src="/pv/js/product-catalog.js"></script>
   <script src="/pv/js/psh-store.js"></script>

@@ -76,7 +76,7 @@
       </div>
       <div class="cta-box">
         <p>${t('guest_notice')}</p>
-        <a class="btn btn-primary btn-sm" href="/pv/member" style="width:auto;text-decoration:none">${t('register_for_exact')}</a>
+        <a class="btn btn-primary btn-sm" href="/pv/member">${t('register_for_exact')}</a>
       </div>
       ${d.notes && d.notes.length ? `<ul class="notes">${d.notes.map((n) => `<li>${t(n).replace('{psh}', d.calculation.peak_sun_hours)}</li>`).join('')}</ul>` : ''}
     </div>`;

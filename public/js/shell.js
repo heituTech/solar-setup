@@ -1,4 +1,75 @@
 (function () {
+  const LANG_NAMES = {
+    km: 'ខ្មែរ',
+    en: 'English',
+    zh: '中文',
+    es: 'Español',
+    de: 'Deutsch',
+    fr: 'Français',
+    ja: '日本語',
+    ko: '한국어',
+    th: 'ไทย',
+    vi: 'Tiếng Việt',
+  };
+
+  /* ===================== Shared app bar ===================== */
+  // Every page declares <div class="app-bar" data-nav="..."> and this renderer
+  // fills it, so the header lives in one place instead of seven HTML copies.
+  const NAV_ACTIONS = {
+    home: [{ tag: 'a', id: 'headerAccountLink', href: '/pv/member', i18n: 'login', label: 'Login' }],
+    tool: [{ tag: 'a', id: 'headerAccountLink', href: '/pv/member', i18n: 'login', label: 'Login' }],
+    account: [],
+    admin: [{ tag: 'a', href: '/pv/account', i18n: 'my_account', label: 'My Account' }],
+    member: [
+      { tag: 'a', id: 'memberProfileLink', href: '/pv/member/profile', i18n: 'profile', label: 'Profile', compact: true, hidden: true },
+      { tag: 'button', id: 'memberLogoutBtn', i18n: 'logout', label: 'Logout', compact: true, hidden: true },
+    ],
+    'member-profile': [
+      { tag: 'button', id: 'profileLogoutBtn', i18n: 'logout', label: 'Logout', compact: true },
+    ],
+  };
+
+  function actionHtml(action) {
+    const parts = ['class="app-bar-link' + (action.compact ? ' app-bar-link-compact' : '') + '"'];
+    if (action.id) parts.push('id="' + action.id + '"');
+    if (action.tag === 'button') parts.push('type="button"');
+    else parts.push('href="' + action.href + '"');
+    parts.push('data-i18n="' + action.i18n + '"');
+    if (action.hidden) parts.push('style="display:none"');
+    const inner = action.label;
+    return action.tag === 'button'
+      ? '<button ' + parts.join(' ') + '>' + inner + '</button>'
+      : '<a ' + parts.join(' ') + '>' + inner + '</a>';
+  }
+
+  function renderAppBar() {
+    const bar = document.querySelector('.app-bar[data-nav]');
+    if (!bar) return;
+    const logoImg = '<img class="app-bar-logo" src="/pv/img/logo.png" alt="HEITU Technology" />';
+    const logo = bar.dataset.logoHref
+      ? '<a' + (bar.dataset.logoId ? ' id="' + bar.dataset.logoId + '"' : '') + ' href="' + bar.dataset.logoHref + '">' + logoImg + '</a>'
+      : logoImg;
+    const actions = (NAV_ACTIONS[bar.dataset.nav] || []).map(actionHtml).join('');
+    const options = Object.keys(LANG_NAMES)
+      .map(function (code) {
+        return '<button class="lang-option" type="button" data-lang="' + code + '" role="option">' + LANG_NAMES[code] + '</button>';
+      })
+      .join('');
+    bar.innerHTML =
+      logo +
+      '<div class="app-bar-actions">' +
+      actions +
+      '<div class="lang-picker app-bar-picker" id="langPicker">' +
+      '<button class="lang-current" id="langCurrentBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu">' +
+      '<img id="langCurrentFlag" class="lang-flag" src="/pv/img/flags/en.svg" alt="English">' +
+      '<svg class="lang-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
+      '</button>' +
+      '<div class="lang-menu" id="langMenu" role="listbox" hidden>' + options + '</div>' +
+      '</div>' +
+      '</div>';
+  }
+  renderAppBar();
+
   const sidebar = document.getElementById('sidebar');
   const backdrop = document.getElementById('sidebarBackdrop');
   const menuBtn = document.getElementById('menuBtn');
@@ -36,18 +107,6 @@
   }
 
   /* ===================== Language picker (opens upward) ===================== */
-  const LANG_NAMES = {
-    km: 'ខ្មែរ',
-    en: 'English',
-    zh: '中文',
-    es: 'Español',
-    de: 'Deutsch',
-    fr: 'Français',
-    ja: '日本語',
-    ko: '한국어',
-    th: 'ไทย',
-    vi: 'Tiếng Việt',
-  };
   const langBtn = document.getElementById('langCurrentBtn');
   const langMenu = document.getElementById('langMenu');
   const langFlag = document.getElementById('langCurrentFlag');

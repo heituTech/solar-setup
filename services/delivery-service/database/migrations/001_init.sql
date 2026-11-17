@@ -1,0 +1,103 @@
+CREATE TABLE IF NOT EXISTS projects (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  order_no VARCHAR(40) NOT NULL,
+  customer_id BIGINT UNSIGNED NOT NULL,
+  customer_name VARCHAR(160) NOT NULL,
+  address VARCHAR(300) NULL,
+  salesperson_id BIGINT UNSIGNED NULL,
+  amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+  status VARCHAR(30) NOT NULL DEFAULT 'pending_assignment',
+  electrical_engineer_id BIGINT UNSIGNED NULL,
+  electrical_engineer_name VARCHAR(120) NULL,
+  structural_engineer_id BIGINT UNSIGNED NULL,
+  structural_engineer_name VARCHAR(120) NULL,
+  started_at DATETIME NULL,
+  accepted_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_projects_order (order_id),
+  KEY idx_projects_status (status),
+  KEY idx_projects_salesperson (salesperson_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS project_progress (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  project_id BIGINT UNSIGNED NOT NULL,
+  stage VARCHAR(60) NOT NULL,
+  note VARCHAR(1000) NULL,
+  actor_id BIGINT UNSIGNED NULL,
+  actor_name VARCHAR(120) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_progress_project (project_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS devices (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  project_id BIGINT UNSIGNED NOT NULL,
+  category VARCHAR(60) NOT NULL,
+  model VARCHAR(120) NOT NULL,
+  name VARCHAR(190) NOT NULL,
+  serial_no VARCHAR(120) NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  status VARCHAR(30) NOT NULL DEFAULT 'pending',
+  warehouse_note VARCHAR(500) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_devices_project (project_id),
+  KEY idx_devices_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS tickets (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  project_id BIGINT UNSIGNED NULL,
+  order_id BIGINT UNSIGNED NULL,
+  customer_id BIGINT UNSIGNED NULL,
+  customer_name VARCHAR(160) NULL,
+  title VARCHAR(190) NOT NULL,
+  description VARCHAR(2000) NULL,
+  priority VARCHAR(20) NOT NULL DEFAULT 'normal',
+  status VARCHAR(20) NOT NULL DEFAULT 'open',
+  assignee_id BIGINT UNSIGNED NULL,
+  assignee_name VARCHAR(120) NULL,
+  resolution VARCHAR(1000) NULL,
+  created_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_tickets_status (status),
+  KEY idx_tickets_project (project_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS event_outbox (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  event_id CHAR(36) NOT NULL,
+  event_type VARCHAR(60) NOT NULL,
+  aggregate_id VARCHAR(80) NOT NULL,
+  customer_id BIGINT UNSIGNED NULL,
+  destination VARCHAR(30) NOT NULL,
+  payload JSON NOT NULL,
+  actor_id BIGINT UNSIGNED NULL,
+  request_id VARCHAR(80) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  attempts INT NOT NULL DEFAULT 0,
+  next_retry_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_error VARCHAR(1000) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  published_at DATETIME NULL,
+  PRIMARY KEY (id),
+  KEY idx_outbox_status (status, next_retry_at),
+  KEY idx_outbox_event (event_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS event_inbox (
+  event_id CHAR(36) NOT NULL,
+  event_type VARCHAR(60) NOT NULL,
+  payload JSON NOT NULL,
+  received_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (event_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

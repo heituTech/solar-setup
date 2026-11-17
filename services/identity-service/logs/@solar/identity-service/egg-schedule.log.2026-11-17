@@ -1,0 +1,66 @@
+2026-11-17 21:59:54,114 INFO 12936 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 21:59:54,114 INFO 12936 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 21:59:54,114 INFO 12936 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 21:59:54,739 INFO 9508 [Timer] D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js next time will execute after 23405262ms at 2026-11-18 04:30:00.001
+2026-11-17 21:59:54,739 INFO 9508 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 7205261ms at 2026-11-18 00:00:00.000
+2026-11-17 21:59:54,740 INFO 9508 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 7206260ms at 2026-11-18 00:00:01.000
+2026-11-17 22:50:14,958 INFO 14864 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 22:50:14,958 INFO 14864 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 22:50:14,958 INFO 14864 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 22:50:16,113 INFO 11304 [Timer] D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js next time will execute after 20383889ms at 2026-11-18 04:30:00.002
+2026-11-17 22:50:16,114 INFO 11304 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 4183887ms at 2026-11-18 00:00:00.001
+2026-11-17 22:50:16,114 INFO 11304 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 4184886ms at 2026-11-18 00:00:01.000
+2026-11-17 22:50:30,549 INFO 18164 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 22:50:30,549 INFO 18164 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 22:50:30,549 INFO 18164 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 22:52:37,495 INFO 11976 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 22:52:37,495 INFO 11976 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 22:52:37,495 INFO 11976 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 22:52:38,149 INFO 2988 [Timer] D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js next time will execute after 20241853ms at 2026-11-18 04:30:00.002
+2026-11-17 22:52:38,149 INFO 2988 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 4041851ms at 2026-11-18 00:00:00.000
+2026-11-17 22:52:38,149 INFO 2988 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 4042851ms at 2026-11-18 00:00:01.000
+2026-11-17 22:54:24,289 INFO 13956 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 22:54:24,289 INFO 13956 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 22:54:24,289 INFO 13956 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 22:54:24,944 INFO 8880 [Timer] D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js next time will execute after 20135057ms at 2026-11-18 04:30:00.001
+2026-11-17 22:54:24,944 INFO 8880 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 3935056ms at 2026-11-18 00:00:00.000
+2026-11-17 22:54:24,944 INFO 8880 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 3936056ms at 2026-11-18 00:00:01.000
+2026-11-17 22:58:11,937 INFO 5840 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 22:58:11,937 INFO 5840 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 22:58:11,937 INFO 5840 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 22:58:55,233 INFO 14220 [Timer] D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js next time will execute after 19864769ms at 2026-11-18 04:30:00.002
+2026-11-17 22:58:55,233 INFO 14220 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 3664767ms at 2026-11-18 00:00:00.000
+2026-11-17 22:58:55,233 INFO 14220 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 3665767ms at 2026-11-18 00:00:01.000
+2026-11-17 22:58:54,605 INFO 18584 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 22:58:54,605 INFO 18584 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 22:58:54,605 INFO 18584 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 23:10:27,336 INFO 14088 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 23:10:27,336 INFO 14088 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 23:10:27,336 INFO 14088 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 23:10:27,979 INFO 17548 [Timer] D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js next time will execute after 19172023ms at 2026-11-18 04:30:00.001
+2026-11-17 23:10:27,979 INFO 17548 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 2972021ms at 2026-11-18 00:00:00.000
+2026-11-17 23:10:27,979 INFO 17548 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 2973021ms at 2026-11-18 00:00:01.000
+2026-11-17 23:14:18,819 INFO 14956 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 23:14:18,819 INFO 14956 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 23:14:18,819 INFO 14956 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 23:14:19,457 INFO 2220 [Timer] D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js next time will execute after 18940544ms at 2026-11-18 04:30:00.001
+2026-11-17 23:14:19,458 INFO 2220 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 2740542ms at 2026-11-18 00:00:00.000
+2026-11-17 23:14:19,458 INFO 2220 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 2741542ms at 2026-11-18 00:00:01.000
+2026-11-17 23:51:51,068 INFO 22392 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 23:51:51,068 INFO 22392 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 23:51:51,068 INFO 22392 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 23:51:52,641 INFO 11480 [Timer] D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js next time will execute after 16687360ms at 2026-11-18 04:30:00.001
+2026-11-17 23:51:52,641 INFO 11480 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 487359ms at 2026-11-18 00:00:00.000
+2026-11-17 23:51:52,641 INFO 11480 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 488359ms at 2026-11-18 00:00:01.000
+2026-11-17 23:52:00,116 INFO 18316 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 23:52:00,116 INFO 18316 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 23:52:00,116 INFO 18316 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-17 23:52:09,606 INFO 11424 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-multipart\app\schedule\clean_tmpdir.js
+2026-11-17 23:52:09,606 INFO 11424 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js
+2026-11-17 23:52:09,606 INFO 11424 [egg-schedule]: register schedule D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js
+2026-11-18 00:00:00,007 INFO 11424 [Job#17949312000057593435178942001] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js executing by app
+2026-11-18 00:00:00,013 INFO 11424 [Job#17949312000057593435178942001] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js execute succeed, used 6ms. 
+2026-11-18 00:00:00,009 INFO 11480 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\clean_log.js next time will execute after 86399994ms at 2026-11-19 00:00:00.003
+2026-11-18 00:00:01,007 INFO 11424 [Job#17949312010067593445188801001] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js executing by app
+2026-11-18 00:00:01,022 INFO 11424 [Job#17949312010067593445188801001] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js execute succeed, used 15ms. 
+2026-11-18 00:00:01,008 INFO 11480 [Timer] D:\workspace\github\solar-setup\node_modules\egg-logrotator\app\schedule\rotate_by_file.js next time will execute after 86399993ms at 2026-11-19 00:00:01.001

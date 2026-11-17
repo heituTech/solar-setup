@@ -1,0 +1,482 @@
+2026-11-17 21:59:47,692 INFO 9508 [egg:logger] init all loggers with options: {"dir":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\logs\\@solar\\identity-service","encoding":"utf8","env":"local","level":"INFO","consoleLevel":"INFO","disableConsoleAfterReady":false,"outputJSON":false,"buffer":true,"appLogName":"@solar/identity-service-web.log","coreLogName":"egg-web.log","agentLogName":"egg-agent.log","errorLogName":"common-error.log","coreLogger":{"consoleLevel":"WARN"},"allowDebugAtProd":false,"enablePerformanceTimer":false,"enableFastContextLogger":false,"type":"agent","localStorage":{}}
+2026-11-17 21:59:47,697 INFO 9508 [egg:core] dump config after load, 3ms
+2026-11-17 21:59:47,836 INFO 9508 [egg-watcher] Start watching: ["D:\\workspace\\github\\solar-setup\\services\\identity-service\\app","D:\\workspace\\github\\solar-setup\\services\\identity-service\\config","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy","D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"]
+2026-11-17 21:59:47,836 INFO 9508 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app"
+2026-11-17 21:59:47,837 INFO 9508 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config"
+2026-11-17 21:59:47,837 INFO 9508 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks"
+2026-11-17 21:59:47,838 INFO 9508 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy"
+2026-11-17 21:59:47,838 INFO 9508 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"
+2026-11-17 21:59:47,842 INFO 9508 [egg-watcher:agent] watcher start success
+2026-11-17 21:59:47,855 INFO 9508 egg start timeline:
+▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ [4247ms] - #0 Process Start
+                                        ▇▇▇▇▇▇▇▇▇ [1018ms] - #1 Application Start
+                                        ▇ [83ms] - #2 Load Plugin
+                                         ▇ [131ms] - #3 Load Config
+                                         ▇ [9ms] - #4 Require(0) config/config.default.js
+                                         ▇ [2ms] - #5 Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js
+                                         ▇ [2ms] - #6 Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js
+                                         ▇ [2ms] - #7 Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js
+                                         ▇ [2ms] - #8 Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js
+                                         ▇ [2ms] - #9 Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js
+                                         ▇ [1ms] - #10 Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js
+                                         ▇ [2ms] - #11 Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js
+                                         ▇ [2ms] - #12 Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js
+                                          ▇ [2ms] - #13 Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js
+                                          ▇ [2ms] - #14 Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js
+                                          ▇ [2ms] - #15 Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js
+                                          ▇ [2ms] - #16 Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js
+                                          ▇ [2ms] - #17 Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js
+                                          ▇ [0ms] - #18 Require(14) config/config.default.js
+                                          ▇ [2ms] - #19 Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js
+                                          ▇ [2ms] - #20 Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js
+                                          ▇ [2ms] - #21 Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js
+                                          ▇ [2ms] - #22 Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js
+                                          ▇▇ [250ms] - #23 Load extend/agent.js
+                                          ▇ [7ms] - #24 Require(19) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/agent.js
+                                          ▇ [169ms] - #25 Require(20) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/agent.js
+                                            ▇ [9ms] - #26 Require(21) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/agent.js
+                                             ▇▇ [218ms] - #27 Load extend/context.js
+                                             ▇ [43ms] - #28 Require(22) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js
+                                             ▇ [13ms] - #29 Require(23) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js
+                                             ▇ [3ms] - #30 Require(24) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js
+                                             ▇ [76ms] - #31 Require(25) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js
+                                              ▇ [6ms] - #32 Require(26) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js
+                                              ▇ [12ms] - #33 Require(27) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js
+                                               ▇ [139ms] - #34 Load agent.js
+                                               ▇ [2ms] - #35 Require(28) D:/workspace/github/solar-setup/node_modules/egg-security/agent.js
+                                               ▇ [2ms] - #36 Require(29) D:/workspace/github/solar-setup/node_modules/egg-onerror/agent.js
+                                               ▇ [47ms] - #37 Require(30) D:/workspace/github/solar-setup/node_modules/egg-watcher/agent.js
+                                               ▇ [10ms] - #38 Require(31) D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js
+                                               ▇ [45ms] - #39 Require(32) D:/workspace/github/solar-setup/node_modules/egg-development/agent.js
+                                                ▇ [2ms] - #40 Require(33) D:/workspace/github/solar-setup/node_modules/egg-logrotator/agent.js
+                                                ▇ [2ms] - #41 Require(34) D:/workspace/github/solar-setup/node_modules/egg/agent.js
+                                                ▇ [149ms] - #42 Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14
+                                                ▇ [92ms] - #43 Before Start in D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js:12:9
+                                                ▇ [150ms] - #44 Before Start in D:/workspace/github/solar-setup/node_modules/egg-development/agent.js:9:9
+2026-11-17 21:59:47,855 INFO 9508 [egg:core] dump config after ready, 6ms
+2026-11-17 21:59:54,610 INFO 9508 [egg-watcher] Received a change event from eventSource: {"event":"rename","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\public","stat":{"dev":646611047,"mode":16822,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":281474977039299,"size":0,"blocks":0,"atimeMs":1794923994604.9465,"mtimeMs":1794923994604.9465,"ctimeMs":1794923994604.9465,"birthtimeMs":1794923994604.9465},"remove":false,"isDirectory":true,"isFile":false}
+2026-11-17 22:50:06,811 INFO 11304 [egg:logger] init all loggers with options: {"dir":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\logs\\@solar\\identity-service","encoding":"utf8","env":"local","level":"INFO","consoleLevel":"INFO","disableConsoleAfterReady":false,"outputJSON":false,"buffer":true,"appLogName":"@solar/identity-service-web.log","coreLogName":"egg-web.log","agentLogName":"egg-agent.log","errorLogName":"common-error.log","coreLogger":{"consoleLevel":"WARN"},"allowDebugAtProd":false,"enablePerformanceTimer":false,"enableFastContextLogger":false,"type":"agent","localStorage":{}}
+2026-11-17 22:50:06,819 INFO 11304 [egg:core] dump config after load, 5ms
+2026-11-17 22:50:07,024 INFO 11304 [egg-watcher] Start watching: ["D:\\workspace\\github\\solar-setup\\services\\identity-service\\app","D:\\workspace\\github\\solar-setup\\services\\identity-service\\config","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy","D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"]
+2026-11-17 22:50:07,024 INFO 11304 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app"
+2026-11-17 22:50:07,025 INFO 11304 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config"
+2026-11-17 22:50:07,025 INFO 11304 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks"
+2026-11-17 22:50:07,026 INFO 11304 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy"
+2026-11-17 22:50:07,026 INFO 11304 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"
+2026-11-17 22:50:07,031 INFO 11304 [egg-watcher:agent] watcher start success
+2026-11-17 22:50:07,071 INFO 11304 egg start timeline:
+▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ [5367ms] - #0 Process Start
+                                      ▇▇▇▇▇▇▇▇▇▇▇ [1547ms] - #1 Application Start
+                                       ▇ [125ms] - #2 Load Plugin
+                                        ▇ [200ms] - #3 Load Config
+                                        ▇ [14ms] - #4 Require(0) config/config.default.js
+                                        ▇ [3ms] - #5 Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js
+                                        ▇ [3ms] - #6 Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js
+                                        ▇ [3ms] - #7 Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js
+                                        ▇ [3ms] - #8 Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js
+                                        ▇ [3ms] - #9 Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js
+                                        ▇ [4ms] - #10 Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js
+                                        ▇ [3ms] - #11 Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js
+                                        ▇ [3ms] - #12 Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js
+                                        ▇ [3ms] - #13 Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js
+                                        ▇ [3ms] - #14 Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js
+                                        ▇ [3ms] - #15 Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js
+                                        ▇ [2ms] - #16 Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js
+                                        ▇ [4ms] - #17 Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js
+                                         ▇ [0ms] - #18 Require(14) config/config.default.js
+                                         ▇ [3ms] - #19 Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js
+                                         ▇ [4ms] - #20 Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js
+                                         ▇ [3ms] - #21 Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js
+                                         ▇ [2ms] - #22 Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js
+                                         ▇▇ [362ms] - #23 Load extend/agent.js
+                                         ▇ [9ms] - #24 Require(19) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/agent.js
+                                         ▇ [241ms] - #25 Require(20) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/agent.js
+                                           ▇ [13ms] - #26 Require(21) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/agent.js
+                                            ▇▇ [337ms] - #27 Load extend/context.js
+                                            ▇ [63ms] - #28 Require(22) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js
+                                            ▇ [20ms] - #29 Require(23) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js
+                                            ▇ [3ms] - #30 Require(24) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js
+                                            ▇ [116ms] - #31 Require(25) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js
+                                             ▇ [9ms] - #32 Require(26) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js
+                                              ▇ [21ms] - #33 Require(27) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js
+                                              ▇ [209ms] - #34 Load agent.js
+                                              ▇ [4ms] - #35 Require(28) D:/workspace/github/solar-setup/node_modules/egg-security/agent.js
+                                              ▇ [3ms] - #36 Require(29) D:/workspace/github/solar-setup/node_modules/egg-onerror/agent.js
+                                              ▇ [71ms] - #37 Require(30) D:/workspace/github/solar-setup/node_modules/egg-watcher/agent.js
+                                               ▇ [15ms] - #38 Require(31) D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js
+                                               ▇ [67ms] - #39 Require(32) D:/workspace/github/solar-setup/node_modules/egg-development/agent.js
+                                               ▇ [3ms] - #40 Require(33) D:/workspace/github/solar-setup/node_modules/egg-logrotator/agent.js
+                                                ▇ [3ms] - #41 Require(34) D:/workspace/github/solar-setup/node_modules/egg/agent.js
+                                                ▇ [218ms] - #42 Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14
+                                                ▇ [135ms] - #43 Before Start in D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js:12:9
+                                                ▇ [251ms] - #44 Before Start in D:/workspace/github/solar-setup/node_modules/egg-development/agent.js:9:9
+2026-11-17 22:50:07,071 INFO 11304 [egg:core] dump config after ready, 6ms
+2026-11-17 22:50:13,819 WARN 11304 [agent:development] reload worker because D:\workspace\github\solar-setup\services\identity-service\app.js change
+2026-11-17 22:50:13,618 INFO 11304 [egg-watcher] Received a change event from eventSource: {"path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js","event":"change","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716917,"size":762,"blocks":8,"atimeMs":1794927013610.6592,"mtimeMs":1794922964596.5637,"ctimeMs":1794922964596.5637,"birthtimeMs":1794922964585.3362}}
+2026-11-17 22:50:16,253 WARN 11304 [agent:development] reload worker because D:\workspace\github\solar-setup\services\identity-service\app\controller\users.js change
+2026-11-17 22:50:15,893 INFO 11304 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\middleware\\cors.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716916,"size":74,"blocks":0,"atimeMs":1794927015873.869,"mtimeMs":1794922936556.333,"ctimeMs":1794922936556.333,"birthtimeMs":1794922936545.039},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:50:15,895 INFO 11304 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\middleware\\error_handler.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716915,"size":82,"blocks":0,"atimeMs":1794927015884.1282,"mtimeMs":1794922936174.5789,"ctimeMs":1794922936174.5789,"birthtimeMs":1794922936164.0354},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:50:15,902 INFO 11304 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\middleware\\request_id.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716914,"size":79,"blocks":0,"atimeMs":1794927015894.5552,"mtimeMs":1794922935908.279,"ctimeMs":1794922935908.279,"birthtimeMs":1794922935896.133},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:50:15,977 INFO 11304 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\approvals.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716924,"size":3900,"blocks":8,"atimeMs":1794927015968.732,"mtimeMs":1794923015786.2415,"ctimeMs":1794923015786.2415,"birthtimeMs":1794923015775.051},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:50:16,007 INFO 11304 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\auth.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716922,"size":2492,"blocks":8,"atimeMs":1794927015997.71,"mtimeMs":1794922996701.0615,"ctimeMs":1794922996701.0615,"birthtimeMs":1794922996690.533},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:50:16,041 INFO 11304 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\internal.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716925,"size":965,"blocks":8,"atimeMs":1794927016029.0527,"mtimeMs":1794923016261.3406,"ctimeMs":1794923016261.3406,"birthtimeMs":1794923016250.8044},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:50:16,051 INFO 11304 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\users.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716923,"size":4178,"blocks":16,"atimeMs":1794927016043.3655,"mtimeMs":1794923003924.4229,"ctimeMs":1794923003924.4229,"birthtimeMs":1794923003914.2673},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:50:22,596 WARN 11304 [ClusterClient:Connection] socket is closed by other side while there were still unhandled data in the socket buffer
+2026-11-17 22:50:22,623 WARN 11304 [ClusterClient:Connection] socket is closed by other side while there were still unhandled data in the socket buffer
+2026-11-17 22:52:30,481 INFO 2988 [egg:logger] init all loggers with options: {"dir":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\logs\\@solar\\identity-service","encoding":"utf8","env":"local","level":"INFO","consoleLevel":"INFO","disableConsoleAfterReady":false,"outputJSON":false,"buffer":true,"appLogName":"@solar/identity-service-web.log","coreLogName":"egg-web.log","agentLogName":"egg-agent.log","errorLogName":"common-error.log","coreLogger":{"consoleLevel":"WARN"},"allowDebugAtProd":false,"enablePerformanceTimer":false,"enableFastContextLogger":false,"type":"agent","localStorage":{}}
+2026-11-17 22:52:30,486 INFO 2988 [egg:core] dump config after load, 3ms
+2026-11-17 22:52:30,638 INFO 2988 [egg-watcher] Start watching: ["D:\\workspace\\github\\solar-setup\\services\\identity-service\\app","D:\\workspace\\github\\solar-setup\\services\\identity-service\\config","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy","D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"]
+2026-11-17 22:52:30,639 INFO 2988 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app"
+2026-11-17 22:52:30,639 INFO 2988 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config"
+2026-11-17 22:52:30,639 INFO 2988 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks"
+2026-11-17 22:52:30,640 INFO 2988 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy"
+2026-11-17 22:52:30,640 INFO 2988 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"
+2026-11-17 22:52:30,644 INFO 2988 [egg-watcher:agent] watcher start success
+2026-11-17 22:52:30,691 INFO 2988 egg start timeline:
+▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ [4642ms] - #0 Process Start
+                                       ▇▇▇▇▇▇▇▇▇▇ [1169ms] - #1 Application Start
+                                        ▇ [98ms] - #2 Load Plugin
+                                         ▇ [153ms] - #3 Load Config
+                                         ▇ [11ms] - #4 Require(0) config/config.default.js
+                                         ▇ [2ms] - #5 Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js
+                                         ▇ [2ms] - #6 Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js
+                                         ▇ [2ms] - #7 Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js
+                                         ▇ [3ms] - #8 Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js
+                                         ▇ [3ms] - #9 Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js
+                                         ▇ [3ms] - #10 Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js
+                                         ▇ [2ms] - #11 Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js
+                                         ▇ [2ms] - #12 Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js
+                                         ▇ [2ms] - #13 Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js
+                                         ▇ [1ms] - #14 Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js
+                                         ▇ [3ms] - #15 Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js
+                                         ▇ [2ms] - #16 Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js
+                                         ▇ [3ms] - #17 Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js
+                                          ▇ [0ms] - #18 Require(14) config/config.default.js
+                                          ▇ [2ms] - #19 Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js
+                                          ▇ [2ms] - #20 Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js
+                                          ▇ [2ms] - #21 Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js
+                                          ▇ [2ms] - #22 Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js
+                                          ▇▇ [275ms] - #23 Load extend/agent.js
+                                          ▇ [7ms] - #24 Require(19) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/agent.js
+                                          ▇ [184ms] - #25 Require(20) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/agent.js
+                                            ▇ [10ms] - #26 Require(21) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/agent.js
+                                            ▇▇ [239ms] - #27 Load extend/context.js
+                                            ▇ [48ms] - #28 Require(22) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js
+                                             ▇ [13ms] - #29 Require(23) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js
+                                             ▇ [3ms] - #30 Require(24) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js
+                                             ▇ [79ms] - #31 Require(25) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js
+                                              ▇ [7ms] - #32 Require(26) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js
+                                              ▇ [15ms] - #33 Require(27) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js
+                                              ▇ [151ms] - #34 Load agent.js
+                                              ▇ [3ms] - #35 Require(28) D:/workspace/github/solar-setup/node_modules/egg-security/agent.js
+                                              ▇ [2ms] - #36 Require(29) D:/workspace/github/solar-setup/node_modules/egg-onerror/agent.js
+                                               ▇ [51ms] - #37 Require(30) D:/workspace/github/solar-setup/node_modules/egg-watcher/agent.js
+                                               ▇ [11ms] - #38 Require(31) D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js
+                                               ▇ [45ms] - #39 Require(32) D:/workspace/github/solar-setup/node_modules/egg-development/agent.js
+                                                ▇ [2ms] - #40 Require(33) D:/workspace/github/solar-setup/node_modules/egg-logrotator/agent.js
+                                                ▇ [2ms] - #41 Require(34) D:/workspace/github/solar-setup/node_modules/egg/agent.js
+                                                ▇ [162ms] - #42 Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14
+                                                ▇ [100ms] - #43 Before Start in D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js:12:9
+                                                ▇ [205ms] - #44 Before Start in D:/workspace/github/solar-setup/node_modules/egg-development/agent.js:9:9
+2026-11-17 22:52:30,692 INFO 2988 [egg:core] dump config after ready, 4ms
+2026-11-17 22:54:17,281 INFO 8880 [egg:logger] init all loggers with options: {"dir":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\logs\\@solar\\identity-service","encoding":"utf8","env":"local","level":"INFO","consoleLevel":"INFO","disableConsoleAfterReady":false,"outputJSON":false,"buffer":true,"appLogName":"@solar/identity-service-web.log","coreLogName":"egg-web.log","agentLogName":"egg-agent.log","errorLogName":"common-error.log","coreLogger":{"consoleLevel":"WARN"},"allowDebugAtProd":false,"enablePerformanceTimer":false,"enableFastContextLogger":false,"type":"agent","localStorage":{}}
+2026-11-17 22:54:17,288 INFO 8880 [egg:core] dump config after load, 3ms
+2026-11-17 22:54:17,437 INFO 8880 [egg-watcher] Start watching: ["D:\\workspace\\github\\solar-setup\\services\\identity-service\\app","D:\\workspace\\github\\solar-setup\\services\\identity-service\\config","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy","D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"]
+2026-11-17 22:54:17,437 INFO 8880 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app"
+2026-11-17 22:54:17,437 INFO 8880 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config"
+2026-11-17 22:54:17,438 INFO 8880 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks"
+2026-11-17 22:54:17,438 INFO 8880 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy"
+2026-11-17 22:54:17,439 INFO 8880 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"
+2026-11-17 22:54:17,442 INFO 8880 [egg-watcher:agent] watcher start success
+2026-11-17 22:54:17,473 INFO 8880 egg start timeline:
+▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ [4521ms] - #0 Process Start
+                                       ▇▇▇▇▇▇▇▇▇▇ [1154ms] - #1 Application Start
+                                        ▇ [99ms] - #2 Load Plugin
+                                         ▇ [152ms] - #3 Load Config
+                                         ▇ [11ms] - #4 Require(0) config/config.default.js
+                                         ▇ [2ms] - #5 Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js
+                                         ▇ [3ms] - #6 Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js
+                                         ▇ [2ms] - #7 Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js
+                                         ▇ [2ms] - #8 Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js
+                                         ▇ [2ms] - #9 Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js
+                                         ▇ [2ms] - #10 Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js
+                                         ▇ [2ms] - #11 Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js
+                                         ▇ [2ms] - #12 Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js
+                                         ▇ [2ms] - #13 Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js
+                                         ▇ [2ms] - #14 Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js
+                                         ▇ [2ms] - #15 Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js
+                                         ▇ [3ms] - #16 Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js
+                                         ▇ [2ms] - #17 Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js
+                                         ▇ [0ms] - #18 Require(14) config/config.default.js
+                                         ▇ [3ms] - #19 Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js
+                                          ▇ [2ms] - #20 Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js
+                                          ▇ [2ms] - #21 Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js
+                                          ▇ [2ms] - #22 Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js
+                                          ▇▇ [279ms] - #23 Load extend/agent.js
+                                          ▇ [8ms] - #24 Require(19) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/agent.js
+                                          ▇ [185ms] - #25 Require(20) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/agent.js
+                                            ▇ [9ms] - #26 Require(21) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/agent.js
+                                            ▇▇ [242ms] - #27 Load extend/context.js
+                                            ▇ [48ms] - #28 Require(22) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js
+                                             ▇ [13ms] - #29 Require(23) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js
+                                             ▇ [3ms] - #30 Require(24) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js
+                                             ▇ [81ms] - #31 Require(25) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js
+                                              ▇ [7ms] - #32 Require(26) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js
+                                              ▇ [16ms] - #33 Require(27) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js
+                                              ▇ [150ms] - #34 Load agent.js
+                                               ▇ [3ms] - #35 Require(28) D:/workspace/github/solar-setup/node_modules/egg-security/agent.js
+                                               ▇ [1ms] - #36 Require(29) D:/workspace/github/solar-setup/node_modules/egg-onerror/agent.js
+                                               ▇ [50ms] - #37 Require(30) D:/workspace/github/solar-setup/node_modules/egg-watcher/agent.js
+                                               ▇ [10ms] - #38 Require(31) D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js
+                                               ▇ [47ms] - #39 Require(32) D:/workspace/github/solar-setup/node_modules/egg-development/agent.js
+                                                ▇ [2ms] - #40 Require(33) D:/workspace/github/solar-setup/node_modules/egg-logrotator/agent.js
+                                                ▇ [2ms] - #41 Require(34) D:/workspace/github/solar-setup/node_modules/egg/agent.js
+                                                ▇ [158ms] - #42 Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14
+                                                ▇ [99ms] - #43 Before Start in D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js:12:9
+                                                ▇ [184ms] - #44 Before Start in D:/workspace/github/solar-setup/node_modules/egg-development/agent.js:9:9
+2026-11-17 22:54:17,473 INFO 8880 [egg:core] dump config after ready, 4ms
+2026-11-17 22:58:05,433 INFO 8880 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\router.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716926,"size":2048,"blocks":8,"atimeMs":1794927485422.5647,"mtimeMs":1794923729972.6216,"ctimeMs":1794923729972.6216,"birthtimeMs":1794923019123.221},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:58:05,434 INFO 8880 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\health.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716921,"size":1014,"blocks":8,"atimeMs":1794927485422.5647,"mtimeMs":1794923710862.3054,"ctimeMs":1794923710862.3054,"birthtimeMs":1794922996174.3276},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 22:58:05,643 WARN 8880 [agent:development] reload worker because D:\workspace\github\solar-setup\services\identity-service\app\controller\health.js change
+2026-11-17 22:58:12,568 WARN 8880 [ClusterClient:Connection] socket is closed by other side while there were still unhandled data in the socket buffer
+2026-11-17 22:58:47,372 INFO 14220 [egg:logger] init all loggers with options: {"dir":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\logs\\@solar\\identity-service","encoding":"utf8","env":"local","level":"INFO","consoleLevel":"INFO","disableConsoleAfterReady":false,"outputJSON":false,"buffer":true,"appLogName":"@solar/identity-service-web.log","coreLogName":"egg-web.log","agentLogName":"egg-agent.log","errorLogName":"common-error.log","coreLogger":{"consoleLevel":"WARN"},"allowDebugAtProd":false,"enablePerformanceTimer":false,"enableFastContextLogger":false,"type":"agent","localStorage":{}}
+2026-11-17 22:58:47,377 INFO 14220 [egg:core] dump config after load, 3ms
+2026-11-17 22:58:47,523 INFO 14220 [egg-watcher] Start watching: ["D:\\workspace\\github\\solar-setup\\services\\identity-service\\app","D:\\workspace\\github\\solar-setup\\services\\identity-service\\config","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy","D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"]
+2026-11-17 22:58:47,523 INFO 14220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app"
+2026-11-17 22:58:47,524 INFO 14220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config"
+2026-11-17 22:58:47,524 INFO 14220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks"
+2026-11-17 22:58:47,524 INFO 14220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy"
+2026-11-17 22:58:47,525 INFO 14220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"
+2026-11-17 22:58:47,529 INFO 14220 [egg-watcher:agent] watcher start success
+2026-11-17 22:58:47,579 INFO 14220 egg start timeline:
+▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ [4479ms] - #0 Process Start
+                                       ▇▇▇▇▇▇▇▇▇▇ [1163ms] - #1 Application Start
+                                        ▇ [95ms] - #2 Load Plugin
+                                        ▇ [154ms] - #3 Load Config
+                                        ▇ [11ms] - #4 Require(0) config/config.default.js
+                                         ▇ [3ms] - #5 Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js
+                                         ▇ [2ms] - #6 Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js
+                                         ▇ [3ms] - #7 Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js
+                                         ▇ [2ms] - #8 Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js
+                                         ▇ [2ms] - #9 Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js
+                                         ▇ [3ms] - #10 Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js
+                                         ▇ [2ms] - #11 Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js
+                                         ▇ [2ms] - #12 Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js
+                                         ▇ [3ms] - #13 Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js
+                                         ▇ [2ms] - #14 Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js
+                                         ▇ [2ms] - #15 Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js
+                                         ▇ [2ms] - #16 Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js
+                                         ▇ [3ms] - #17 Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js
+                                         ▇ [0ms] - #18 Require(14) config/config.default.js
+                                         ▇ [2ms] - #19 Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js
+                                         ▇ [2ms] - #20 Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js
+                                          ▇ [3ms] - #21 Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js
+                                          ▇ [3ms] - #22 Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js
+                                          ▇▇ [277ms] - #23 Load extend/agent.js
+                                          ▇ [8ms] - #24 Require(19) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/agent.js
+                                          ▇ [186ms] - #25 Require(20) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/agent.js
+                                            ▇ [9ms] - #26 Require(21) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/agent.js
+                                            ▇▇ [237ms] - #27 Load extend/context.js
+                                            ▇ [46ms] - #28 Require(22) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js
+                                             ▇ [13ms] - #29 Require(23) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js
+                                             ▇ [3ms] - #30 Require(24) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js
+                                             ▇ [80ms] - #31 Require(25) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js
+                                              ▇ [7ms] - #32 Require(26) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js
+                                              ▇ [15ms] - #33 Require(27) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js
+                                              ▇ [150ms] - #34 Load agent.js
+                                              ▇ [3ms] - #35 Require(28) D:/workspace/github/solar-setup/node_modules/egg-security/agent.js
+                                              ▇ [2ms] - #36 Require(29) D:/workspace/github/solar-setup/node_modules/egg-onerror/agent.js
+                                              ▇ [51ms] - #37 Require(30) D:/workspace/github/solar-setup/node_modules/egg-watcher/agent.js
+                                               ▇ [11ms] - #38 Require(31) D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js
+                                               ▇ [46ms] - #39 Require(32) D:/workspace/github/solar-setup/node_modules/egg-development/agent.js
+                                                ▇ [2ms] - #40 Require(33) D:/workspace/github/solar-setup/node_modules/egg-logrotator/agent.js
+                                                ▇ [3ms] - #41 Require(34) D:/workspace/github/solar-setup/node_modules/egg/agent.js
+                                                ▇ [156ms] - #42 Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14
+                                                ▇ [96ms] - #43 Before Start in D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js:12:9
+                                                ▇ [200ms] - #44 Before Start in D:/workspace/github/solar-setup/node_modules/egg-development/agent.js:9:9
+2026-11-17 22:58:47,579 INFO 14220 [egg:core] dump config after ready, 5ms
+2026-11-17 23:00:21,106 INFO 14220 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\public","stat":{"dev":646611047,"mode":16822,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":281474977039299,"size":0,"blocks":0,"atimeMs":1794927621099.7498,"mtimeMs":1794923994604.9465,"ctimeMs":1794923994604.9465,"birthtimeMs":1794923994604.9465},"remove":false,"isDirectory":true,"isFile":false}
+2026-11-17 23:10:20,282 INFO 17548 [egg:logger] init all loggers with options: {"dir":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\logs\\@solar\\identity-service","encoding":"utf8","env":"local","level":"INFO","consoleLevel":"INFO","disableConsoleAfterReady":false,"outputJSON":false,"buffer":true,"appLogName":"@solar/identity-service-web.log","coreLogName":"egg-web.log","agentLogName":"egg-agent.log","errorLogName":"common-error.log","coreLogger":{"consoleLevel":"WARN"},"allowDebugAtProd":false,"enablePerformanceTimer":false,"enableFastContextLogger":false,"type":"agent","localStorage":{}}
+2026-11-17 23:10:20,287 INFO 17548 [egg:core] dump config after load, 3ms
+2026-11-17 23:10:20,438 INFO 17548 [egg-watcher] Start watching: ["D:\\workspace\\github\\solar-setup\\services\\identity-service\\app","D:\\workspace\\github\\solar-setup\\services\\identity-service\\config","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy","D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"]
+2026-11-17 23:10:20,438 INFO 17548 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app"
+2026-11-17 23:10:20,439 INFO 17548 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config"
+2026-11-17 23:10:20,439 INFO 17548 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks"
+2026-11-17 23:10:20,440 INFO 17548 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy"
+2026-11-17 23:10:20,440 INFO 17548 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"
+2026-11-17 23:10:20,444 INFO 17548 [egg-watcher:agent] watcher start success
+2026-11-17 23:10:20,474 INFO 17548 egg start timeline:
+▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ [4664ms] - #0 Process Start
+                                        ▇▇▇▇▇▇▇▇▇ [1140ms] - #1 Application Start
+                                        ▇ [97ms] - #2 Load Plugin
+                                         ▇ [152ms] - #3 Load Config
+                                         ▇ [11ms] - #4 Require(0) config/config.default.js
+                                         ▇ [2ms] - #5 Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js
+                                         ▇ [2ms] - #6 Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js
+                                         ▇ [2ms] - #7 Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js
+                                         ▇ [3ms] - #8 Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js
+                                         ▇ [2ms] - #9 Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js
+                                         ▇ [3ms] - #10 Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js
+                                         ▇ [2ms] - #11 Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js
+                                         ▇ [2ms] - #12 Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js
+                                         ▇ [3ms] - #13 Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js
+                                          ▇ [2ms] - #14 Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js
+                                          ▇ [2ms] - #15 Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js
+                                          ▇ [3ms] - #16 Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js
+                                          ▇ [2ms] - #17 Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js
+                                          ▇ [0ms] - #18 Require(14) config/config.default.js
+                                          ▇ [2ms] - #19 Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js
+                                          ▇ [2ms] - #20 Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js
+                                          ▇ [3ms] - #21 Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js
+                                          ▇ [2ms] - #22 Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js
+                                          ▇▇ [273ms] - #23 Load extend/agent.js
+                                          ▇ [8ms] - #24 Require(19) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/agent.js
+                                          ▇ [182ms] - #25 Require(20) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/agent.js
+                                            ▇ [9ms] - #26 Require(21) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/agent.js
+                                            ▇▇ [239ms] - #27 Load extend/context.js
+                                             ▇ [48ms] - #28 Require(22) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js
+                                             ▇ [14ms] - #29 Require(23) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js
+                                             ▇ [2ms] - #30 Require(24) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js
+                                             ▇ [80ms] - #31 Require(25) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js
+                                              ▇ [6ms] - #32 Require(26) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js
+                                              ▇ [16ms] - #33 Require(27) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js
+                                               ▇ [148ms] - #34 Load agent.js
+                                               ▇ [3ms] - #35 Require(28) D:/workspace/github/solar-setup/node_modules/egg-security/agent.js
+                                               ▇ [2ms] - #36 Require(29) D:/workspace/github/solar-setup/node_modules/egg-onerror/agent.js
+                                               ▇ [49ms] - #37 Require(30) D:/workspace/github/solar-setup/node_modules/egg-watcher/agent.js
+                                               ▇ [10ms] - #38 Require(31) D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js
+                                               ▇ [47ms] - #39 Require(32) D:/workspace/github/solar-setup/node_modules/egg-development/agent.js
+                                                ▇ [2ms] - #40 Require(33) D:/workspace/github/solar-setup/node_modules/egg-logrotator/agent.js
+                                                ▇ [3ms] - #41 Require(34) D:/workspace/github/solar-setup/node_modules/egg/agent.js
+                                                ▇ [161ms] - #42 Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14
+                                                ▇ [99ms] - #43 Before Start in D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js:12:9
+                                                ▇ [185ms] - #44 Before Start in D:/workspace/github/solar-setup/node_modules/egg-development/agent.js:9:9
+2026-11-17 23:10:20,474 INFO 17548 [egg:core] dump config after ready, 4ms
+2026-11-17 23:14:11,211 INFO 2220 [egg:logger] init all loggers with options: {"dir":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\logs\\@solar\\identity-service","encoding":"utf8","env":"local","level":"INFO","consoleLevel":"INFO","disableConsoleAfterReady":false,"outputJSON":false,"buffer":true,"appLogName":"@solar/identity-service-web.log","coreLogName":"egg-web.log","agentLogName":"egg-agent.log","errorLogName":"common-error.log","coreLogger":{"consoleLevel":"WARN"},"allowDebugAtProd":false,"enablePerformanceTimer":false,"enableFastContextLogger":false,"type":"agent","localStorage":{}}
+2026-11-17 23:14:11,218 INFO 2220 [egg:core] dump config after load, 5ms
+2026-11-17 23:14:11,368 INFO 2220 [egg-watcher] Start watching: ["D:\\workspace\\github\\solar-setup\\services\\identity-service\\app","D:\\workspace\\github\\solar-setup\\services\\identity-service\\config","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy","D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"]
+2026-11-17 23:14:11,368 INFO 2220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app"
+2026-11-17 23:14:11,369 INFO 2220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config"
+2026-11-17 23:14:11,369 INFO 2220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks"
+2026-11-17 23:14:11,370 INFO 2220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy"
+2026-11-17 23:14:11,370 INFO 2220 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"
+2026-11-17 23:14:11,373 INFO 2220 [egg-watcher:agent] watcher start success
+2026-11-17 23:14:11,398 INFO 2220 egg start timeline:
+▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ [4429ms] - #0 Process Start
+                                       ▇▇▇▇▇▇▇▇▇▇ [1141ms] - #1 Application Start
+                                        ▇ [96ms] - #2 Load Plugin
+                                        ▇ [154ms] - #3 Load Config
+                                        ▇ [11ms] - #4 Require(0) config/config.default.js
+                                         ▇ [2ms] - #5 Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js
+                                         ▇ [2ms] - #6 Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js
+                                         ▇ [3ms] - #7 Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js
+                                         ▇ [3ms] - #8 Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js
+                                         ▇ [2ms] - #9 Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js
+                                         ▇ [2ms] - #10 Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js
+                                         ▇ [3ms] - #11 Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js
+                                         ▇ [2ms] - #12 Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js
+                                         ▇ [2ms] - #13 Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js
+                                         ▇ [2ms] - #14 Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js
+                                         ▇ [2ms] - #15 Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js
+                                         ▇ [3ms] - #16 Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js
+                                         ▇ [2ms] - #17 Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js
+                                         ▇ [0ms] - #18 Require(14) config/config.default.js
+                                         ▇ [3ms] - #19 Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js
+                                          ▇ [2ms] - #20 Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js
+                                          ▇ [3ms] - #21 Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js
+                                          ▇ [2ms] - #22 Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js
+                                          ▇▇ [274ms] - #23 Load extend/agent.js
+                                          ▇ [7ms] - #24 Require(19) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/agent.js
+                                          ▇ [181ms] - #25 Require(20) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/agent.js
+                                            ▇ [10ms] - #26 Require(21) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/agent.js
+                                            ▇▇ [240ms] - #27 Load extend/context.js
+                                            ▇ [48ms] - #28 Require(22) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js
+                                             ▇ [14ms] - #29 Require(23) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js
+                                             ▇ [3ms] - #30 Require(24) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js
+                                             ▇ [79ms] - #31 Require(25) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js
+                                              ▇ [7ms] - #32 Require(26) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js
+                                              ▇ [15ms] - #33 Require(27) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js
+                                              ▇ [149ms] - #34 Load agent.js
+                                              ▇ [3ms] - #35 Require(28) D:/workspace/github/solar-setup/node_modules/egg-security/agent.js
+                                               ▇ [2ms] - #36 Require(29) D:/workspace/github/solar-setup/node_modules/egg-onerror/agent.js
+                                               ▇ [48ms] - #37 Require(30) D:/workspace/github/solar-setup/node_modules/egg-watcher/agent.js
+                                               ▇ [12ms] - #38 Require(31) D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js
+                                               ▇ [48ms] - #39 Require(32) D:/workspace/github/solar-setup/node_modules/egg-development/agent.js
+                                                ▇ [2ms] - #40 Require(33) D:/workspace/github/solar-setup/node_modules/egg-logrotator/agent.js
+                                                ▇ [2ms] - #41 Require(34) D:/workspace/github/solar-setup/node_modules/egg/agent.js
+                                                ▇ [161ms] - #42 Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14
+                                                ▇ [101ms] - #43 Before Start in D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js:12:9
+                                                ▇ [181ms] - #44 Before Start in D:/workspace/github/solar-setup/node_modules/egg-development/agent.js:9:9
+2026-11-17 23:14:11,398 INFO 2220 [egg:core] dump config after ready, 3ms
+2026-11-17 23:38:45,921 INFO 2220 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\schedule","stat":{"dev":646611047,"mode":16822,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716850,"size":0,"blocks":0,"atimeMs":1794929925894.731,"mtimeMs":1794921636789.9385,"ctimeMs":1794921636789.9385,"birthtimeMs":1794921636789.9385},"remove":false,"isDirectory":true,"isFile":false}
+2026-11-17 23:38:45,922 INFO 2220 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\service","stat":{"dev":646611047,"mode":16822,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716848,"size":0,"blocks":0,"atimeMs":1794929925894.731,"mtimeMs":1794921636783.797,"ctimeMs":1794921636783.797,"birthtimeMs":1794921636783.797},"remove":false,"isDirectory":true,"isFile":false}
+2026-11-17 23:43:09,873 INFO 2220 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\middleware","stat":{"dev":646611047,"mode":16822,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716849,"size":0,"blocks":0,"atimeMs":1794930189868.9854,"mtimeMs":1794922936545.039,"ctimeMs":1794922936545.039,"birthtimeMs":1794921636787.407},"remove":false,"isDirectory":true,"isFile":false}
+2026-11-17 23:47:21,702 INFO 2220 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller","stat":{"dev":646611047,"mode":16822,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716847,"size":0,"blocks":8,"atimeMs":1794930441696.2983,"mtimeMs":1794923016250.8044,"ctimeMs":1794923016250.8044,"birthtimeMs":1794921636783.797},"remove":false,"isDirectory":true,"isFile":false}
+2026-11-17 23:51:41,659 INFO 11480 [egg:logger] init all loggers with options: {"dir":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\logs\\@solar\\identity-service","encoding":"utf8","env":"local","level":"INFO","consoleLevel":"INFO","disableConsoleAfterReady":false,"outputJSON":false,"buffer":true,"appLogName":"@solar/identity-service-web.log","coreLogName":"egg-web.log","agentLogName":"egg-agent.log","errorLogName":"common-error.log","coreLogger":{"consoleLevel":"WARN"},"allowDebugAtProd":false,"enablePerformanceTimer":false,"enableFastContextLogger":false,"type":"agent","localStorage":{}}
+2026-11-17 23:51:41,665 INFO 11480 [egg:core] dump config after load, 3ms
+2026-11-17 23:51:41,837 INFO 11480 [egg-watcher] Start watching: ["D:\\workspace\\github\\solar-setup\\services\\identity-service\\app","D:\\workspace\\github\\solar-setup\\services\\identity-service\\config","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks","D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy","D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"]
+2026-11-17 23:51:41,837 INFO 11480 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app"
+2026-11-17 23:51:41,838 INFO 11480 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config"
+2026-11-17 23:51:41,839 INFO 11480 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks"
+2026-11-17 23:51:41,839 INFO 11480 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\mocks_proxy"
+2026-11-17 23:51:41,839 INFO 11480 [egg-watcher] Start watching: "D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js"
+2026-11-17 23:51:41,843 INFO 11480 [egg-watcher:agent] watcher start success
+2026-11-17 23:51:41,885 INFO 11480 egg start timeline:
+▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ [5113ms] - #0 Process Start
+                                       ▇▇▇▇▇▇▇▇▇▇ [1322ms] - #1 Application Start
+                                        ▇ [107ms] - #2 Load Plugin
+                                        ▇ [172ms] - #3 Load Config
+                                        ▇ [12ms] - #4 Require(0) config/config.default.js
+                                         ▇ [3ms] - #5 Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js
+                                         ▇ [3ms] - #6 Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js
+                                         ▇ [3ms] - #7 Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js
+                                         ▇ [3ms] - #8 Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js
+                                         ▇ [3ms] - #9 Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js
+                                         ▇ [2ms] - #10 Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js
+                                         ▇ [2ms] - #11 Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js
+                                         ▇ [2ms] - #12 Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js
+                                         ▇ [3ms] - #13 Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js
+                                         ▇ [3ms] - #14 Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js
+                                         ▇ [3ms] - #15 Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js
+                                         ▇ [3ms] - #16 Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js
+                                         ▇ [3ms] - #17 Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js
+                                         ▇ [0ms] - #18 Require(14) config/config.default.js
+                                         ▇ [4ms] - #19 Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js
+                                         ▇ [3ms] - #20 Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js
+                                          ▇ [2ms] - #21 Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js
+                                          ▇ [3ms] - #22 Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js
+                                          ▇▇ [319ms] - #23 Load extend/agent.js
+                                          ▇ [8ms] - #24 Require(19) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/agent.js
+                                          ▇ [210ms] - #25 Require(20) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/agent.js
+                                            ▇ [10ms] - #26 Require(21) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/agent.js
+                                            ▇▇ [276ms] - #27 Load extend/context.js
+                                            ▇ [57ms] - #28 Require(22) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js
+                                             ▇ [14ms] - #29 Require(23) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js
+                                             ▇ [3ms] - #30 Require(24) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js
+                                             ▇ [89ms] - #31 Require(25) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js
+                                              ▇ [7ms] - #32 Require(26) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js
+                                              ▇ [18ms] - #33 Require(27) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js
+                                              ▇ [175ms] - #34 Load agent.js
+                                              ▇ [4ms] - #35 Require(28) D:/workspace/github/solar-setup/node_modules/egg-security/agent.js
+                                              ▇ [2ms] - #36 Require(29) D:/workspace/github/solar-setup/node_modules/egg-onerror/agent.js
+                                               ▇ [57ms] - #37 Require(30) D:/workspace/github/solar-setup/node_modules/egg-watcher/agent.js
+                                               ▇ [13ms] - #38 Require(31) D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js
+                                               ▇ [56ms] - #39 Require(32) D:/workspace/github/solar-setup/node_modules/egg-development/agent.js
+                                                ▇ [2ms] - #40 Require(33) D:/workspace/github/solar-setup/node_modules/egg-logrotator/agent.js
+                                                ▇ [2ms] - #41 Require(34) D:/workspace/github/solar-setup/node_modules/egg/agent.js
+                                                ▇ [182ms] - #42 Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14
+                                                ▇ [112ms] - #43 Before Start in D:/workspace/github/solar-setup/node_modules/egg-schedule/agent.js:12:9
+                                                ▇ [219ms] - #44 Before Start in D:/workspace/github/solar-setup/node_modules/egg-development/agent.js:9:9
+2026-11-17 23:51:41,886 INFO 11480 [egg:core] dump config after ready, 5ms
+2026-11-17 23:51:49,198 WARN 11480 [agent:development] reload worker because D:\workspace\github\solar-setup\services\identity-service\app.js change
+2026-11-17 23:51:48,993 INFO 11480 [egg-watcher] Received a change event from eventSource: {"path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app.js","event":"change","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716917,"size":762,"blocks":8,"atimeMs":1794930708992.071,"mtimeMs":1794922964596.5637,"ctimeMs":1794922964596.5637,"birthtimeMs":1794922964585.3362}}
+2026-11-17 23:51:52,313 INFO 11480 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\middleware\\cors.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716916,"size":74,"blocks":0,"atimeMs":1794930712290.1055,"mtimeMs":1794922936556.333,"ctimeMs":1794922936556.333,"birthtimeMs":1794922936545.039},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 23:51:52,314 INFO 11480 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\middleware\\error_handler.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716915,"size":82,"blocks":0,"atimeMs":1794930712302.8518,"mtimeMs":1794922936174.5789,"ctimeMs":1794922936174.5789,"birthtimeMs":1794922936164.0354},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 23:51:52,325 INFO 11480 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\middleware\\request_id.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716914,"size":79,"blocks":0,"atimeMs":1794930712315.3801,"mtimeMs":1794922935908.279,"ctimeMs":1794922935908.279,"birthtimeMs":1794922935896.133},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 23:51:52,452 INFO 11480 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\approvals.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716924,"size":3900,"blocks":8,"atimeMs":1794930712439.967,"mtimeMs":1794923015786.2415,"ctimeMs":1794923015786.2415,"birthtimeMs":1794923015775.051},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 23:51:52,500 INFO 11480 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\auth.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716922,"size":2492,"blocks":8,"atimeMs":1794930712487.1216,"mtimeMs":1794922996701.0615,"ctimeMs":1794922996701.0615,"birthtimeMs":1794922996690.533},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 23:51:52,557 INFO 11480 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\internal.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716925,"size":965,"blocks":8,"atimeMs":1794930712544.3333,"mtimeMs":1794923016261.3406,"ctimeMs":1794923016261.3406,"birthtimeMs":1794923016250.8044},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 23:51:52,573 INFO 11480 [egg-watcher] Received a change event from eventSource: {"event":"change","path":"D:\\workspace\\github\\solar-setup\\services\\identity-service\\app\\controller\\users.js","stat":{"dev":646611047,"mode":33206,"nlink":1,"uid":0,"gid":0,"rdev":0,"blksize":4096,"ino":562949953716923,"size":4178,"blocks":16,"atimeMs":1794930712561.136,"mtimeMs":1794923003924.4229,"ctimeMs":1794923003924.4229,"birthtimeMs":1794923003914.2673},"remove":false,"isDirectory":false,"isFile":true}
+2026-11-17 23:51:52,782 WARN 11480 [agent:development] reload worker because D:\workspace\github\solar-setup\services\identity-service\app\controller\users.js change
+2026-11-17 23:52:01,068 WARN 11480 [ClusterClient:Connection] socket is closed by other side while there were still unhandled data in the socket buffer
+2026-11-17 23:52:01,099 WARN 11480 [ClusterClient:Connection] socket is closed by other side while there were still unhandled data in the socket buffer

@@ -1,0 +1,538 @@
+[
+  {
+    "name": "Process Start",
+    "start": 1794934243533,
+    "end": 1794934248757,
+    "duration": 5224,
+    "pid": 13104,
+    "index": 0
+  },
+  {
+    "name": "Application Start",
+    "start": 1794934248761,
+    "end": 1794934251905,
+    "duration": 3144,
+    "pid": 13104,
+    "index": 1
+  },
+  {
+    "name": "Load Plugin",
+    "start": 1794934248808,
+    "end": 1794934248920,
+    "duration": 112,
+    "pid": 13104,
+    "index": 2
+  },
+  {
+    "name": "Load Config",
+    "start": 1794934248920,
+    "end": 1794934249095,
+    "duration": 175,
+    "pid": 13104,
+    "index": 3
+  },
+  {
+    "name": "Require(0) config/config.default.js",
+    "start": 1794934248924,
+    "end": 1794934248936,
+    "duration": 12,
+    "pid": 13104,
+    "index": 4
+  },
+  {
+    "name": "Require(1) D:/workspace/github/solar-setup/node_modules/egg-session/config/config.default.js",
+    "start": 1794934248945,
+    "end": 1794934248947,
+    "duration": 2,
+    "pid": 13104,
+    "index": 5
+  },
+  {
+    "name": "Require(2) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.default.js",
+    "start": 1794934248951,
+    "end": 1794934248954,
+    "duration": 3,
+    "pid": 13104,
+    "index": 6
+  },
+  {
+    "name": "Require(3) D:/workspace/github/solar-setup/node_modules/egg-jsonp/config/config.default.js",
+    "start": 1794934248959,
+    "end": 1794934248961,
+    "duration": 2,
+    "pid": 13104,
+    "index": 7
+  },
+  {
+    "name": "Require(4) D:/workspace/github/solar-setup/node_modules/egg-onerror/config/config.default.js",
+    "start": 1794934248966,
+    "end": 1794934248968,
+    "duration": 2,
+    "pid": 13104,
+    "index": 8
+  },
+  {
+    "name": "Require(5) D:/workspace/github/solar-setup/node_modules/egg-i18n/config/config.default.js",
+    "start": 1794934248973,
+    "end": 1794934248975,
+    "duration": 2,
+    "pid": 13104,
+    "index": 9
+  },
+  {
+    "name": "Require(6) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.default.js",
+    "start": 1794934248981,
+    "end": 1794934248983,
+    "duration": 2,
+    "pid": 13104,
+    "index": 10
+  },
+  {
+    "name": "Require(7) D:/workspace/github/solar-setup/node_modules/egg-schedule/config/config.default.js",
+    "start": 1794934248987,
+    "end": 1794934248989,
+    "duration": 2,
+    "pid": 13104,
+    "index": 11
+  },
+  {
+    "name": "Require(8) D:/workspace/github/solar-setup/node_modules/egg-multipart/config/config.default.js",
+    "start": 1794934248995,
+    "end": 1794934248997,
+    "duration": 2,
+    "pid": 13104,
+    "index": 12
+  },
+  {
+    "name": "Require(9) D:/workspace/github/solar-setup/node_modules/egg-development/config/config.default.js",
+    "start": 1794934249002,
+    "end": 1794934249004,
+    "duration": 2,
+    "pid": 13104,
+    "index": 13
+  },
+  {
+    "name": "Require(10) D:/workspace/github/solar-setup/node_modules/egg-logrotator/config/config.default.js",
+    "start": 1794934249009,
+    "end": 1794934249012,
+    "duration": 3,
+    "pid": 13104,
+    "index": 14
+  },
+  {
+    "name": "Require(11) D:/workspace/github/solar-setup/node_modules/egg-static/config/config.default.js",
+    "start": 1794934249017,
+    "end": 1794934249019,
+    "duration": 2,
+    "pid": 13104,
+    "index": 15
+  },
+  {
+    "name": "Require(12) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.default.js",
+    "start": 1794934249024,
+    "end": 1794934249027,
+    "duration": 3,
+    "pid": 13104,
+    "index": 16
+  },
+  {
+    "name": "Require(13) D:/workspace/github/solar-setup/node_modules/egg/config/config.default.js",
+    "start": 1794934249032,
+    "end": 1794934249034,
+    "duration": 2,
+    "pid": 13104,
+    "index": 17
+  },
+  {
+    "name": "Require(14) config/config.default.js",
+    "start": 1794934249037,
+    "end": 1794934249037,
+    "duration": 0,
+    "pid": 13104,
+    "index": 18
+  },
+  {
+    "name": "Require(15) D:/workspace/github/solar-setup/node_modules/egg-security/config/config.local.js",
+    "start": 1794934249045,
+    "end": 1794934249048,
+    "duration": 3,
+    "pid": 13104,
+    "index": 19
+  },
+  {
+    "name": "Require(16) D:/workspace/github/solar-setup/node_modules/egg-watcher/config/config.local.js",
+    "start": 1794934249061,
+    "end": 1794934249063,
+    "duration": 2,
+    "pid": 13104,
+    "index": 20
+  },
+  {
+    "name": "Require(17) D:/workspace/github/solar-setup/node_modules/egg-view/config/config.local.js",
+    "start": 1794934249082,
+    "end": 1794934249085,
+    "duration": 3,
+    "pid": 13104,
+    "index": 21
+  },
+  {
+    "name": "Require(18) D:/workspace/github/solar-setup/node_modules/egg/config/config.local.js",
+    "start": 1794934249090,
+    "end": 1794934249093,
+    "duration": 3,
+    "pid": 13104,
+    "index": 22
+  },
+  {
+    "name": "Load extend/application.js",
+    "start": 1794934249096,
+    "end": 1794934249270,
+    "duration": 174,
+    "pid": 13104,
+    "index": 23
+  },
+  {
+    "name": "Require(19) D:/workspace/github/solar-setup/node_modules/egg-session/app/extend/application.js",
+    "start": 1794934249099,
+    "end": 1794934249102,
+    "duration": 3,
+    "pid": 13104,
+    "index": 24
+  },
+  {
+    "name": "Require(20) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/application.js",
+    "start": 1794934249106,
+    "end": 1794934249114,
+    "duration": 8,
+    "pid": 13104,
+    "index": 25
+  },
+  {
+    "name": "Require(21) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/application.js",
+    "start": 1794934249118,
+    "end": 1794934249144,
+    "duration": 26,
+    "pid": 13104,
+    "index": 26
+  },
+  {
+    "name": "Require(22) D:/workspace/github/solar-setup/node_modules/egg-schedule/app/extend/application.js",
+    "start": 1794934249157,
+    "end": 1794934249186,
+    "duration": 29,
+    "pid": 13104,
+    "index": 27
+  },
+  {
+    "name": "Require(23) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app/extend/application.js",
+    "start": 1794934249196,
+    "end": 1794934249206,
+    "duration": 10,
+    "pid": 13104,
+    "index": 28
+  },
+  {
+    "name": "Require(24) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/application.js",
+    "start": 1794934249213,
+    "end": 1794934249221,
+    "duration": 8,
+    "pid": 13104,
+    "index": 29
+  },
+  {
+    "name": "Load extend/request.js",
+    "start": 1794934249270,
+    "end": 1794934249362,
+    "duration": 92,
+    "pid": 13104,
+    "index": 30
+  },
+  {
+    "name": "Require(25) D:/workspace/github/solar-setup/node_modules/egg/app/extend/request.js",
+    "start": 1794934249309,
+    "end": 1794934249317,
+    "duration": 8,
+    "pid": 13104,
+    "index": 31
+  },
+  {
+    "name": "Load extend/response.js",
+    "start": 1794934249362,
+    "end": 1794934249463,
+    "duration": 101,
+    "pid": 13104,
+    "index": 32
+  },
+  {
+    "name": "Require(26) D:/workspace/github/solar-setup/node_modules/egg/app/extend/response.js",
+    "start": 1794934249401,
+    "end": 1794934249417,
+    "duration": 16,
+    "pid": 13104,
+    "index": 33
+  },
+  {
+    "name": "Load extend/context.js",
+    "start": 1794934249463,
+    "end": 1794934249731,
+    "duration": 268,
+    "pid": 13104,
+    "index": 34
+  },
+  {
+    "name": "Require(27) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/context.js",
+    "start": 1794934249468,
+    "end": 1794934249522,
+    "duration": 54,
+    "pid": 13104,
+    "index": 35
+  },
+  {
+    "name": "Require(28) D:/workspace/github/solar-setup/node_modules/egg-jsonp/app/extend/context.js",
+    "start": 1794934249526,
+    "end": 1794934249536,
+    "duration": 10,
+    "pid": 13104,
+    "index": 36
+  },
+  {
+    "name": "Require(29) D:/workspace/github/solar-setup/node_modules/egg-i18n/app/extend/context.js",
+    "start": 1794934249542,
+    "end": 1794934249545,
+    "duration": 3,
+    "pid": 13104,
+    "index": 37
+  },
+  {
+    "name": "Require(30) D:/workspace/github/solar-setup/node_modules/egg-multipart/app/extend/context.js",
+    "start": 1794934249555,
+    "end": 1794934249649,
+    "duration": 94,
+    "pid": 13104,
+    "index": 38
+  },
+  {
+    "name": "Require(31) D:/workspace/github/solar-setup/node_modules/egg-view/app/extend/context.js",
+    "start": 1794934249660,
+    "end": 1794934249667,
+    "duration": 7,
+    "pid": 13104,
+    "index": 39
+  },
+  {
+    "name": "Require(32) D:/workspace/github/solar-setup/node_modules/egg/app/extend/context.js",
+    "start": 1794934249670,
+    "end": 1794934249687,
+    "duration": 17,
+    "pid": 13104,
+    "index": 40
+  },
+  {
+    "name": "Load extend/helper.js",
+    "start": 1794934249731,
+    "end": 1794934249920,
+    "duration": 189,
+    "pid": 13104,
+    "index": 41
+  },
+  {
+    "name": "Require(33) D:/workspace/github/solar-setup/node_modules/egg-security/app/extend/helper.js",
+    "start": 1794934249736,
+    "end": 1794934249839,
+    "duration": 103,
+    "pid": 13104,
+    "index": 42
+  },
+  {
+    "name": "Require(34) D:/workspace/github/solar-setup/node_modules/egg/app/extend/helper.js",
+    "start": 1794934249872,
+    "end": 1794934249875,
+    "duration": 3,
+    "pid": 13104,
+    "index": 43
+  },
+  {
+    "name": "Load app.js",
+    "start": 1794934249920,
+    "end": 1794934251052,
+    "duration": 1132,
+    "pid": 13104,
+    "index": 44
+  },
+  {
+    "name": "Require(35) D:/workspace/github/solar-setup/node_modules/egg-session/app.js",
+    "start": 1794934249923,
+    "end": 1794934249925,
+    "duration": 2,
+    "pid": 13104,
+    "index": 45
+  },
+  {
+    "name": "Require(36) D:/workspace/github/solar-setup/node_modules/egg-security/app.js",
+    "start": 1794934249928,
+    "end": 1794934249937,
+    "duration": 9,
+    "pid": 13104,
+    "index": 46
+  },
+  {
+    "name": "Require(37) D:/workspace/github/solar-setup/node_modules/egg-onerror/app.js",
+    "start": 1794934249945,
+    "end": 1794934249984,
+    "duration": 39,
+    "pid": 13104,
+    "index": 47
+  },
+  {
+    "name": "Require(38) D:/workspace/github/solar-setup/node_modules/egg-i18n/app.js",
+    "start": 1794934249986,
+    "end": 1794934250048,
+    "duration": 62,
+    "pid": 13104,
+    "index": 48
+  },
+  {
+    "name": "Require(39) D:/workspace/github/solar-setup/node_modules/egg-watcher/app.js",
+    "start": 1794934250051,
+    "end": 1794934250107,
+    "duration": 56,
+    "pid": 13104,
+    "index": 49
+  },
+  {
+    "name": "Require(40) D:/workspace/github/solar-setup/node_modules/egg-schedule/app.js",
+    "start": 1794934250109,
+    "end": 1794934250113,
+    "duration": 4,
+    "pid": 13104,
+    "index": 50
+  },
+  {
+    "name": "Require(41) D:/workspace/github/solar-setup/node_modules/egg-multipart/app.js",
+    "start": 1794934250115,
+    "end": 1794934250124,
+    "duration": 9,
+    "pid": 13104,
+    "index": 51
+  },
+  {
+    "name": "Require(42) D:/workspace/github/solar-setup/node_modules/egg-development/app.js",
+    "start": 1794934250127,
+    "end": 1794934250129,
+    "duration": 2,
+    "pid": 13104,
+    "index": 52
+  },
+  {
+    "name": "Require(43) D:/workspace/github/solar-setup/node_modules/egg-logrotator/app.js",
+    "start": 1794934250131,
+    "end": 1794934250133,
+    "duration": 2,
+    "pid": 13104,
+    "index": 53
+  },
+  {
+    "name": "Require(44) D:/workspace/github/solar-setup/node_modules/egg-static/app.js",
+    "start": 1794934250136,
+    "end": 1794934250138,
+    "duration": 2,
+    "pid": 13104,
+    "index": 54
+  },
+  {
+    "name": "Require(45) app.js",
+    "start": 1794934250149,
+    "end": 1794934251052,
+    "duration": 903,
+    "pid": 13104,
+    "index": 55
+  },
+  {
+    "name": "Before Start in D:/workspace/github/solar-setup/node_modules/egg-watcher/lib/init.js:15:14",
+    "start": 1794934251071,
+    "end": 1794934251905,
+    "duration": 834,
+    "pid": 13104,
+    "index": 56
+  },
+  {
+    "name": "Before Start in app.js:17:7",
+    "start": 1794934251175,
+    "end": 1794934251895,
+    "duration": 720,
+    "pid": 13104,
+    "index": 57
+  },
+  {
+    "name": "Load Service",
+    "start": 1794934251176,
+    "end": 1794934251194,
+    "duration": 18,
+    "pid": 13104,
+    "index": 58
+  },
+  {
+    "name": "Load \"service\" to Context",
+    "start": 1794934251176,
+    "end": 1794934251194,
+    "duration": 18,
+    "pid": 13104,
+    "index": 59
+  },
+  {
+    "name": "Load Middleware",
+    "start": 1794934251195,
+    "end": 1794934251810,
+    "duration": 615,
+    "pid": 13104,
+    "index": 60
+  },
+  {
+    "name": "Load \"middlewares\" to Application",
+    "start": 1794934251195,
+    "end": 1794934251757,
+    "duration": 562,
+    "pid": 13104,
+    "index": 61
+  },
+  {
+    "name": "Load Controller",
+    "start": 1794934251810,
+    "end": 1794934251870,
+    "duration": 60,
+    "pid": 13104,
+    "index": 62
+  },
+  {
+    "name": "Load \"controller\" to Application",
+    "start": 1794934251810,
+    "end": 1794934251870,
+    "duration": 60,
+    "pid": 13104,
+    "index": 63
+  },
+  {
+    "name": "Load Router",
+    "start": 1794934251870,
+    "end": 1794934251889,
+    "duration": 19,
+    "pid": 13104,
+    "index": 64
+  },
+  {
+    "name": "Require(46) app/router.js",
+    "start": 1794934251873,
+    "end": 1794934251887,
+    "duration": 14,
+    "pid": 13104,
+    "index": 65
+  },
+  {
+    "name": "Before Start in D:/workspace/github/solar-setup/node_modules/egg-core/lib/egg.js:328:10",
+    "start": 1794934251888,
+    "end": 1794934251895,
+    "duration": 7,
+    "pid": 13104,
+    "index": 66
+  }
+]

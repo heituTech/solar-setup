@@ -1,0 +1,140 @@
+2026-11-17 23:17:28,893 ERROR 14956 [-/undefined/-/8011ms POST /internal/auth/introspect] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at loadUser (D:\workspace\github\solar-setup\services\identity-service\lib\users.js:20:27)
+    at Object.introspect (D:\workspace\github\solar-setup\services\identity-service\app\controller\internal.js:16:24)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 14956
+hostname: MC
+
+2026-11-17 23:17:28,894 ERROR 14956 [-/undefined/-/8011ms POST /internal/auth/introspect] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at loadUser (D:\workspace\github\solar-setup\services\identity-service\lib\users.js:20:27)
+    at Object.introspect (D:\workspace\github\solar-setup\services\identity-service\app\controller\internal.js:16:24)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 14956
+hostname: MC
+
+2026-11-17 23:18:15,229 ERROR 14956 [-/undefined/-/8012ms POST /internal/auth/introspect] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at loadUser (D:\workspace\github\solar-setup\services\identity-service\lib\users.js:20:27)
+    at Object.introspect (D:\workspace\github\solar-setup\services\identity-service\app\controller\internal.js:16:24)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 14956
+hostname: MC
+
+2026-11-17 23:18:15,230 ERROR 14956 [-/undefined/-/8012ms POST /internal/auth/introspect] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at loadUser (D:\workspace\github\solar-setup\services\identity-service\lib\users.js:20:27)
+    at Object.introspect (D:\workspace\github\solar-setup\services\identity-service\app\controller\internal.js:16:24)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 14956
+hostname: MC
+
+2026-11-17 23:40:05,649 ERROR 14956 [-/undefined/-/8010ms POST /internal/auth/introspect] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at loadUser (D:\workspace\github\solar-setup\services\identity-service\lib\users.js:20:27)
+    at Object.introspect (D:\workspace\github\solar-setup\services\identity-service\app\controller\internal.js:16:24)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 14956
+hostname: MC
+
+2026-11-17 23:40:05,650 ERROR 14956 [-/undefined/-/8010ms POST /internal/auth/introspect] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at loadUser (D:\workspace\github\solar-setup\services\identity-service\lib\users.js:20:27)
+    at Object.introspect (D:\workspace\github\solar-setup\services\identity-service\app\controller\internal.js:16:24)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 14956
+hostname: MC
+
+2026-11-17 23:53:43,236 ERROR 11424 [-/127.0.0.1/-/8016ms POST /pv/api/auth/login] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.login (D:\workspace\github\solar-setup\services\identity-service\app\controller\auth.js:47:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\router.js:190:18
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:36:12
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\router.js:195:33)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 11424
+hostname: MC
+

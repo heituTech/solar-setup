@@ -1,0 +1,754 @@
+2026-11-17 22:00:42,644 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:44,200 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:50,363 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:51,502 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:57,009 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:00:57,818 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:00,992 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:02,846 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:08,422 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:08,426 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:12,408 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:14,912 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:18,561 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:24,480 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:25,328 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:26,258 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:29,333 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:34,895 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:36,501 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:39,354 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:43,598 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:45,549 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:48,120 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:01:50,479 WARN 13780 outbox publish failed: Access denied for user 'solar_sales'@'175.100.46.226' (using password: YES)
+2026-11-17 22:51:23,226 ERROR 20840 [-/127.0.0.1/-/3486ms POST /pv/api/workbench/quotes/1/convert] nodejs.ServiceUnavailableError: authentication_unavailable
+    at Object.throw (D:\workspace\github\solar-setup\node_modules\koa\lib\context.js:97:11)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:70:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+    at async xframe (D:\workspace\github\solar-setup\node_modules\egg-security\lib\middlewares\xframe.js:7:5)
+    at async xssProtection (D:\workspace\github\solar-setup\node_modules\egg-security\lib\middlewares\xssProtection.js:7:5)
+    at async nosniff (D:\workspace\github\solar-setup\node_modules\egg-security\lib\middlewares\nosniff.js:8:5)
+message: "authentication_unavailable"
+pid: 20840
+hostname: MC
+
+2026-11-17 22:53:18,522 ERROR 12380 [-/127.0.0.1/-/3284ms POST /pv/api/workbench/quotes/2/convert] nodejs.ServiceUnavailableError: authentication_unavailable
+    at Object.throw (D:\workspace\github\solar-setup\node_modules\koa\lib\context.js:97:11)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:70:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+    at async xframe (D:\workspace\github\solar-setup\node_modules\egg-security\lib\middlewares\xframe.js:7:5)
+    at async xssProtection (D:\workspace\github\solar-setup\node_modules\egg-security\lib\middlewares\xssProtection.js:7:5)
+    at async nosniff (D:\workspace\github\solar-setup\node_modules\egg-security\lib\middlewares\nosniff.js:8:5)
+message: "authentication_unavailable"
+pid: 12380
+hostname: MC
+
+2026-11-17 22:54:57,431 ERROR 7540 [-/127.0.0.1/-/3714ms POST /pv/api/workbench/quotes/3/convert] nodejs.ER_TRUNCATED_WRONG_VALUE_FOR_FIELDError: Incorrect integer value: 'b3582a59-bf71-4413-a62f-dd07767d4619' for column 'id' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at enqueueEvent (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:10:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\quotes.js:141:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async withTransaction (D:\workspace\github\solar-setup\packages\service-kit\lib\database.js:26:20)
+    at async Object.convert (D:\workspace\github\solar-setup\services\sales-service\app\controller\quotes.js:123:19)
+    at async roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:5)
+    at async authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+message: "Incorrect integer value: 'b3582a59-bf71-4413-a62f-dd07767d4619' for column 'id' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE_FOR_FIELD"
+errno: 1366
+sql: "INSERT INTO event_outbox\n       (id, event_id, event_type, aggregate_id, customer_id, destination, payload, actor_id, request_id)\n       VALUES ('b3582a59-bf71-4413-a62f-dd07767d4619','39e2ea89-a93e-4293-b9c5-9e825c295d05','OrderConverted','3',3,'delivery','{\\\"order_id\\\":3,\\\"order_no\\\":\\\"SO-MWKTD8RZ-1314\\\",\\\"quote_id\\\":3,\\\"customer_id\\\":3,\\\"customer_name\\\":\\\"Chain Customer mwktcm31\\\",\\\"address\\\":\\\"Street 1\\\",\\\"salesperson_id\\\":15,\\\"salesperson_name\\\":\\\"Rep mwktcm31\\\",\\\"amount\\\":3300,\\\"commission_rate\\\":0.03,\\\"items\\\":[{\\\"qty\\\":20,\\\"name\\\":\\\"Panel 550W\\\",\\\"unit_price\\\":120},{\\\"qty\\\":1,\\\"name\\\":\\\"Inverter 10kW\\\",\\\"unit_price\\\":900}]}',15,'93db2616-4f5a-42cf-b92a-61a6980bfef4')"
+sqlState: "HY000"
+sqlMessage: "Incorrect integer value: 'b3582a59-bf71-4413-a62f-dd07767d4619' for column 'id' at row 1"
+pid: 7540
+hostname: MC
+
+2026-11-17 23:01:33,342 ERROR 12076 [-/127.0.0.1/-/1219ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:45:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:38:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE orders SET project_id = COALESCE(2, project_id), status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 12076
+hostname: MC
+
+2026-11-17 23:01:40,064 ERROR 12076 [-/127.0.0.1/-/1730ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:45:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:38:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE orders SET project_id = COALESCE(2, project_id), status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 12076
+hostname: MC
+
+2026-11-17 23:01:40,087 WARN 12076 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:01:48,283 ERROR 12076 [-/127.0.0.1/-/1123ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:45:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:38:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE orders SET project_id = COALESCE(2, project_id), status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 12076
+hostname: MC
+
+2026-11-17 23:01:49,091 WARN 12076 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:01:58,119 WARN 12076 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:02:00,547 ERROR 12076 [-/127.0.0.1/-/1410ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:45:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:38:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE orders SET project_id = COALESCE(2, project_id), status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 12076
+hostname: MC
+
+2026-11-17 23:02:18,476 ERROR 12076 [-/127.0.0.1/-/1288ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:45:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:38:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE orders SET project_id = COALESCE(2, project_id), status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 12076
+hostname: MC
+
+2026-11-17 23:02:51,167 ERROR 12076 [-/127.0.0.1/-/944ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:45:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:38:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE orders SET project_id = COALESCE(2, project_id), status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 12076
+hostname: MC
+
+2026-11-17 23:02:52,292 ERROR 12076 [-/127.0.0.1/-/1871ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:45:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:38:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE orders SET project_id = COALESCE(2, project_id), status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 12076
+hostname: MC
+
+2026-11-17 23:04:00,492 ERROR 12076 [-/127.0.0.1/-/1872ms POST /internal/events] nodejs.ER_TRUNCATED_WRONG_VALUEError: Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1
+    at PromisePoolConnection.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:94:22)
+    at D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:45:26
+    at consumeInbox (D:\workspace\github\solar-setup\packages\service-kit\lib\events.js:37:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.events (D:\workspace\github\solar-setup\services\sales-service\app\controller\internal.js:38:20)
+    at async internalGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:99:5)
+    at async cors (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:36:3)
+    at async errorHandler (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:7:5)
+    at async requestId (D:\workspace\github\solar-setup\packages\service-kit\lib\http.js:24:3)
+    at async D:\workspace\github\solar-setup\node_modules\egg-development\app\middleware\egg_loader_trace.js:7:50
+message: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+code: "ER_TRUNCATED_WRONG_VALUE"
+errno: 1292
+sql: "UPDATE orders SET project_id = COALESCE(2, project_id), status = 'accepted', accepted_at = '2026-11-17T15:01:29.109Z' WHERE id = 5"
+sqlState: "22007"
+sqlMessage: "Incorrect datetime value: '2026-11-17T15:01:29.109Z' for column 'accepted_at' at row 1"
+pid: 12076
+hostname: MC
+
+2026-11-17 23:10:47,192 WARN 11212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:05,208 WARN 11212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:08,210 WARN 11212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:11,210 WARN 11212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:14,210 WARN 11212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:24,061 ERROR 11212 [-/undefined/-/10009ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 11212
+hostname: MC
+
+2026-11-17 23:11:29,247 ERROR 11212 [-/undefined/-/10017ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 11212
+hostname: MC
+
+2026-11-17 23:11:38,929 ERROR 11212 [-/undefined/-/10014ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 11212
+hostname: MC
+
+2026-11-17 23:11:41,261 WARN 11212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:11:44,278 WARN 11212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:12:08,298 WARN 11212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:14:36,716 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:14:39,701 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:14:48,717 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:14:51,718 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:14:54,736 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:14:57,735 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:12,769 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:28,756 ERROR 18356 [-/undefined/-/8016ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 18356
+hostname: MC
+
+2026-11-17 23:15:30,789 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:31,621 ERROR 18356 [-/undefined/-/8011ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 18356
+hostname: MC
+
+2026-11-17 23:15:36,789 ERROR 18356 [-/undefined/-/8001ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 18356
+hostname: MC
+
+2026-11-17 23:15:38,807 ERROR 18356 [-/127.0.0.1/-/9368ms GET /pv/api/workbench/orders] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\orders.js:27:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:15:39,791 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:15:46,574 ERROR 18356 [-/undefined/-/8010ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 18356
+hostname: MC
+
+2026-11-17 23:15:51,820 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:16:07,074 ERROR 18356 [-/undefined/-/8005ms POST /internal/events] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PoolConnection._handleTimeoutError (D:\workspace\github\solar-setup\node_modules\mysql2\lib\connection.js:205:17)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+errorno: "ETIMEDOUT"
+code: "ETIMEDOUT"
+syscall: "connect"
+fatal: true
+pid: 18356
+hostname: MC
+
+2026-11-17 23:16:12,858 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:16:15,857 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:16:19,343 ERROR 18356 [-/127.0.0.1/-/8005ms GET /pv/api/products] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\catalog.js:32:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:16:21,858 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:16:28,076 ERROR 18356 [-/127.0.0.1/-/8017ms GET /pv/api/products] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\catalog.js:32:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:16:36,878 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:18:21,331 ERROR 18356 [-/127.0.0.1/-/14117ms GET /pv/api/workbench/orders] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\orders.js:27:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:18:23,732 ERROR 18356 [-/127.0.0.1/-/8019ms GET /pv/api/workbench/orders] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\orders.js:27:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:18:26,677 ERROR 18356 [-/127.0.0.1/-/8005ms GET /pv/api/workbench/orders] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\orders.js:27:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:20:34,342 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:23:10,690 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:38:03,840 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:38:04,637 ERROR 18356 [-/127.0.0.1/-/8015ms GET /pv/api/workbench/customers] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\customers.js:16:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:38:05,865 ERROR 18356 [-/127.0.0.1/-/8015ms GET /pv/api/workbench/orders] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\orders.js:27:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:38:12,867 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:38:21,879 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:38:49,030 ERROR 18356 [-/127.0.0.1/-/8249ms GET /pv/api/workbench/customers] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\customers.js:16:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:39:34,034 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:39:57,936 ERROR 18356 [-/127.0.0.1/-/8006ms GET /pv/api/workbench/quotes] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\quotes.js:46:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:39:58,070 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:40:00,593 ERROR 18356 [-/127.0.0.1/-/8007ms GET /pv/api/workbench/customers] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\customers.js:16:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:40:07,089 WARN 18356 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:40:07,190 ERROR 18356 [-/127.0.0.1/-/8001ms GET /pv/api/workbench/surveys] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\surveys.js:26:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:40:58,773 ERROR 18356 [-/127.0.0.1/-/8003ms GET /pv/api/workbench/customers] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\customers.js:16:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 18356
+hostname: MC
+
+2026-11-17 23:46:25,226 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:46:28,244 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:46:31,247 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:46:34,260 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:46:37,279 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:46:40,265 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:46:43,280 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:46:49,299 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:47:01,347 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:48:28,728 ERROR 9760 [-/127.0.0.1/-/8272ms GET /pv/api/workbench/quotes] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\quotes.js:53:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 9760
+hostname: MC
+
+2026-11-17 23:48:28,742 ERROR 9760 [-/127.0.0.1/-/8276ms GET /pv/api/workbench/customers] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\customers.js:16:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 9760
+hostname: MC
+
+2026-11-17 23:48:29,383 ERROR 9760 [-/127.0.0.1/-/8005ms GET /pv/api/workbench/customers] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\customers.js:16:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 9760
+hostname: MC
+
+2026-11-17 23:48:52,472 ERROR 9760 [-/127.0.0.1/-/8004ms GET /pv/api/workbench/quotes] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\quotes.js:53:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 9760
+hostname: MC
+
+2026-11-17 23:48:52,574 WARN 9760 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:49:09,087 ERROR 9760 [-/127.0.0.1/-/8257ms GET /pv/api/workbench/quotes] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\quotes.js:53:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 9760
+hostname: MC
+
+2026-11-17 23:49:09,783 ERROR 9760 [-/127.0.0.1/-/8001ms GET /pv/api/workbench/customers] nodejs.ETIMEDOUTError: connect ETIMEDOUT
+    at PromisePool.query (D:\workspace\github\solar-setup\node_modules\mysql2\promise.js:356:22)
+    at Object.list (D:\workspace\github\solar-setup\services\sales-service\app\controller\customers.js:16:37)
+    at Object.callFn (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\utils.js:17:21)
+    at wrappedController (D:\workspace\github\solar-setup\node_modules\@eggjs\router\lib\egg_router.js:322:18)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at roleGuard (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:82:11)
+    at dispatch (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:44:32)
+    at next (D:\workspace\github\solar-setup\node_modules\@eggjs\router\node_modules\koa-compose\index.js:45:18)
+    at authenticate (D:\workspace\github\solar-setup\packages\service-kit\lib\auth.js:73:11)
+message: "connect ETIMEDOUT"
+code: "ETIMEDOUT"
+errno: undefined
+sql: undefined
+sqlState: undefined
+sqlMessage: undefined
+pid: 9760
+hostname: MC
+
+2026-11-17 23:52:57,761 WARN 1212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:00,769 WARN 1212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:03,771 WARN 1212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:06,785 WARN 1212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:09,792 WARN 1212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:21,836 WARN 1212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:24,839 WARN 1212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:27,107 WARN 1212 outbox publish failed: connect ETIMEDOUT
+2026-11-17 23:53:33,843 WARN 1212 outbox publish failed: connect ETIMEDOUT

@@ -1,0 +1,278 @@
+[
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/health",
+    "regexp": "/^\\/health(?:\\/(?=$))?$/",
+    "stack": [
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/health",
+    "regexp": "/^\\/pv\\/api\\/health(?:\\/(?=$))?$/",
+    "stack": [
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/ledger",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/ledger(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/ledger/export",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/ledger\\/export(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/finance/summary",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/finance\\/summary(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/payments",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/payments(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/payments",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/payments(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/compensation-config",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/compensation-config(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "PUT"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/compensation-config",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/compensation-config(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/adjustments",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/adjustments(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/adjustments",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/adjustments(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/settlements",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/settlements(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/workbench/settlements",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/settlements(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [
+      {
+        "name": "id",
+        "prefix": "/",
+        "delimiter": "/",
+        "optional": false,
+        "repeat": false,
+        "partial": false,
+        "asterisk": false,
+        "pattern": "[^\\/]+?"
+      }
+    ],
+    "path": "/pv/api/workbench/settlements/:id",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/settlements\\/((?:[^\\/]+?))(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [
+      {
+        "name": "id",
+        "prefix": "/",
+        "delimiter": "/",
+        "optional": false,
+        "repeat": false,
+        "partial": false,
+        "asterisk": false,
+        "pattern": "[^\\/]+?"
+      }
+    ],
+    "path": "/pv/api/workbench/settlements/:id/confirm",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/settlements\\/((?:[^\\/]+?))\\/confirm(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [
+      {
+        "name": "id",
+        "prefix": "/",
+        "delimiter": "/",
+        "optional": false,
+        "repeat": false,
+        "partial": false,
+        "asterisk": false,
+        "pattern": "[^\\/]+?"
+      }
+    ],
+    "path": "/pv/api/workbench/settlements/:id/pay",
+    "regexp": "/^\\/pv\\/api\\/workbench\\/settlements\\/((?:[^\\/]+?))\\/pay(?:\\/(?=$))?$/",
+    "stack": [
+      "authenticate",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/internal/events",
+    "regexp": "/^\\/internal\\/events(?:\\/(?=$))?$/",
+    "stack": [
+      "internalGuard",
+      "wrappedController"
+    ]
+  }
+]

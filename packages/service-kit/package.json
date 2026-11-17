@@ -1,0 +1,11 @@
+{
+  "name": "@solar/service-kit",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.11.0"
+  }
+}

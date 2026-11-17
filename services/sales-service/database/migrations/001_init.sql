@@ -1,0 +1,141 @@
+CREATE TABLE IF NOT EXISTS customers (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(160) NOT NULL,
+  phone VARCHAR(40) NULL,
+  email VARCHAR(190) NULL,
+  region VARCHAR(120) NULL,
+  address VARCHAR(300) NULL,
+  source VARCHAR(60) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'lead',
+  owner_id BIGINT UNSIGNED NULL,
+  owner_name VARCHAR(120) NULL,
+  note VARCHAR(1000) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_customers_owner (owner_id),
+  KEY idx_customers_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS surveys (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  customer_id BIGINT UNSIGNED NOT NULL,
+  address VARCHAR(300) NULL,
+  roof_type VARCHAR(60) NULL,
+  roof_area DECIMAL(10,2) NULL,
+  monthly_consumption DECIMAL(12,2) NULL,
+  payload JSON NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'draft',
+  created_by BIGINT UNSIGNED NOT NULL,
+  submitted_at DATETIME NULL,
+  reviewed_by BIGINT UNSIGNED NULL,
+  review_note VARCHAR(500) NULL,
+  reviewed_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_surveys_customer (customer_id),
+  KEY idx_surveys_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS quotes (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  quote_no VARCHAR(40) NOT NULL,
+  customer_id BIGINT UNSIGNED NOT NULL,
+  salesperson_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'draft',
+  currency VARCHAR(8) NOT NULL DEFAULT 'USD',
+  items JSON NOT NULL,
+  total_amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+  notes VARCHAR(1000) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_quotes_no (quote_no),
+  KEY idx_quotes_customer (customer_id),
+  KEY idx_quotes_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_no VARCHAR(40) NOT NULL,
+  quote_id BIGINT UNSIGNED NULL,
+  customer_id BIGINT UNSIGNED NOT NULL,
+  customer_name VARCHAR(160) NOT NULL,
+  address VARCHAR(300) NULL,
+  salesperson_id BIGINT UNSIGNED NOT NULL,
+  amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+  received_amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+  commission_rate DECIMAL(6,4) NOT NULL DEFAULT 0.0300,
+  status VARCHAR(30) NOT NULL DEFAULT 'initializing',
+  project_id BIGINT UNSIGNED NULL,
+  accepted_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_orders_no (order_no),
+  KEY idx_orders_salesperson (salesperson_id),
+  KEY idx_orders_status (status),
+  KEY idx_orders_project (project_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS products (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  category VARCHAR(60) NOT NULL,
+  model VARCHAR(120) NOT NULL,
+  name VARCHAR(190) NOT NULL,
+  specs JSON NULL,
+  price DECIMAL(14,2) NOT NULL DEFAULT 0,
+  unit VARCHAR(40) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  created_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_products_category (category),
+  KEY idx_products_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS cases (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  member_id BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(190) NOT NULL,
+  snapshot JSON NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  share_token VARCHAR(64) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_cases_token (share_token),
+  KEY idx_cases_member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS event_outbox (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  event_id CHAR(36) NOT NULL,
+  event_type VARCHAR(60) NOT NULL,
+  aggregate_id VARCHAR(80) NOT NULL,
+  customer_id BIGINT UNSIGNED NULL,
+  destination VARCHAR(30) NOT NULL,
+  payload JSON NOT NULL,
+  actor_id BIGINT UNSIGNED NULL,
+  request_id VARCHAR(80) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  attempts INT NOT NULL DEFAULT 0,
+  next_retry_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_error VARCHAR(1000) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  published_at DATETIME NULL,
+  PRIMARY KEY (id),
+  KEY idx_outbox_status (status, next_retry_at),
+  KEY idx_outbox_event (event_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS event_inbox (
+  event_id CHAR(36) NOT NULL,
+  event_type VARCHAR(60) NOT NULL,
+  payload JSON NOT NULL,
+  received_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (event_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

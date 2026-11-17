@@ -1,10 +1,11 @@
 <template>
   <div class="staff-shell">
-    <aside class="staff-aside">
+    <div class="staff-drawer-mask" :class="{ open: mobileNavOpen }" @click="mobileNavOpen = false"></div>
+    <aside class="staff-aside" :class="{ open: mobileNavOpen }">
       <div class="staff-brand">
         <span>HEITU ERP v2.0</span>
       </div>
-      <el-menu :default-active="activePath" class="staff-menu" router>
+      <el-menu :default-active="activePath" class="staff-menu" router @select="mobileNavOpen = false">
         <el-menu-item v-for="item in menus" :key="item.path" :index="item.path">
           {{ t(item.label) }}
         </el-menu-item>
@@ -13,7 +14,12 @@
     </aside>
     <div class="staff-main">
       <header class="staff-header">
-        <h2>{{ pageTitle }}</h2>
+        <div class="staff-header-left">
+          <button class="nav-toggle mobile-only" @click="mobileNavOpen = !mobileNavOpen" aria-label="menu">
+            <span></span><span></span><span></span>
+          </button>
+          <h2>{{ pageTitle }}</h2>
+        </div>
         <div class="staff-user">
           <el-select v-model="locale" size="small" style="width: 110px" @change="changeLocale">
             <el-option v-for="[code, label] in languages" :key="code" :value="code" :label="label" />
@@ -40,6 +46,7 @@ const { t, locale } = useI18n();
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+const mobileNavOpen = ref(false);
 
 const allMenus = [
   { path: '/workbench', label: 'overview' },
@@ -78,3 +85,14 @@ function logout() {
   router.push('/');
 }
 </script>
+
+<style scoped>
+.staff-header-left { display: flex; align-items: center; gap: 10px; }
+.nav-toggle {
+  display: inline-flex; flex-direction: column; justify-content: center; gap: 4px;
+  width: 32px; height: 32px; padding: 0; background: transparent; border: none; cursor: pointer;
+}
+.nav-toggle span {
+  display: block; width: 20px; height: 2px; background: var(--solar-ink); border-radius: 2px; margin: 0 auto;
+}
+</style>

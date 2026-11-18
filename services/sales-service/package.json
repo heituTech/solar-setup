@@ -5,7 +5,7 @@
   "description": "Sales, customer, survey, quote and order microservice",
   "scripts": {
     "dev": "egg-bin dev",
-    "start": "egg-bin dev",
+    "start": "egg-bin start --port 7102",
     "migrate": "node ../../packages/service-kit/migrate.js"
   },
   "dependencies": {

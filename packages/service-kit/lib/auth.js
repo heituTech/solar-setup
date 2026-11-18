@@ -17,7 +17,7 @@ function signAccessToken(user) {
     { role: user.role },
     privateKey,
     {
-      algorithm: 'RS256', subject: String(user.id), expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+      algorithm: 'RS256', subject: String(user.id), expiresIn: process.env.JWT_EXPIRES_IN || '12h',
       issuer: 'solar-identity', audience: 'solar-services', jwtid: crypto.randomUUID(),
     }
   );

@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { get, post, setToken, getToken } from '../api/client';
-import router from '../router';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -46,7 +45,9 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       setToken('');
       localStorage.removeItem('solar_user');
-      router.push('/home');
+      // 用整页刷新而不是 router.push，确保所有已挂载的业务组件（客户、订单、报价等）
+      // 连同它们的 DOM 和数据一起被彻底销毁，不会残留在页面上
+      window.location.href = '/pv/';
     },
   },
 });

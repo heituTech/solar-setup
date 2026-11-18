@@ -19,12 +19,16 @@ const isCollapse = computed(() => !appStore.sidebar.opened);
 const device = computed(() => appStore.device);
 const menus = computed(() => {
   // 首页与概览合并为同一入口：员工进概览，访客进首页
-  const primary = auth.staff
-    ? { path: '/workbench', meta: { key: 'overview' } }
+  const primary = auth.role !== 'member'
+    ? { path: '/workbench', meta: { key: 'overview', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } }
     : { path: '/home', meta: { key: 'home' } };
   const rest = routerArrays.filter((m) => {
     if (m.path === '/home' || m.path === '/workbench') return false;
-    if (m.meta.staff) return auth.staff;
+    const reqRoles = m.meta.requiresRoles;
+    if (reqRoles) {
+      if (!reqRoles.includes(auth.role)) return false;
+      return true;
+    }
     if (m.meta.requiresAuth) return auth.authenticated;
     return true;
   });

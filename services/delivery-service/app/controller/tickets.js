@@ -19,13 +19,24 @@ function toTicket(row) {
 
 module.exports = {
   async list(ctx) {
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
     const params = [];
-    let sql = 'SELECT * FROM tickets WHERE 1 = 1';
+    let sql = 'FROM tickets WHERE 1 = 1';
     if (ctx.query.status) { sql += ' AND status = ?'; params.push(String(ctx.query.status)); }
+    if (ctx.query.priority) { sql += ' AND priority = ?'; params.push(String(ctx.query.priority)); }
     if (ctx.query.project_id) { sql += ' AND project_id = ?'; params.push(Number(ctx.query.project_id)); }
-    sql += ' ORDER BY id DESC LIMIT 300';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { tickets: rows.map(toTicket) };
+    if (q) {
+      sql += ' AND (title LIKE ? OR description LIKE ? OR customer_name LIKE ?)';
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    }
+    const [rows] = await ctx.app.db.query(
+      `SELECT * ${sql} ORDER BY id DESC LIMIT ? OFFSET ?`,
+      [...params, pageSize, (page - 1) * pageSize]
+    );
+    const [count] = await ctx.app.db.query(`SELECT COUNT(*) AS total ${sql}`, params);
+    ctx.body = { tickets: rows.map(toTicket), total: Number(count[0].total), page, page_size: pageSize };
   },
 
   async create(ctx) {

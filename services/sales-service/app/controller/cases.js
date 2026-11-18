@@ -14,15 +14,32 @@ function toCase(row) {
 module.exports = {
   async list(ctx) {
     const user = ctx.state.user;
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
+    const status = String(ctx.query.status || '').trim();
+    const conditions = [];
     const params = [];
-    let sql = 'SELECT * FROM cases';
     if (user.role === 'member') {
-      sql += ' WHERE member_id = ?';
+      conditions.push('member_id = ?');
       params.push(Number(user.id));
     }
-    sql += ' ORDER BY id DESC LIMIT 200';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { cases: rows.map(toCase) };
+    if (q) {
+      conditions.push('title LIKE ?');
+      params.push(`%${q}%`);
+    }
+    if (status) {
+      conditions.push('status = ?');
+      params.push(status);
+    }
+    const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
+    const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total FROM cases${where}`, params);
+    const offset = (page - 1) * pageSize;
+    const [rows] = await ctx.app.db.query(
+      `SELECT * FROM cases${where} ORDER BY id DESC LIMIT ? OFFSET ?`,
+      [...params, pageSize, offset]
+    );
+    ctx.body = { cases: rows.map(toCase), total: Number(countRows[0].total), page, page_size: pageSize };
   },
 
   async create(ctx) {

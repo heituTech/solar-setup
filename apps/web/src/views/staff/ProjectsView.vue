@@ -6,6 +6,15 @@
     </div>
 
     <div class="panel">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:160px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="s in statusOptions" :key="s" :label="statusLabel(s)" :value="s" />
+        </el-select>
+        <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
+        <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
+      </div>
       <el-table :data="projects" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="order_no" :label="t('orderNumber')" width="190" />
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="130" />
@@ -21,6 +30,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
     </div>
 
     <el-drawer v-model="drawer" :title="t('projects')" size="680px">
@@ -127,6 +137,11 @@ const projects = ref([]);
 const directory = ref([]);
 const loading = ref(false);
 const saving = ref(false);
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const filters = reactive({ q: '', status: '', priority: '' });
+const statusOptions = ['pending_assignment', 'initializing', 'in_delivery', 'accepted'];
 const drawer = ref(false);
 const detail = ref({ project: null, devices: [], progress: [], tickets: [] });
 const assignForm = reactive({ electrical_engineer_id: null, structural_engineer_id: null });
@@ -146,17 +161,32 @@ const engineers = computed(() => ({
 async function load() {
   loading.value = true;
   try {
+    const params = new URLSearchParams({ page: String(page.value), page_size: String(pageSize.value) });
+    if (filters.q) params.set('q', filters.q);
+    if (filters.status) params.set('status', filters.status);
     const [projectData, dirData] = await Promise.all([
-      get('/pv/api/workbench/projects'),
+      get(`/pv/api/workbench/projects?${params.toString()}`),
       get('/pv/api/workbench/directory'),
     ]);
     projects.value = projectData.projects || [];
+    total.value = projectData.total || 0;
     directory.value = dirData.users || [];
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
     loading.value = false;
   }
+}
+
+function reload() {
+  page.value = 1;
+  load();
+}
+
+function resetFilters() {
+  filters.q = '';
+  filters.status = '';
+  reload();
 }
 
 async function openDetail(row) {
@@ -174,7 +204,7 @@ async function openDetail(row) {
 
 async function refreshDetail() {
   detail.value = await get(`/pv/api/workbench/projects/${detail.value.project.id}`);
-  await load();
+  await reload();
 }
 
 async function assign() {

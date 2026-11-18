@@ -94,7 +94,7 @@ async function load() {
       get('/pv/api/workbench/summary'),
       get('/pv/api/workbench/finance/summary'),
       get('/pv/api/workbench/orders'),
-      get('/pv/api/workbench/projects'),
+      get('/pv/api/workbench/projects?page_size=100'),
     ]);
     if (results[0].status === 'fulfilled') summary.value = results[0].value;
     if (results[1].status === 'fulfilled') finance.value = results[1].value;

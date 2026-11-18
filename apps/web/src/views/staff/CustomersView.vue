@@ -9,6 +9,15 @@
     </div>
 
     <div class="panel">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:150px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="s in ['lead','qualified','won','lost']" :key="s" :label="statusLabel(s)" :value="s" />
+        </el-select>
+        <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
+        <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
+      </div>
       <el-table :data="customers" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="name" :label="t('name')" min-width="140" />
         <el-table-column prop="phone" :label="t('phone')" width="140" />
@@ -33,6 +42,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
     </div>
 
     <el-dialog v-model="dialog" :title="form.id ? t('edit') : t('newCustomer')" width="640px">
@@ -146,6 +156,10 @@ const { t } = useI18n();
 const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const customers = ref([]);
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const filters = reactive({ q: '', status: '' });
 const loading = ref(false);
 const dialog = ref(false);
 const drawer = ref(false);
@@ -160,13 +174,28 @@ const canEdit = computed(() => ['super_admin', 'sales_manager', 'salesperson'].i
 async function load() {
   loading.value = true;
   try {
-    const data = await get('/pv/api/workbench/customers');
+    const params = new URLSearchParams({ page: String(page.value), page_size: '10' });
+    if (filters.q.trim()) params.set('q', filters.q.trim());
+    if (filters.status) params.set('status', filters.status);
+    const data = await get(`/pv/api/workbench/customers?${params.toString()}`);
     customers.value = data.customers || [];
+    total.value = data.total || 0;
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
     loading.value = false;
   }
+}
+
+function reload() {
+  page.value = 1;
+  load();
+}
+
+function resetFilters() {
+  filters.q = '';
+  filters.status = '';
+  reload();
 }
 
 function resetForm() {
@@ -202,7 +231,7 @@ async function save() {
     else await post('/pv/api/workbench/customers', payload);
     ElMessage.success(t('operationSuccess'));
     dialog.value = false;
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {

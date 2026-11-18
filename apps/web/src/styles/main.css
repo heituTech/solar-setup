@@ -229,7 +229,9 @@ html, body { height: 100%; margin: 0; }
 }
 .main-container {
   margin-left: 210px;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: margin-left .28s ease;
   background: #f0f2f5;
 }

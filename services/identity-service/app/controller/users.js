@@ -17,15 +17,37 @@ module.exports = {
 
   async list(ctx) {
     const user = ctx.state.user;
-    let sql = 'SELECT id,name,email,phone,role,status,manager_id,created_at FROM users';
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
+    const status = String(ctx.query.status || '').trim();
+    const role = String(ctx.query.role || '').trim();
+    const conditions = [];
     const params = [];
     if (user.role === 'sales_manager') {
-      sql += " WHERE manager_id = ? OR id = ?";
+      conditions.push('(u.manager_id = ? OR u.id = ?)');
       params.push(Number(user.id), Number(user.id));
     }
-    sql += ' ORDER BY id DESC LIMIT 500';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { users: rows.map(toUser) };
+    if (q) {
+      conditions.push('(u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)');
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    }
+    if (status) {
+      conditions.push('u.status = ?');
+      params.push(status);
+    }
+    if (role) {
+      conditions.push('u.role = ?');
+      params.push(role);
+    }
+    const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
+    const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total FROM users u${where}`, params);
+    const offset = (page - 1) * pageSize;
+    const [rows] = await ctx.app.db.query(
+      `SELECT u.id,u.name,u.email,u.phone,u.role,u.status,u.manager_id,u.created_at FROM users u${where} ORDER BY u.id DESC LIMIT ? OFFSET ?`,
+      [...params, pageSize, offset]
+    );
+    ctx.body = { users: rows.map(toUser), total: Number(countRows[0].total), page, page_size: pageSize };
   },
 
   async create(ctx) {

@@ -35,6 +35,15 @@
     </div>
 
     <div class="panel">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:160px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="s in statusOptions" :key="s" :label="statusLabel(s)" :value="s" />
+        </el-select>
+        <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
+        <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
+      </div>
       <el-table :data="settlements" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="period" :label="t('month')" width="110" />
         <el-table-column prop="user_name" :label="t('name')" min-width="130" />
@@ -76,6 +85,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
     </div>
 
     <el-drawer v-model="drawer" :title="t('payrollSnapshot')" size="560px">
@@ -134,6 +144,11 @@ const { t } = useI18n();
 const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const settlements = ref([]);
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const filters = reactive({ q: '', status: '' });
+const statusOptions = ['draft', 'confirmed', 'paid'];
 const loading = ref(false);
 const saving = ref(false);
 const savingConfig = ref(false);
@@ -180,8 +195,14 @@ async function saveConfig() {
 async function load() {
   loading.value = true;
   try {
-    const data = await get('/pv/api/workbench/settlements');
+    const params = new URLSearchParams();
+    params.set('page', page.value);
+    params.set('page_size', pageSize.value);
+    if (filters.q) params.set('q', filters.q);
+    if (filters.status) params.set('status', filters.status);
+    const data = await get(`/pv/api/workbench/settlements?${params.toString()}`);
     settlements.value = data.settlements || [];
+    total.value = data.total || 0;
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -189,12 +210,23 @@ async function load() {
   }
 }
 
+function reload() {
+  page.value = 1;
+  return load();
+}
+
+function resetFilters() {
+  filters.q = '';
+  filters.status = '';
+  reload();
+}
+
 async function generate() {
   saving.value = true;
   try {
     await post('/pv/api/workbench/settlements', { period: periodValue.value, base_salary: baseSalary.value });
     ElMessage.success(t('operationSuccess'));
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -215,7 +247,7 @@ async function confirm(row) {
   saving.value = true;
   try {
     await post(`/pv/api/workbench/settlements/${row.id}/confirm`, {});
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -229,7 +261,7 @@ async function pay(row) {
     await ElMessageBox.confirm(`${t('payout')} ${row.user_name} ${money(row.payable)}?`, t('confirm'));
     await post(`/pv/api/workbench/settlements/${row.id}/pay`, { type: 'actual' });
     ElMessage.success(t('operationSuccess'));
-    await load();
+    await reload();
   } catch (error) {
     if (error?.message) ElMessage.error(error.message);
   } finally {

@@ -44,14 +44,21 @@ function reference(prefix) {
 module.exports = {
   async list(ctx) {
     const params = [];
-    let sql = `SELECT q.*, c.name AS customer_name FROM quotes q
-               LEFT JOIN customers c ON c.id = q.customer_id WHERE 1 = 1`;
-    sql += scopeClause('q.salesperson_id', salesScopeFor(ctx.state.user), params);
-    if (ctx.query.status) { sql += ' AND q.status = ?'; params.push(String(ctx.query.status)); }
-    if (ctx.query.customer_id) { sql += ' AND q.customer_id = ?'; params.push(Number(ctx.query.customer_id)); }
-    sql += ' ORDER BY q.id DESC LIMIT 300';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { quotes: rows.map(toQuote) };
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
+    let where = `FROM quotes q
+                 LEFT JOIN customers c ON c.id = q.customer_id WHERE 1 = 1`;
+    where += scopeClause('q.salesperson_id', salesScopeFor(ctx.state.user), params);
+    if (ctx.query.status) { where += ' AND q.status = ?'; params.push(String(ctx.query.status)); }
+    if (ctx.query.customer_id) { where += ' AND q.customer_id = ?'; params.push(Number(ctx.query.customer_id)); }
+    if (q) { where += ' AND (q.quote_no LIKE ? OR c.name LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
+    const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total ${where}`, params);
+    const [rows] = await ctx.app.db.query(
+      `SELECT q.*, c.name AS customer_name ${where} ORDER BY q.id DESC LIMIT ? OFFSET ?`,
+      params.concat([pageSize, (page - 1) * pageSize])
+    );
+    ctx.body = { quotes: rows.map(toQuote), total: Number(countRows[0].total), page, page_size: pageSize };
   },
 
   async create(ctx) {

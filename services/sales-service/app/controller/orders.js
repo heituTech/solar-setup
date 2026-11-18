@@ -20,12 +20,18 @@ function toOrder(row) {
 module.exports = {
   async list(ctx) {
     const params = [];
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
     let sql = 'SELECT * FROM orders WHERE 1 = 1';
     sql += scopeClause('salesperson_id', salesScopeFor(ctx.state.user), params);
     if (ctx.query.status) { sql += ' AND status = ?'; params.push(String(ctx.query.status)); }
-    sql += ' ORDER BY id DESC LIMIT 300';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { orders: rows.map(toOrder) };
+    if (q) { sql += ' AND (order_no LIKE ? OR customer_name LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
+    const countSql = sql.replace('SELECT *', 'SELECT COUNT(*) AS total');
+    const [countRows] = await ctx.app.db.query(countSql, params);
+    const [rows] = await ctx.app.db.query(`${sql} ORDER BY id DESC LIMIT ? OFFSET ?`,
+      params.concat([pageSize, (page - 1) * pageSize]));
+    ctx.body = { orders: rows.map(toOrder), total: Number(countRows[0].total), page, page_size: pageSize };
   },
 
   async detail(ctx) {

@@ -34,6 +34,15 @@
     </div>
 
     <div v-show="tab === 'ledger'" class="panel">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:160px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="s in statusOptions" :key="s" :label="statusLabel(s)" :value="s" />
+        </el-select>
+        <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
+        <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
+      </div>
       <el-table :data="ledger" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="order_no" :label="t('orderNumber')" width="190" />
         <el-table-column :label="t('dealDate')" width="120">
@@ -86,6 +95,7 @@
           <template #default="{ row }">{{ row.referral_flag ? (row.referral_name || '✓') : '' }}</template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
     </div>
 
     <div v-show="tab === 'payments'" class="panel">
@@ -193,6 +203,11 @@ const ledger = ref([]);
 const payments = ref([]);
 const adjustments = ref([]);
 const directory = ref([]);
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const filters = reactive({ q: '', status: '' });
+const statusOptions = ['initializing', 'accepted'];
 const loading = ref(false);
 const saving = ref(false);
 const exporting = ref(false);
@@ -205,18 +220,30 @@ const adjustForm = reactive({ salesperson_id: null, type: 'award', amount: 0, re
 const canFinance = computed(() => ['super_admin', 'accountant'].includes(auth.role));
 const salespeople = computed(() => directory.value.filter((item) => ['salesperson', 'sales_manager'].includes(item.role)));
 
+function ledgerQuery() {
+  const params = new URLSearchParams();
+  params.set('page', page.value);
+  params.set('page_size', pageSize.value);
+  if (filters.q) params.set('q', filters.q);
+  if (filters.status) params.set('status', filters.status);
+  return params.toString();
+}
+
 async function load() {
   loading.value = true;
   try {
     const results = await Promise.allSettled([
       get('/pv/api/workbench/finance/summary'),
-      get('/pv/api/workbench/ledger'),
+      get(`/pv/api/workbench/ledger?${ledgerQuery()}`),
       get('/pv/api/workbench/payments'),
       get('/pv/api/workbench/adjustments'),
       get('/pv/api/workbench/directory'),
     ]);
     if (results[0].status === 'fulfilled') summary.value = results[0].value;
-    if (results[1].status === 'fulfilled') ledger.value = results[1].value.ledger || [];
+    if (results[1].status === 'fulfilled') {
+      ledger.value = results[1].value.ledger || [];
+      total.value = results[1].value.total || 0;
+    }
     if (results[2].status === 'fulfilled') payments.value = results[2].value.payments || [];
     if (results[3].status === 'fulfilled') adjustments.value = results[3].value.adjustments || [];
     if (results[4].status === 'fulfilled') directory.value = results[4].value.users || [];
@@ -225,6 +252,17 @@ async function load() {
   } finally {
     loading.value = false;
   }
+}
+
+function reload() {
+  page.value = 1;
+  return load();
+}
+
+function resetFilters() {
+  filters.q = '';
+  filters.status = '';
+  reload();
 }
 
 function openPayment() {
@@ -253,7 +291,7 @@ async function savePayment() {
     await post('/pv/api/workbench/payments', paymentForm);
     ElMessage.success(t('operationSuccess'));
     paymentDialog.value = false;
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {

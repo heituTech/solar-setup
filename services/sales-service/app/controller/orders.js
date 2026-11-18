@@ -114,12 +114,16 @@ module.exports = {
     const salespersonId = overrideSalesperson && overrideSalesperson > 0
       ? overrideSalesperson
       : Number(customer.owner_id);
+    // 归属人姓名：默认取客户归属人姓名（冗余字段，避免跨服务查 users）
+    const salespersonName = salespersonId === Number(customer.owner_id)
+      ? customer.owner_name
+      : (body.salesperson_name || null);
 
     const orderNo = newNo('ORD');
     const [result] = await ctx.app.db.query(
-      `INSERT INTO orders (order_no, customer_id, customer_name, address, salesperson_id, status, amount)
-       VALUES (?,?,?,?,?,'initializing',0)`,
-      [orderNo, customerId, customer.name, customer.address || null, salespersonId]
+      `INSERT INTO orders (order_no, customer_id, customer_name, address, salesperson_id, salesperson_name, status, amount)
+       VALUES (?,?,?,?,?,?,'initializing',0)`,
+      [orderNo, customerId, customer.name, customer.address || null, salespersonId, salespersonName]
     );
     const orderId = result.insertId;
 

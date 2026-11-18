@@ -171,10 +171,10 @@ module.exports = {
       const productConfig = items.map((item) => `${item.name}×${item.qty || 1}`).join('; ');
       const orderNo = reference('SO');
       const [result] = await connection.query(
-        `INSERT INTO orders (order_no, quote_id, customer_id, customer_name, address, salesperson_id, amount, commission_rate, status)
-         VALUES (?,?,?,?,?,?,?,?,?)`,
+        `INSERT INTO orders (order_no, quote_id, customer_id, customer_name, address, salesperson_id, salesperson_name, amount, commission_rate, status)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`,
         [orderNo, id, Number(customer.id), customer.name, customer.address, Number(quote.salesperson_id),
-          amount, rate, 'initializing']
+          customer.owner_name || null, amount, rate, 'initializing']
       );
       await connection.query("UPDATE quotes SET status = 'converted' WHERE id = ?", [id]);
       await connection.query("UPDATE customers SET status = 'won' WHERE id = ?", [customer.id]);
@@ -198,7 +198,7 @@ module.exports = {
           discount_approver: quote.notes || null,
           address: customer.address,
           salesperson_id: Number(quote.salesperson_id),
-          salesperson_name: ctx.state.user.name,
+          salesperson_name: customer.owner_name || null,
           amount,
           commission_rate: rate,
           referral,

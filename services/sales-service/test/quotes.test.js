@@ -162,7 +162,7 @@ test('quotes.convert - 订单归属人=quote.salesperson_id，而非当前操作
       items: JSON.stringify(validItems), notes: null,
     }] },
     { match: 'SELECT * FROM customers WHERE id = ?', return: [{
-      id: 1, name: 'X Cafe', owner_id: 80, address: 'Boeng Tuk', source: 'walk-in',
+      id: 1, name: 'X Cafe', owner_id: 80, owner_name: 'Owner 80', address: 'Boeng Tuk', source: 'walk-in',
     }] },
     { match: 'INSERT INTO orders', return: (params) => { orderInsertParams = params; return { insertId: 100 }; } },
     { match: 'UPDATE quotes SET status', return: [{ affectedRows: 1 }] },
@@ -179,8 +179,9 @@ test('quotes.convert - 订单归属人=quote.salesperson_id，而非当前操作
   const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db });
   await quotes.convert(ctx);
 
-  // INSERT params: [orderNo, quoteId, customerId, customerName, address, salespersonId, amount, rate, status]
+  // INSERT params: [orderNo, quoteId, customerId, customerName, address, salespersonId, salespersonName, amount, rate, status]
   assert.equal(orderInsertParams[5], quoteSalesperson, 'INSERT 的 salesperson_id 应取 quote.salesperson_id');
+  assert.equal(orderInsertParams[6], 'Owner 80', 'INSERT 的 salesperson_name 应取 customer.owner_name');
   assert.equal(ctx.body.order.salesperson_id, quoteSalesperson);
   assert.equal(ctx.body.order.salesperson_id, 90);
 });

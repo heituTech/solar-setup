@@ -18,6 +18,12 @@
       <el-table :data="orders" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="order_no" :label="t('orderNumber')" width="200" />
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="140" />
+        <el-table-column prop="salesperson_name" :label="t('salesperson')" width="120">
+          <template #default="{ row }">
+            <span v-if="row.salesperson_name">{{ row.salesperson_name }}</span>
+            <span v-else class="muted">#{{ row.salesperson_id }}</span>
+          </template>
+        </el-table-column>
         <el-table-column :label="t('orderAmount')" width="130">
           <template #default="{ row }">{{ money(row.amount) }}</template>
         </el-table-column>

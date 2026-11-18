@@ -15,7 +15,7 @@ module.exports = () => ({
   security: { csrf: { enable: false } },
   bodyParser: { jsonLimit: '2mb' },
   middleware: ['requestId', 'errorHandler', 'cors'],
-  cluster: { listen: { port: Number(process.env.PORT || 7101), hostname: '0.0.0.0' } },
+  cluster: { listen: { port: Number(process.env.PORT || 7101), hostname: process.env.BIND_HOST || '127.0.0.1' } },
   logger: { level: process.env.LOG_LEVEL || 'INFO', disableConsoleAfterReady: false },
   serviceName: 'identity',
   internal: { secret: process.env.INTERNAL_SERVICE_SECRET || '', services },
@@ -23,7 +23,7 @@ module.exports = () => ({
   identity: {
     jwtPublicKey: (process.env.JWT_PUBLIC_KEY || '').replace(/\\n/g, '\n'),
     jwtPrivateKey: (process.env.JWT_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-    tokenTtl: process.env.JWT_EXPIRES_IN || '7d',
+    tokenTtl: process.env.JWT_EXPIRES_IN || '12h',
     teamRoles: ['salesperson'],
   },
 });

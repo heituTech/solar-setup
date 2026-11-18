@@ -2,6 +2,7 @@
 
 const { verifyAccessToken, consumeInbox } = require('@solar/service-kit');
 const { loadUser } = require('../../lib/users');
+const { isTokenRevoked } = require('../../lib/revocation');
 
 module.exports = {
   async introspect(ctx) {
@@ -13,6 +14,7 @@ module.exports = {
     } catch {
       ctx.throw(401, 'invalid_token');
     }
+    if (await isTokenRevoked(ctx.app.db, payload.jti)) ctx.throw(401, 'invalid_token');
     const user = await loadUser(ctx.app.db, payload.sub);
     if (!user || user.status !== 'active' || user.role !== payload.role) ctx.throw(401, 'invalid_token');
     ctx.body = { user };

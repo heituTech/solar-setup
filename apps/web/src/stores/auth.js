@@ -33,6 +33,14 @@ export const useAuthStore = defineStore('auth', {
       } catch { this.logout(); }
     },
     logout() {
+      // 先通知服务端吊销当前 token（失败不影响本地登出）
+      if (this.token) {
+        fetch('/pv/api/auth/logout', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${this.token}` },
+          keepalive: true,
+        }).catch(() => {});
+      }
       this.token = '';
       this.user = null;
       setToken('');

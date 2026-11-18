@@ -15,7 +15,7 @@ module.exports = () => ({
   security: { csrf: { enable: false } },
   bodyParser: { jsonLimit: '2mb' },
   middleware: ['requestId', 'errorHandler', 'cors'],
-  cluster: { listen: { port: Number(process.env.PORT || 7103), hostname: '0.0.0.0' } },
+  cluster: { listen: { port: Number(process.env.PORT || 7103), hostname: process.env.BIND_HOST || '127.0.0.1' } },
   logger: { level: process.env.LOG_LEVEL || 'INFO', disableConsoleAfterReady: false },
   serviceName: 'delivery',
   internal: { secret: process.env.INTERNAL_SERVICE_SECRET || '', services },

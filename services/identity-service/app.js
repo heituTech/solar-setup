@@ -2,6 +2,7 @@
 
 const { createDatabase, createAuthMiddleware, publishOutbox } = require('@solar/service-kit');
 const { loadUser } = require('./lib/users');
+const { isTokenRevoked } = require('./lib/revocation');
 
 module.exports = (app) => {
   const config = app.config;
@@ -11,7 +12,10 @@ module.exports = (app) => {
     internalSecret: config.internal.secret,
     identityUrl: config.internal.services.identity,
     publicKey: config.identity.jwtPublicKey || undefined,
-    loadUser: async (payload) => loadUser(app.db, payload.sub),
+    loadUser: async (payload) => {
+      if (await isTokenRevoked(app.db, payload.jti)) return null;
+      return loadUser(app.db, payload.sub);
+    },
   });
 
   app.beforeStart(async () => {

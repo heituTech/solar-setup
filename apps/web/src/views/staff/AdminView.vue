@@ -10,6 +10,20 @@
           </div>
         </div>
 
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+          <el-input v-model="userFilters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reloadUsers" />
+          <el-select v-model="userFilters.role" clearable :placeholder="t('role')" style="width:160px">
+            <el-option :label="t('filterAll')" value="" />
+            <el-option v-for="r in roles" :key="r" :label="roleLabel(r)" :value="r" />
+          </el-select>
+          <el-select v-model="userFilters.status" clearable :placeholder="t('status')" style="width:160px">
+            <el-option :label="t('filterAll')" value="" />
+            <el-option v-for="s in userStatusOptions" :key="s" :label="statusLabel(s)" :value="s" />
+          </el-select>
+          <el-button type="primary" :loading="loadingUsers" @click="reloadUsers">{{ t('filterSearch') }}</el-button>
+          <el-button @click="resetUserFilters">{{ t('filterReset') }}</el-button>
+        </div>
+
         <div class="panel">
           <el-table :data="users" v-loading="loadingUsers" :empty-text="t('noData')">
             <el-table-column prop="id" :label="t('staffId')" width="90" />
@@ -31,6 +45,15 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination
+            style="margin-top:12px; justify-content:flex-end"
+            background
+            layout="total, prev, pager, next, jumper"
+            :total="usersTotal"
+            :page-size="usersPageSize"
+            :current-page="usersPage"
+            @current-change="changeUsersPage"
+          />
         </div>
       </el-tab-pane>
 
@@ -40,6 +63,16 @@
           <div class="toolbar-actions">
             <el-button @click="loadApprovals" :loading="loadingApprovals">{{ t('refresh') }}</el-button>
           </div>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+          <el-input v-model="approvalFilters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reloadApprovals" />
+          <el-select v-model="approvalFilters.status" clearable :placeholder="t('status')" style="width:160px">
+            <el-option :label="t('filterAll')" value="" />
+            <el-option v-for="s in approvalStatusOptions" :key="s" :label="statusLabel(s)" :value="s" />
+          </el-select>
+          <el-button type="primary" :loading="loadingApprovals" @click="reloadApprovals">{{ t('filterSearch') }}</el-button>
+          <el-button @click="resetApprovalFilters">{{ t('filterReset') }}</el-button>
         </div>
 
         <div class="panel">
@@ -68,6 +101,15 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination
+            style="margin-top:12px; justify-content:flex-end"
+            background
+            layout="total, prev, pager, next, jumper"
+            :total="approvalTotal"
+            :page-size="approvalPageSize"
+            :current-page="approvalPage"
+            @current-change="changeApprovalPage"
+          />
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -122,16 +164,27 @@ const auth = useAuthStore();
 const tab = ref('users');
 const users = ref([]);
 const approvals = ref([]);
+const directory = ref([]);
 const loadingUsers = ref(false);
 const loadingApprovals = ref(false);
 const saving = ref(false);
 const dialog = ref(false);
+const usersPage = ref(1);
+const usersPageSize = ref(10);
+const usersTotal = ref(0);
+const approvalPage = ref(1);
+const approvalPageSize = ref(10);
+const approvalTotal = ref(0);
+const userFilters = reactive({ q: '', role: '', status: '' });
+const approvalFilters = reactive({ q: '', status: '' });
+const userStatusOptions = ['active', 'disabled'];
+const approvalStatusOptions = ['pending', 'approved', 'rejected'];
 const roles = ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'member'];
 const form = reactive({ id: null, name: '', email: '', phone: '', role: 'salesperson', manager_id: null, status: 'active', password: '' });
 
 const isAdmin = computed(() => auth.role === 'super_admin');
 const canDecide = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
-const managers = computed(() => users.value.filter((item) => ['super_admin', 'sales_manager'].includes(item.role)));
+const managers = computed(() => directory.value.filter((item) => ['super_admin', 'sales_manager'].includes(item.role)));
 
 function roleLabel(role) {
   if (!role) return '-';
@@ -142,7 +195,8 @@ function roleLabel(role) {
 
 function managerName(id) {
   if (!id) return '-';
-  return users.value.find((item) => item.id === Number(id))?.name || `#${id}`;
+  const found = directory.value.find((item) => item.id === Number(id)) || users.value.find((item) => item.id === Number(id));
+  return found?.name || `#${id}`;
 }
 
 function summary(payload) {
@@ -151,11 +205,27 @@ function summary(payload) {
   return text.length > 160 ? `${text.slice(0, 160)}…` : text;
 }
 
+function queryString(params) {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== '' && value !== null && value !== undefined) search.set(key, value);
+  });
+  return search.toString();
+}
+
 async function loadUsers() {
   loadingUsers.value = true;
   try {
-    const data = await get('/pv/api/admin/users');
+    const query = queryString({
+      page: usersPage.value,
+      page_size: usersPageSize.value,
+      q: userFilters.q,
+      role: userFilters.role,
+      status: userFilters.status,
+    });
+    const data = await get(`/pv/api/admin/users?${query}`);
     users.value = data.users || [];
+    usersTotal.value = Number(data.total) || 0;
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -166,13 +236,59 @@ async function loadUsers() {
 async function loadApprovals() {
   loadingApprovals.value = true;
   try {
-    const data = await get('/pv/api/approvals');
+    const query = queryString({
+      page: approvalPage.value,
+      page_size: approvalPageSize.value,
+      q: approvalFilters.q,
+      status: approvalFilters.status,
+    });
+    const data = await get(`/pv/api/approvals?${query}`);
     approvals.value = data.approvals || [];
+    approvalTotal.value = Number(data.total) || 0;
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
     loadingApprovals.value = false;
   }
+}
+
+async function loadDirectory() {
+  try {
+    const data = await get('/pv/api/workbench/directory');
+    directory.value = data.users || [];
+  } catch {
+    directory.value = [];
+  }
+}
+
+function reloadUsers() {
+  usersPage.value = 1;
+  return loadUsers();
+}
+
+function resetUserFilters() {
+  Object.assign(userFilters, { q: '', role: '', status: '' });
+  reloadUsers();
+}
+
+function changeUsersPage(next) {
+  usersPage.value = next;
+  loadUsers();
+}
+
+function reloadApprovals() {
+  approvalPage.value = 1;
+  return loadApprovals();
+}
+
+function resetApprovalFilters() {
+  Object.assign(approvalFilters, { q: '', status: '' });
+  reloadApprovals();
+}
+
+function changeApprovalPage(next) {
+  approvalPage.value = next;
+  loadApprovals();
 }
 
 function openCreate() {
@@ -203,7 +319,7 @@ async function save() {
     else await post('/pv/api/admin/users', payload);
     ElMessage.success(t('operationSuccess'));
     dialog.value = false;
-    await loadUsers();
+    await reloadUsers();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -222,7 +338,7 @@ async function decide(row, decision) {
     });
     await post(`/pv/api/approvals/${row.id}/decide`, { decision, note: value || '' });
     ElMessage.success(t('operationSuccess'));
-    await loadApprovals();
+    await reloadApprovals();
   } catch (error) {
     if (error?.message && error.message !== 'cancel') ElMessage.error(error.message);
   } finally {
@@ -231,6 +347,6 @@ async function decide(row, decision) {
 }
 
 onMounted(async () => {
-  await Promise.all([loadUsers(), loadApprovals()]);
+  await Promise.all([loadUsers(), loadApprovals(), loadDirectory()]);
 });
 </script>

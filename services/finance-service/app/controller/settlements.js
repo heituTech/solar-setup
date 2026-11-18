@@ -42,13 +42,26 @@ async function loadSettlement(ctx, id) {
 
 module.exports = {
   async list(ctx) {
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
     const params = [];
-    let sql = 'SELECT * FROM settlements WHERE 1 = 1';
-    sql += scopeClause('user_id', salesScopeFor(ctx.state.user), params);
-    if (ctx.query.period) { sql += ' AND period = ?'; params.push(String(ctx.query.period)); }
-    sql += ' ORDER BY period DESC, id DESC LIMIT 300';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { settlements: rows.map(toSettlement) };
+    let where = ' WHERE 1 = 1';
+    where += scopeClause('user_id', salesScopeFor(ctx.state.user), params);
+    if (ctx.query.period) { where += ' AND period = ?'; params.push(String(ctx.query.period)); }
+    if (ctx.query.status) { where += ' AND status = ?'; params.push(String(ctx.query.status)); }
+    if (q) {
+      where += ' AND (user_name LIKE ? OR period LIKE ?)';
+      params.push(`%${q}%`, `%${q}%`);
+    }
+    const [[counted]] = await ctx.app.db.query(
+      `SELECT COUNT(*) AS total FROM settlements${where}`, params
+    );
+    const [rows] = await ctx.app.db.query(
+      `SELECT * FROM settlements${where} ORDER BY period DESC, id DESC LIMIT ? OFFSET ?`,
+      [...params, pageSize, (page - 1) * pageSize]
+    );
+    ctx.body = { settlements: rows.map(toSettlement), total: Number(counted.total), page, page_size: pageSize };
   },
 
   async detail(ctx) {

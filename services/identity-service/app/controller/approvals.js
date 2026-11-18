@@ -8,21 +8,38 @@ const APPROVAL_TYPES = new Set(['product_change', 'quote_discount']);
 module.exports = {
   async list(ctx) {
     const user = ctx.state.user;
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
+    const status = String(ctx.query.status || '').trim();
+    const conditions = [];
     const params = [];
-    let sql = `SELECT id,type,requester_id,requester_name,payload,status,approver_id,decision_note,created_at,decided_at
-               FROM approval_requests`;
     if (user.role === 'super_admin' || user.role === 'accountant') {
-      sql += ' WHERE 1 = 1';
+      // no requester scope
     } else if (user.role === 'sales_manager') {
       const team = [Number(user.id), ...(user.salesperson_ids || [])];
-      sql += ` WHERE requester_id IN (${team.map(() => '?').join(',')})`;
+      conditions.push(`requester_id IN (${team.map(() => '?').join(',')})`);
       params.push(...team);
     } else {
-      sql += ' WHERE requester_id = ?';
+      conditions.push('requester_id = ?');
       params.push(Number(user.id));
     }
-    sql += ' ORDER BY id DESC LIMIT 200';
-    const [rows] = await ctx.app.db.query(sql, params);
+    if (q) {
+      conditions.push('(type LIKE ? OR requester_name LIKE ?)');
+      params.push(`%${q}%`, `%${q}%`);
+    }
+    if (status) {
+      conditions.push('status = ?');
+      params.push(status);
+    }
+    const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
+    const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total FROM approval_requests${where}`, params);
+    const offset = (page - 1) * pageSize;
+    const [rows] = await ctx.app.db.query(
+      `SELECT id,type,requester_id,requester_name,payload,status,approver_id,decision_note,created_at,decided_at
+       FROM approval_requests${where} ORDER BY id DESC LIMIT ? OFFSET ?`,
+      [...params, pageSize, offset]
+    );
     ctx.body = {
       approvals: rows.map((row) => ({
         ...row,
@@ -31,6 +48,9 @@ module.exports = {
         approver_id: row.approver_id ? Number(row.approver_id) : null,
         payload: typeof row.payload === 'string' ? JSON.parse(row.payload) : row.payload,
       })),
+      total: Number(countRows[0].total),
+      page,
+      page_size: pageSize,
     };
   },
 

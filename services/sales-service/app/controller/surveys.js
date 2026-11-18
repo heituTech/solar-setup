@@ -25,13 +25,20 @@ function toSurvey(row) {
 module.exports = {
   async list(ctx) {
     const params = [];
-    let sql = `SELECT s.*, c.name AS customer_name FROM surveys s
-               LEFT JOIN customers c ON c.id = s.customer_id WHERE 1 = 1`;
-    sql += scopeClause('c.owner_id', salesScopeFor(ctx.state.user), params);
-    if (ctx.query.status) { sql += ' AND s.status = ?'; params.push(String(ctx.query.status)); }
-    sql += ' ORDER BY s.id DESC LIMIT 300';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { surveys: rows.map(toSurvey) };
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
+    let where = `FROM surveys s
+                 LEFT JOIN customers c ON c.id = s.customer_id WHERE 1 = 1`;
+    where += scopeClause('c.owner_id', salesScopeFor(ctx.state.user), params);
+    if (ctx.query.status) { where += ' AND s.status = ?'; params.push(String(ctx.query.status)); }
+    if (q) { where += ' AND (c.name LIKE ? OR s.address LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
+    const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total ${where}`, params);
+    const [rows] = await ctx.app.db.query(
+      `SELECT s.*, c.name AS customer_name ${where} ORDER BY s.id DESC LIMIT ? OFFSET ?`,
+      params.concat([pageSize, (page - 1) * pageSize])
+    );
+    ctx.body = { surveys: rows.map(toSurvey), total: Number(countRows[0].total), page, page_size: pageSize };
   },
 
   async create(ctx) {

@@ -9,6 +9,15 @@
     </div>
 
     <div class="panel">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:150px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="s in ['draft','pending_review','approved','rejected','accepted','converted']" :key="s" :label="statusLabel(s)" :value="s" />
+        </el-select>
+        <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
+        <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
+      </div>
       <el-table :data="quotes" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="quote_no" :label="t('quoteNumber')" width="190" />
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="140" />
@@ -36,6 +45,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
     </div>
 
     <el-dialog v-model="dialog" :title="t('newQuote')" width="720px">
@@ -53,7 +63,7 @@
         </div>
         <div class="toolbar-actions section-gap">
           <el-button @click="form.items.push({ name: '', qty: 1, unit_price: 0 })">{{ t('addItem') }}</el-button>
-          <strong>{{ t('total') }}: {{ money(total) }}</strong>
+          <strong>{{ t('total') }}: {{ money(formTotal) }}</strong>
         </div>
         <el-form-item :label="t('notes')" class="section-gap">
           <el-input v-model="form.notes" type="textarea" :rows="2" />
@@ -81,6 +91,10 @@ const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const quotes = ref([]);
 const customers = ref([]);
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const filters = reactive({ q: '', status: '' });
 const loading = ref(false);
 const saving = ref(false);
 const dialog = ref(false);
@@ -88,22 +102,37 @@ const form = reactive({ customer_id: null, items: [{ name: '', qty: 1, unit_pric
 
 const canSell = computed(() => ['super_admin', 'sales_manager', 'salesperson'].includes(auth.role));
 const isManager = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
-const total = computed(() => form.items.reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.unit_price || 0), 0));
+const formTotal = computed(() => form.items.reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.unit_price || 0), 0));
 
 async function load() {
   loading.value = true;
   try {
+    const params = new URLSearchParams({ page: String(page.value), page_size: '10' });
+    if (filters.q.trim()) params.set('q', filters.q.trim());
+    if (filters.status) params.set('status', filters.status);
     const [quoteData, customerData] = await Promise.all([
-      get('/pv/api/workbench/quotes'),
-      get('/pv/api/workbench/customers'),
+      get(`/pv/api/workbench/quotes?${params.toString()}`),
+      get('/pv/api/workbench/customers?page=1&page_size=100'),
     ]);
     quotes.value = quoteData.quotes || [];
+    total.value = quoteData.total || 0;
     customers.value = customerData.customers || [];
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
     loading.value = false;
   }
+}
+
+function reload() {
+  page.value = 1;
+  load();
+}
+
+function resetFilters() {
+  filters.q = '';
+  filters.status = '';
+  reload();
 }
 
 function openCreate() {
@@ -120,7 +149,7 @@ async function save() {
     await post('/pv/api/workbench/quotes', { customer_id: form.customer_id, items, notes: form.notes });
     ElMessage.success(t('operationSuccess'));
     dialog.value = false;
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -132,7 +161,7 @@ async function submit(row) {
   saving.value = true;
   try {
     await post(`/pv/api/workbench/quotes/${row.id}/submit`, {});
-    await load();
+    await reload();
   } catch (error) { ElMessage.error(error.message); } finally { saving.value = false; }
 }
 
@@ -140,7 +169,7 @@ async function approve(row, decision) {
   saving.value = true;
   try {
     await post(`/pv/api/workbench/quotes/${row.id}/approve`, { decision });
-    await load();
+    await reload();
   } catch (error) { ElMessage.error(error.message); } finally { saving.value = false; }
 }
 
@@ -149,7 +178,7 @@ async function accept(row) {
   try {
     await ElMessageBox.confirm(`${t('accept')} ${row.quote_no}?`, t('confirm'));
     await post(`/pv/api/workbench/quotes/${row.id}/accept`, {});
-    await load();
+    await reload();
   } catch (error) { if (error?.message) ElMessage.error(error.message); } finally { saving.value = false; }
 }
 
@@ -159,7 +188,7 @@ async function convert(row) {
     await ElMessageBox.confirm(`${t('convertOrder')} ${row.quote_no}?`, t('confirm'));
     const data = await post(`/pv/api/workbench/quotes/${row.id}/convert`, {});
     ElMessage.success(`${t('orders')}: ${data.order.order_no}`);
-    await load();
+    await reload();
   } catch (error) { if (error?.message) ElMessage.error(error.message); } finally { saving.value = false; }
 }
 

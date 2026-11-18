@@ -3,15 +3,24 @@
     <div class="page-toolbar">
       <h3>{{ t('catalog') }}</h3>
       <div class="toolbar-actions">
-        <el-select v-model="category" clearable :placeholder="t('category')" style="width: 160px" @change="load">
-          <el-option v-for="item in categories" :key="item" :label="statusLabel(item)" :value="item" />
-        </el-select>
         <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
         <el-button type="primary" :disabled="loading" @click="openCreate">{{ t('create') }}</el-button>
       </div>
     </div>
 
     <div class="panel">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
+        <el-select v-model="filters.category" clearable :placeholder="t('category')" style="width:160px">
+          <el-option v-for="item in categories" :key="item" :label="statusLabel(item)" :value="item" />
+        </el-select>
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:150px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="s in ['active','disabled']" :key="s" :label="statusLabel(s)" :value="s" />
+        </el-select>
+        <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
+        <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
+      </div>
       <el-table :data="products" v-loading="loading" :empty-text="t('noData')">
         <el-table-column :label="t('category')" width="140">
           <template #default="{ row }">{{ statusLabel(row.category) }}</template>
@@ -33,6 +42,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
     </div>
 
     <el-dialog v-model="dialog" :title="form.id ? t('edit') : t('create')" width="620px">
@@ -74,7 +84,10 @@ const { t } = useI18n();
 const statusLabel = useStatusLabel();
 const products = ref([]);
 const categories = ['panel', 'inverter', 'battery', 'mounting', 'cable', 'accessory', 'service'];
-const category = ref('');
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const filters = reactive({ q: '', category: '', status: '' });
 const loading = ref(false);
 const saving = ref(false);
 const dialog = ref(false);
@@ -83,14 +96,30 @@ const form = reactive({ id: null, category: 'panel', model: '', name: '', price:
 async function load() {
   loading.value = true;
   try {
-    const query = category.value ? `?category=${encodeURIComponent(category.value)}` : '';
-    const data = await get(`/pv/api/products${query}`);
+    const params = new URLSearchParams({ page: String(page.value), page_size: '10' });
+    if (filters.q.trim()) params.set('q', filters.q.trim());
+    if (filters.category) params.set('category', filters.category);
+    if (filters.status) params.set('status', filters.status);
+    const data = await get(`/pv/api/products?${params.toString()}`);
     products.value = data.products || [];
+    total.value = data.total || 0;
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
     loading.value = false;
   }
+}
+
+function reload() {
+  page.value = 1;
+  load();
+}
+
+function resetFilters() {
+  filters.q = '';
+  filters.category = '';
+  filters.status = '';
+  reload();
 }
 
 function openCreate() {
@@ -120,7 +149,7 @@ async function save() {
     if (result.pending_approval) ElMessage.warning(`${t('pending')} #${result.approval_id}`);
     else ElMessage.success(t('operationSuccess'));
     dialog.value = false;
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {

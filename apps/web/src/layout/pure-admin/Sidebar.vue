@@ -17,13 +17,19 @@ const route = useRoute();
 
 const isCollapse = computed(() => !appStore.sidebar.opened);
 const device = computed(() => appStore.device);
-const menus = computed(() =>
-  routerArrays.filter((m) => {
+const menus = computed(() => {
+  // 首页与概览合并为同一入口：员工进概览，访客进首页
+  const primary = auth.staff
+    ? { path: '/workbench', meta: { key: 'overview' } }
+    : { path: '/home', meta: { key: 'home' } };
+  const rest = routerArrays.filter((m) => {
+    if (m.path === '/home' || m.path === '/workbench') return false;
     if (m.meta.staff) return auth.staff;
     if (m.meta.requiresAuth) return auth.authenticated;
     return true;
-  })
-);
+  });
+  return [primary, ...rest];
+});
 
 const defaultActive = computed(() => route.path);
 

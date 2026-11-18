@@ -25,12 +25,18 @@ async function requestApproval(ctx, payload) {
 module.exports = {
   async list(ctx) {
     const params = [];
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
     let sql = 'SELECT * FROM products WHERE 1 = 1';
     if (ctx.query.category) { sql += ' AND category = ?'; params.push(String(ctx.query.category)); }
     if (ctx.query.status) { sql += ' AND status = ?'; params.push(String(ctx.query.status)); }
-    sql += ' ORDER BY category, model LIMIT 500';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { products: rows.map(toProduct) };
+    if (q) { sql += ' AND (name LIKE ? OR model LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
+    const countSql = sql.replace('SELECT *', 'SELECT COUNT(*) AS total');
+    const [countRows] = await ctx.app.db.query(countSql, params);
+    const [rows] = await ctx.app.db.query(`${sql} ORDER BY category, model LIMIT ? OFFSET ?`,
+      params.concat([pageSize, (page - 1) * pageSize]));
+    ctx.body = { products: rows.map(toProduct), total: Number(countRows[0].total), page, page_size: pageSize };
   },
 
   async create(ctx) {

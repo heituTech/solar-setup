@@ -9,6 +9,15 @@
     </div>
 
     <div class="panel">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:150px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="s in ['draft','submitted','reviewed','invalid']" :key="s" :label="statusLabel(s)" :value="s" />
+        </el-select>
+        <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
+        <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
+      </div>
       <el-table :data="surveys" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="130" />
         <el-table-column prop="address" :label="t('address')" min-width="160" />
@@ -31,6 +40,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
     </div>
 
     <el-dialog v-model="dialog" :title="t('newSurvey')" width="620px">
@@ -75,6 +85,10 @@ const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const surveys = ref([]);
 const customers = ref([]);
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const filters = reactive({ q: '', status: '' });
 const loading = ref(false);
 const saving = ref(false);
 const dialog = ref(false);
@@ -88,17 +102,32 @@ const canReview = computed(() => ['super_admin', 'electrical_engineer', 'structu
 async function load() {
   loading.value = true;
   try {
+    const params = new URLSearchParams({ page: String(page.value), page_size: '10' });
+    if (filters.q.trim()) params.set('q', filters.q.trim());
+    if (filters.status) params.set('status', filters.status);
     const [surveyData, customerData] = await Promise.all([
-      get('/pv/api/workbench/surveys'),
-      get('/pv/api/workbench/customers'),
+      get(`/pv/api/workbench/surveys?${params.toString()}`),
+      get('/pv/api/workbench/customers?page=1&page_size=100'),
     ]);
     surveys.value = surveyData.surveys || [];
+    total.value = surveyData.total || 0;
     customers.value = customerData.customers || [];
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
     loading.value = false;
   }
+}
+
+function reload() {
+  page.value = 1;
+  load();
+}
+
+function resetFilters() {
+  filters.q = '';
+  filters.status = '';
+  reload();
 }
 
 function openCreate() {
@@ -120,7 +149,7 @@ async function save() {
     });
     ElMessage.success(t('operationSuccess'));
     dialog.value = false;
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -132,7 +161,7 @@ async function submitSurvey(row) {
   saving.value = true;
   try {
     await post(`/pv/api/workbench/surveys/${row.id}/submit`, {});
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -146,7 +175,7 @@ async function review(row, decision) {
     const { value } = await ElMessageBox.prompt(t('notes'), t('review'), { inputValue: '', inputPlaceholder: t('optional') });
     await post(`/pv/api/workbench/surveys/${row.id}/review`, { decision, note: value || null });
     ElMessage.success(t('operationSuccess'));
-    await load();
+    await reload();
   } catch (error) {
     if (error?.message) ElMessage.error(error.message);
   } finally {

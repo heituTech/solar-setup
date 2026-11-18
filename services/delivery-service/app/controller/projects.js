@@ -44,8 +44,11 @@ async function loadProject(ctx, id, connection = ctx.app.db) {
 
 module.exports = {
   async list(ctx) {
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+    const q = String(ctx.query.q || '').trim();
     const params = [];
-    let sql = 'SELECT * FROM projects WHERE 1 = 1';
+    let sql = 'FROM projects WHERE 1 = 1';
     const scope = scopeFor(ctx.state.user);
     if (scope) {
       if (!scope.ids.length) { sql += ' AND 1 = 0'; } else {
@@ -54,9 +57,16 @@ module.exports = {
       }
     }
     if (ctx.query.status) { sql += ' AND status = ?'; params.push(String(ctx.query.status)); }
-    sql += ' ORDER BY id DESC LIMIT 300';
-    const [rows] = await ctx.app.db.query(sql, params);
-    ctx.body = { projects: rows.map(toProject) };
+    if (q) {
+      sql += ' AND (order_no LIKE ? OR customer_name LIKE ?)';
+      params.push(`%${q}%`, `%${q}%`);
+    }
+    const [rows] = await ctx.app.db.query(
+      `SELECT * ${sql} ORDER BY id DESC LIMIT ? OFFSET ?`,
+      [...params, pageSize, (page - 1) * pageSize]
+    );
+    const [count] = await ctx.app.db.query(`SELECT COUNT(*) AS total ${sql}`, params);
+    ctx.body = { projects: rows.map(toProject), total: Number(count[0].total), page, page_size: pageSize };
   },
 
   async detail(ctx) {

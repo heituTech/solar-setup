@@ -9,6 +9,19 @@
     </div>
 
     <div class="panel">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:160px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="s in statusOptions" :key="s" :label="statusLabel(s)" :value="s" />
+        </el-select>
+        <el-select v-model="filters.priority" clearable :placeholder="t('priority')" style="width:160px">
+          <el-option :label="t('filterAll')" value="" />
+          <el-option v-for="p in priorityOptions" :key="p" :label="statusLabel(p)" :value="p" />
+        </el-select>
+        <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
+        <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
+      </div>
       <el-table :data="tickets" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="title" :label="t('title')" min-width="150" />
         <el-table-column prop="customer_name" :label="t('customerName')" width="130" />
@@ -29,6 +42,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
     </div>
 
     <el-dialog v-model="createDialog" :title="t('createTicket')" width="520px">
@@ -85,6 +99,12 @@ const tickets = ref([]);
 const projects = ref([]);
 const loading = ref(false);
 const saving = ref(false);
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const filters = reactive({ q: '', status: '', priority: '' });
+const statusOptions = ['open', 'in_progress', 'resolved', 'closed'];
+const priorityOptions = ['low', 'normal', 'high', 'urgent'];
 const createDialog = ref(false);
 const updateDialog = ref(false);
 const resolution = ref('');
@@ -95,17 +115,34 @@ const canHandle = computed(() => ['super_admin', 'after_sales', 'electrical_engi
 async function load() {
   loading.value = true;
   try {
+    const params = new URLSearchParams({ page: String(page.value), page_size: String(pageSize.value) });
+    if (filters.q) params.set('q', filters.q);
+    if (filters.status) params.set('status', filters.status);
+    if (filters.priority) params.set('priority', filters.priority);
     const [ticketData, projectData] = await Promise.all([
-      get('/pv/api/workbench/tickets'),
-      get('/pv/api/workbench/projects'),
+      get(`/pv/api/workbench/tickets?${params.toString()}`),
+      get('/pv/api/workbench/projects?page_size=100'),
     ]);
     tickets.value = ticketData.tickets || [];
+    total.value = ticketData.total || 0;
     projects.value = projectData.projects || [];
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
     loading.value = false;
   }
+}
+
+function reload() {
+  page.value = 1;
+  load();
+}
+
+function resetFilters() {
+  filters.q = '';
+  filters.status = '';
+  filters.priority = '';
+  reload();
 }
 
 function openCreate() {
@@ -120,7 +157,7 @@ async function create() {
     await post('/pv/api/workbench/tickets', form);
     ElMessage.success(t('operationSuccess'));
     createDialog.value = false;
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -139,7 +176,7 @@ async function resolve() {
   try {
     await patch(`/pv/api/workbench/tickets/${editing.value.id}`, { status: 'resolved', resolution: resolution.value });
     updateDialog.value = false;
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
@@ -151,7 +188,7 @@ async function setStatus(row, status) {
   saving.value = true;
   try {
     await patch(`/pv/api/workbench/tickets/${row.id}`, { status });
-    await load();
+    await reload();
   } catch (error) {
     ElMessage.error(error.message);
   } finally {

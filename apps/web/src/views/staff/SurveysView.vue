@@ -26,16 +26,24 @@
         <el-table-column :label="t('status')" width="120">
           <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
+        <el-table-column :label="t('constructionCost')" width="140">
+          <template #default="{ row }">
+            <span v-if="row.construction_cost !== null">{{ row.construction_cost }}</span>
+            <span v-else class="muted">-</span>
+          </template>
+        </el-table-column>
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column :label="t('actions')" width="220">
+        <el-table-column :label="t('actions')" width="280">
           <template #default="{ row }">
             <el-button v-if="canEdit && row.status === 'draft'" link type="primary" :disabled="saving" @click="submitSurvey(row)">{{ t('submitReview') }}</el-button>
             <template v-if="canReview && row.status === 'submitted'">
               <el-button link type="success" :disabled="saving" @click="review(row, 'valid')">{{ t('valid') }}</el-button>
               <el-button link type="danger" :disabled="saving" @click="review(row, 'invalid')">{{ t('invalid') }}</el-button>
             </template>
+            <el-button v-if="canReview && row.status === 'reviewed'" link type="primary" :disabled="saving" @click="fillCost(row)">{{ t('fillConstructionCost') }}</el-button>
+            <el-button v-if="canEdit" link @click="linkOrder(row)">{{ t('linkOrder') }}</el-button>
             <span v-if="row.review_note" class="muted">{{ row.review_note }}</span>
           </template>
         </el-table-column>
@@ -185,6 +193,36 @@ async function review(row, decision) {
     if (error?.message) ElMessage.error(error.message);
   } finally {
     saving.value = false;
+  }
+}
+
+async function fillCost(row) {
+  try {
+    const { value } = await ElMessageBox.prompt(t('constructionCost'), t('fillConstructionCost'), {
+      inputValue: row.construction_cost ?? '', inputType: 'number', inputPlaceholder: '0',
+    });
+    const cost = Number(value);
+    if (!Number.isFinite(cost) || cost < 0) return ElMessage.warning(t('constructionCost'));
+    await post(`/pv/api/workbench/surveys/${row.id}/construction-cost`, { construction_cost: cost });
+    ElMessage.success(t('operationSuccess'));
+    await reload();
+  } catch (error) {
+    if (error?.message) ElMessage.error(error.message);
+  }
+}
+
+async function linkOrder(row) {
+  try {
+    const { value } = await ElMessageBox.prompt(t('orderNumber'), t('linkOrder'), {
+      inputValue: row.order_id ?? '', inputPlaceholder: 'Order ID',
+    });
+    const orderId = Number(value);
+    if (!orderId) return;
+    await post(`/pv/api/workbench/surveys/${row.id}/link-order`, { order_id: orderId });
+    ElMessage.success(t('operationSuccess'));
+    await reload();
+  } catch (error) {
+    if (error?.message) ElMessage.error(error.message);
   }
 }
 

@@ -24,6 +24,18 @@
         <el-table-column :label="t('total')" width="140">
           <template #default="{ row }">{{ money(row.total_amount, row.currency) }}</template>
         </el-table-column>
+        <el-table-column :label="t('systemTotal')" width="140">
+          <template #default="{ row }">
+            <span v-if="row.system_total !== null">{{ money(row.system_total, row.currency) }}</span>
+            <span v-else class="muted">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('suggestedPrice')" width="140">
+          <template #default="{ row }">
+            <span v-if="row.suggested_price !== null" style="color:#e6a23c;font-weight:600">{{ money(row.suggested_price, row.currency) }}</span>
+            <span v-else class="muted">-</span>
+          </template>
+        </el-table-column>
         <el-table-column :label="t('items')" width="80">
           <template #default="{ row }">{{ row.items.length }}</template>
         </el-table-column>
@@ -33,8 +45,9 @@
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column :label="t('actions')" width="260">
+        <el-table-column :label="t('actions')" width="320">
           <template #default="{ row }">
+            <el-button link @click="viewDetail(row)">{{ t('detail') }}</el-button>
             <el-button v-if="row.status === 'draft' && canSell" link type="primary" :disabled="saving" @click="submit(row)">{{ t('submitReview') }}</el-button>
             <template v-if="row.status === 'pending_review' && isManager">
               <el-button link type="success" :disabled="saving" @click="approve(row, 'approved')">{{ t('approve') }}</el-button>
@@ -65,6 +78,15 @@
           <el-button @click="form.items.push({ name: '', qty: 1, unit_price: 0 })">{{ t('addItem') }}</el-button>
           <strong>{{ t('total') }}: {{ money(formTotal) }}</strong>
         </div>
+        <el-form-item :label="t('systemTotal')">
+          <el-input-number v-model="form.system_total" :min="0" :controls="false" style="width:100%" :placeholder="t('systemTotal')" />
+        </el-form-item>
+        <el-form-item :label="t('suggestedPrice')">
+          <el-input-number v-model="form.suggested_price" :min="0" :controls="false" style="width:100%" :placeholder="t('suggestedPriceHint')" />
+        </el-form-item>
+        <el-form-item v-if="showDiffReason" :label="t('diffReason')" required>
+          <el-input v-model="form.diff_reason" type="textarea" :rows="2" :placeholder="t('diffReasonRequired')" />
+        </el-form-item>
         <el-form-item :label="t('notes')" class="section-gap">
           <el-input v-model="form.notes" type="textarea" :rows="2" />
         </el-form-item>
@@ -74,6 +96,46 @@
         <el-button type="primary" :loading="saving" @click="save">{{ t('save') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 报价详情 drawer（含明细 + 系统总造价 + 建议价 + 差异原因） -->
+    <el-drawer v-model="drawer" :title="t('viewQuoteDetail')" size="640px">
+      <template v-if="currentQuote">
+        <div class="detail-grid">
+          <div class="detail-item"><span>{{ t('quoteNumber') }}</span>{{ currentQuote.quote_no }}</div>
+          <div class="detail-item"><span>{{ t('customerName') }}</span>{{ currentQuote.customer_name }}</div>
+          <div class="detail-item"><span>{{ t('status') }}</span><el-tag :type="statusType(currentQuote.status)">{{ statusLabel(currentQuote.status) }}</el-tag></div>
+          <div class="detail-item"><span>{{ t('date') }}</span>{{ dt(currentQuote.created_at) }}</div>
+          <div class="detail-item"><span>{{ t('systemTotal') }}</span><strong>{{ currentQuote.system_total !== null ? money(currentQuote.system_total, currentQuote.currency) : '-' }}</strong></div>
+          <div class="detail-item"><span>{{ t('suggestedPrice') }}</span>
+            <strong v-if="currentQuote.suggested_price !== null" style="color:#e6a23c">{{ money(currentQuote.suggested_price, currentQuote.currency) }}</strong>
+            <span v-else>-</span>
+          </div>
+          <div v-if="currentQuote.diff_reason" class="detail-item span-2">
+            <span>{{ t('diffReason') }}</span>
+            <el-alert type="warning" :closable="false">{{ currentQuote.diff_reason }}</el-alert>
+          </div>
+          <div v-if="currentQuote.notes" class="detail-item span-2"><span>{{ t('notes') }}</span>{{ currentQuote.notes }}</div>
+        </div>
+        <div class="panel-title" style="margin-top:16px"><h3>{{ t('items') }}</h3></div>
+        <el-table :data="currentQuote.items" size="small">
+          <el-table-column prop="name" :label="t('product')" min-width="200" />
+          <el-table-column prop="qty" :label="t('quantity')" width="80" />
+          <el-table-column :label="t('unitPrice')" width="120">
+            <template #default="{ row }">{{ money(row.unit_price, currentQuote.currency) }}</template>
+          </el-table-column>
+          <el-table-column :label="t('subtotal')" width="120">
+            <template #default="{ row }">{{ money(row.qty * row.unit_price, currentQuote.currency) }}</template>
+          </el-table-column>
+        </el-table>
+        <div style="text-align:right;margin-top:12px;font-size:16px">
+          <strong>{{ t('total') }}: {{ money(currentQuote.total_amount, currentQuote.currency) }}</strong>
+        </div>
+        <div v-if="currentQuote.status === 'pending_review' && isManager" style="margin-top:24px;text-align:right">
+          <el-button type="danger" :loading="saving" @click="approve(currentQuote, 'rejected'); drawer = false">{{ t('reject') }}</el-button>
+          <el-button type="success" :loading="saving" @click="approve(currentQuote, 'approved'); drawer = false">{{ t('approve') }}</el-button>
+        </div>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
@@ -98,11 +160,21 @@ const filters = reactive({ q: '', status: '' });
 const loading = ref(false);
 const saving = ref(false);
 const dialog = ref(false);
-const form = reactive({ customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '' });
+const drawer = ref(false);
+const currentQuote = ref(null);
+const form = reactive({
+  customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
+  system_total: null, suggested_price: null, diff_reason: '',
+});
 
 const canSell = computed(() => ['super_admin', 'sales_manager', 'salesperson'].includes(auth.role));
 const isManager = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
 const formTotal = computed(() => form.items.reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.unit_price || 0), 0));
+const showDiffReason = computed(() => {
+  if (form.suggested_price === null || form.suggested_price === undefined) return false;
+  if (form.system_total === null || form.system_total === undefined) return false;
+  return Math.abs(Number(form.suggested_price) - Number(form.system_total)) > 0.001;
+});
 
 async function load() {
   loading.value = true;
@@ -141,17 +213,29 @@ function resetFilters() {
 }
 
 function openCreate() {
-  Object.assign(form, { customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '' });
+  Object.assign(form, {
+    customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
+    system_total: null, suggested_price: null, diff_reason: '',
+  });
   dialog.value = true;
+}
+
+function viewDetail(row) {
+  currentQuote.value = row;
+  drawer.value = true;
 }
 
 async function save() {
   if (!form.customer_id) return ElMessage.warning(t('selectCustomer'));
   const items = form.items.filter((item) => item.name && item.unit_price > 0);
   if (!items.length) return ElMessage.warning(t('items'));
+  if (showDiffReason.value && !form.diff_reason.trim()) return ElMessage.warning(t('diffReasonRequired'));
   saving.value = true;
   try {
-    await post('/pv/api/workbench/quotes', { customer_id: form.customer_id, items, notes: form.notes });
+    await post('/pv/api/workbench/quotes', {
+      customer_id: form.customer_id, items, notes: form.notes,
+      system_total: form.system_total, suggested_price: form.suggested_price, diff_reason: form.diff_reason,
+    });
     ElMessage.success(t('operationSuccess'));
     dialog.value = false;
     await reload();
@@ -199,3 +283,10 @@ async function convert(row) {
 
 onMounted(load);
 </script>
+
+<style scoped>
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.detail-item span { display: block; color: #909399; font-size: 12px; margin-bottom: 4px; }
+.detail-item.span-2 { grid-column: span 2; }
+.muted { color: #909399; }
+</style>

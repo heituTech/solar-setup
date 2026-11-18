@@ -97,6 +97,10 @@
         <div class="detail-item span-2"><span>{{ t('address') }}</span>{{ detail.customer.address || '-' }}</div>
       </div>
 
+      <div class="section-gap" v-if="detail.customer">
+        <ScenarioPanel :customer-id="detail.customer.id" @order-created="onOrderCreated" />
+      </div>
+
       <div class="section-gap">
         <div class="panel-title"><h3>{{ t('surveys') }}</h3></div>
         <el-table :data="detail.surveys || []" size="small" :empty-text="t('noData')">
@@ -151,6 +155,7 @@ import { get, post, patch } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, money, statusType } from '../../utils/format';
 import { useStatusLabel } from '../../utils/status';
+import ScenarioPanel from './ScenarioPanel.vue';
 
 const { t } = useI18n();
 const statusLabel = useStatusLabel();
@@ -250,6 +255,13 @@ async function openDetail(row) {
     drawer.value = true;
   } catch (error) {
     ElMessage.error(error.message);
+  }
+}
+
+async function onOrderCreated() {
+  // 订单创建后刷新详情
+  if (detail.value.customer) {
+    detail.value = await get(`/pv/api/workbench/customers/${detail.value.customer.id}`);
   }
 }
 

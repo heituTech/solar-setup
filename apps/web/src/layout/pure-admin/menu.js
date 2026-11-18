@@ -2,7 +2,6 @@
 // roles 字段控制哪些角色能看到；不写 roles 表示公开可见
 export const routerArrays = [
   { path: '/home', meta: { key: 'home' } },
-  { path: '/cases', meta: { key: 'memberCases', requiresAuth: true } },
   { path: '/workbench', meta: { key: 'overview', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
   { path: '/workbench/customers', meta: { key: 'customers', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
   { path: '/workbench/surveys', meta: { key: 'surveys', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },

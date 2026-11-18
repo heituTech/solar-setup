@@ -81,7 +81,7 @@ function messageOf(error) {
 
 function goAfterLogin() {
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '';
-  router.push(redirect || (auth.staff ? '/workbench' : '/cases'));
+  router.push(redirect || (auth.staff ? '/workbench' : '/home'));
 }
 
 async function submitPassword() {

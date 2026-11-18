@@ -66,7 +66,7 @@ async function submit() {
     const data = await post('/pv/api/auth/register', form);
     auth.saveSession(data);
     ElMessage.success(t('operationSuccess'));
-    router.push('/cases');
+    router.push('/home');
   } catch (error) {
     ElMessage.error(error.message);
   } finally {

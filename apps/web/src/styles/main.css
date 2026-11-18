@@ -107,6 +107,8 @@ a { color: var(--solar-green); text-decoration: none; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 16px; }
 .form-grid .span-2 { grid-column: span 2; }
 .item-row { display: grid; grid-template-columns: 1fr 90px 120px 70px; gap: 8px; margin-bottom: 8px; }
+.item-row .el-input-number,
+.item-row .el-input { width: 100%; min-width: 0; }
 .muted { color: var(--solar-muted); font-size: 13px; }
 .mono { font-variant-numeric: tabular-nums; }
 .section-gap { margin-top: 18px; }

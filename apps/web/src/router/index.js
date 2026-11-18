@@ -8,7 +8,6 @@ const routes = [
     redirect: '/home',
     children: [
       { path: 'home', component: () => import('@/views/public/HomeView.vue'), meta: { title: '首页' } },
-      { path: 'cases', component: () => import('@/views/public/CasesView.vue'), meta: { title: '案例', requiresAuth: true } },
       { path: 'workbench', component: () => import('@/views/staff/OverviewView.vue'), meta: { title: '概览', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
       { path: 'workbench/customers', component: () => import('@/views/staff/CustomersView.vue'), meta: { title: '客户', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
       { path: 'workbench/surveys', component: () => import('@/views/staff/SurveysView.vue'), meta: { title: '勘测', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },

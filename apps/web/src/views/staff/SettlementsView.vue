@@ -66,7 +66,7 @@
           <template #default="{ row }">{{ money(row.payable) }}</template>
         </el-table-column>
         <el-table-column :label="t('payoutStatus')" width="120">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('actions')" width="260">
           <template #default="{ row }">
@@ -94,7 +94,9 @@
       </div>
       <div class="section-gap">
         <el-table :data="detail.items" size="small" :empty-text="t('noData')">
-          <el-table-column prop="kind" :label="t('type')" width="120" />
+          <el-table-column :label="t('type')" width="120">
+            <template #default="{ row }">{{ statusLabel(row.kind) }}</template>
+          </el-table-column>
           <el-table-column prop="order_no" :label="t('orderNumber')" width="180" />
           <el-table-column :label="t('amount')" width="120">
             <template #default="{ row }">{{ money(row.amount) }}</template>
@@ -104,7 +106,9 @@
       </div>
       <div class="section-gap">
         <el-table :data="detail.payouts" size="small" :empty-text="t('noData')">
-          <el-table-column prop="type" :label="t('type')" width="120" />
+          <el-table-column :label="t('type')" width="120">
+            <template #default="{ row }">{{ statusLabel(row.type) }}</template>
+          </el-table-column>
           <el-table-column :label="t('amount')" width="120">
             <template #default="{ row }">{{ money(row.amount) }}</template>
           </el-table-column>
@@ -124,8 +128,10 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { get, post, put } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { currentPeriod, dt, money, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const settlements = ref([]);
 const loading = ref(false);

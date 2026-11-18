@@ -27,7 +27,7 @@
         </el-table-column>
         <el-table-column :label="t('status')" width="140">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'ok' ? 'success' : 'danger'">{{ row.status }}</el-tag>
+            <el-tag :type="row.status === 'ok' ? 'success' : 'danger'">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column :label="t('latency')" width="130">
@@ -52,8 +52,10 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { get } from '../../api/client';
 import { dt } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const services = ref([]);
 const checkedAt = ref(null);
 const loading = ref(false);

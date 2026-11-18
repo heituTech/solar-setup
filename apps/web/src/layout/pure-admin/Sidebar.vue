@@ -30,6 +30,10 @@ const defaultActive = computed(() => route.path);
 function toggleSideBar() {
   appStore.toggleSideBar();
 }
+
+function handleSelect() {
+  if (device.value === 'mobile' && appStore.sidebar.opened) appStore.toggleSideBar();
+}
 </script>
 
 <template>
@@ -47,12 +51,14 @@ function toggleSideBar() {
 
     <el-scrollbar wrap-class="scrollbar-wrapper" :class="device === 'mobile' ? 'mobile' : 'pc'">
       <el-menu
+        router
         unique-opened
         mode="vertical"
         class="outer-most select-none"
         :collapse="isCollapse && device !== 'mobile'"
         :collapse-transition="false"
         :default-active="defaultActive"
+        @select="handleSelect"
       >
         <el-menu-item v-for="item in menus" :key="item.path" :index="item.path">
           <el-icon><Coin /></el-icon>

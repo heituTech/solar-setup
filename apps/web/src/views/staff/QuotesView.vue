@@ -19,7 +19,7 @@
           <template #default="{ row }">{{ row.items.length }}</template>
         </el-table-column>
         <el-table-column :label="t('status')" width="150">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
@@ -74,8 +74,10 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { get, post } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, money, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const quotes = ref([]);
 const customers = ref([]);

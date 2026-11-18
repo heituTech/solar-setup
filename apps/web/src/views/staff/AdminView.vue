@@ -23,7 +23,7 @@
               <template #default="{ row }">{{ managerName(row.manager_id) }}</template>
             </el-table-column>
             <el-table-column :label="t('status')" width="110">
-              <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+              <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
             </el-table-column>
             <el-table-column :label="t('actions')" width="110">
               <template #default="{ row }">
@@ -45,13 +45,15 @@
         <div class="panel">
           <el-table :data="approvals" v-loading="loadingApprovals" :empty-text="t('noData')">
             <el-table-column prop="id" label="ID" width="80" />
-            <el-table-column prop="type" :label="t('type')" width="160" />
+            <el-table-column :label="t('type')" width="160">
+              <template #default="{ row }">{{ statusLabel(row.type) }}</template>
+            </el-table-column>
             <el-table-column prop="requester_name" :label="t('owner')" width="130" />
             <el-table-column :label="t('detail')" min-width="260">
               <template #default="{ row }"><span class="mono">{{ summary(row.payload) }}</span></template>
             </el-table-column>
             <el-table-column :label="t('status')" width="110">
-              <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+              <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
             </el-table-column>
             <el-table-column :label="t('date')" width="160">
               <template #default="{ row }">{{ dt(row.created_at) }}</template>
@@ -112,8 +114,10 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { get, patch, post } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const tab = ref('users');
 const users = ref([]);

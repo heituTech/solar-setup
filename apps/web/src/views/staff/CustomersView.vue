@@ -13,13 +13,15 @@
         <el-table-column prop="name" :label="t('name')" min-width="140" />
         <el-table-column prop="phone" :label="t('phone')" width="140" />
         <el-table-column prop="region" :label="t('region')" width="130" />
-        <el-table-column prop="source" :label="t('source')" width="120" />
+        <el-table-column :label="t('source')" width="120">
+          <template #default="{ row }">{{ statusLabel(row.source) }}</template>
+        </el-table-column>
         <el-table-column :label="t('customerType')" width="110">
           <template #default="{ row }">{{ row.customer_type === 'engineering' ? t('engineering') : t('retail') }}</template>
         </el-table-column>
         <el-table-column prop="owner_name" :label="t('owner')" width="120" />
         <el-table-column :label="t('status')" width="110">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
@@ -43,10 +45,10 @@
           <el-form-item class="span-2" :label="t('address')"><el-input v-model="form.address" /></el-form-item>
           <el-form-item :label="t('source')">
             <el-select v-model="form.source" style="width: 100%">
-              <el-option label="referral" value="referral" />
-              <el-option label="website" value="website" />
-              <el-option label="walk-in" value="walk-in" />
-              <el-option label="manual" value="manual" />
+              <el-option :label="statusLabel('referral')" value="referral" />
+              <el-option :label="statusLabel('website')" value="website" />
+              <el-option :label="statusLabel('walk-in')" value="walk-in" />
+              <el-option :label="statusLabel('manual')" value="manual" />
             </el-select>
           </el-form-item>
           <el-form-item :label="t('customerType')">
@@ -57,10 +59,10 @@
           </el-form-item>
           <el-form-item :label="t('status')">
             <el-select v-model="form.status" style="width: 100%">
-              <el-option label="lead" value="lead" />
-              <el-option label="qualified" value="qualified" />
-              <el-option label="won" value="won" />
-              <el-option label="lost" value="lost" />
+              <el-option :label="statusLabel('lead')" value="lead" />
+              <el-option :label="statusLabel('qualified')" value="qualified" />
+              <el-option :label="statusLabel('won')" value="won" />
+              <el-option :label="statusLabel('lost')" value="lost" />
             </el-select>
           </el-form-item>
           <el-form-item class="span-2" :label="t('notes')">
@@ -80,7 +82,7 @@
         <div class="detail-item"><span>{{ t('phone') }}</span>{{ detail.customer.phone || '-' }}</div>
         <div class="detail-item"><span>{{ t('email') }}</span>{{ detail.customer.email || '-' }}</div>
         <div class="detail-item"><span>{{ t('region') }}</span>{{ detail.customer.region || '-' }}</div>
-        <div class="detail-item"><span>{{ t('status') }}</span>{{ detail.customer.status }}</div>
+        <div class="detail-item"><span>{{ t('status') }}</span>{{ statusLabel(detail.customer.status) }}</div>
         <div class="detail-item"><span>{{ t('customerType') }}</span>{{ detail.customer.customer_type === 'engineering' ? t('engineering') : t('retail') }}</div>
         <div class="detail-item span-2"><span>{{ t('address') }}</span>{{ detail.customer.address || '-' }}</div>
       </div>
@@ -88,7 +90,9 @@
       <div class="section-gap">
         <div class="panel-title"><h3>{{ t('surveys') }}</h3></div>
         <el-table :data="detail.surveys || []" size="small" :empty-text="t('noData')">
-          <el-table-column prop="status" :label="t('status')" width="110" />
+          <el-table-column :label="t('status')" width="110">
+            <template #default="{ row }">{{ statusLabel(row.status) }}</template>
+          </el-table-column>
           <el-table-column prop="roof_type" :label="t('roofType')" width="120" />
           <el-table-column prop="roof_area" :label="t('roofArea')" width="110" />
           <el-table-column :label="t('date')" width="140">
@@ -104,7 +108,9 @@
           <el-table-column :label="t('amount')" width="120">
             <template #default="{ row }">{{ money(row.total_amount) }}</template>
           </el-table-column>
-          <el-table-column prop="status" :label="t('status')" />
+          <el-table-column :label="t('status')">
+            <template #default="{ row }">{{ statusLabel(row.status) }}</template>
+          </el-table-column>
         </el-table>
       </div>
 
@@ -118,7 +124,9 @@
           <el-table-column :label="t('outstanding')" width="110">
             <template #default="{ row }">{{ money(row.outstanding) }}</template>
           </el-table-column>
-          <el-table-column prop="status" :label="t('status')" />
+          <el-table-column :label="t('status')">
+            <template #default="{ row }">{{ statusLabel(row.status) }}</template>
+          </el-table-column>
         </el-table>
       </div>
     </el-drawer>
@@ -132,8 +140,10 @@ import { ElMessage } from 'element-plus';
 import { get, post, patch } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, money, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const customers = ref([]);
 const loading = ref(false);

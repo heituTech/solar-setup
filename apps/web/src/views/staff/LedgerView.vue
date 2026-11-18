@@ -77,7 +77,7 @@
           <template #default="{ row }">{{ dateOnly(row.delivery_date) }}</template>
         </el-table-column>
         <el-table-column :label="t('status')" width="130">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('acceptedAt')" width="160">
           <template #default="{ row }">{{ dt(row.accepted_at) }}</template>
@@ -109,7 +109,9 @@
     <div v-show="tab === 'adjustments'" class="panel">
       <el-table :data="adjustments" :empty-text="t('noData')">
         <el-table-column prop="salesperson_id" :label="t('owner')" width="110" />
-        <el-table-column prop="type" :label="t('type')" width="120" />
+        <el-table-column :label="t('type')" width="120">
+          <template #default="{ row }">{{ statusLabel(row.type) }}</template>
+        </el-table-column>
         <el-table-column :label="t('amount')" width="130">
           <template #default="{ row }">{{ money(row.amount) }}</template>
         </el-table-column>
@@ -180,8 +182,10 @@ import { ElMessage } from 'element-plus';
 import { get, post, download } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { currentPeriod, dateOnly, dt, money, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const tab = ref('ledger');
 const summary = ref({});

@@ -9,9 +9,10 @@ for (const path of ['/pv/api/auth', '/pv/api/admin/users', '/pv/api/admin/health
 for (const path of ['/pv/api/workbench/projects', '/pv/api/workbench/devices', '/pv/api/workbench/tickets']) {
   proxy[path] = { target: 'http://127.0.0.1:7103', changeOrigin: true };
 }
-for (const path of ['/pv/api/workbench/finance', '/pv/api/workbench/payments', '/pv/api/workbench/adjustments', '/pv/api/workbench/compensation-config', '/pv/api/workbench/settlements', '/pv/api/workbench/ledger']) {
+for (const path of ['/pv/api/workbench/finance', '/pv/api/workbench/payments', '/pv/api/workbench/adjustments', '/pv/api/workbench/compensation-config', '/pv/api/workbench/commission-rules', '/pv/api/workbench/settlements', '/pv/api/workbench/ledger']) {
   proxy[path] = { target: 'http://127.0.0.1:7104', changeOrigin: true };
 }
+proxy['/pv/api/hrms'] = { target: 'http://127.0.0.1:7105', changeOrigin: true };
 proxy['/pv/api/workbench'] = { target: 'http://127.0.0.1:7102', changeOrigin: true };
 for (const path of ['/pv/api/products', '/pv/api/config', '/pv/api/geo', '/pv/api/cases', '/pv/skill']) {
   proxy[path] = { target: 'http://127.0.0.1:7102', changeOrigin: true };

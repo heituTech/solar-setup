@@ -18,6 +18,8 @@ const services = [
   { name: 'sales', port: 7102 },
   { name: 'delivery', port: 7103 },
   { name: 'finance', port: 7104 },
+  // HRMS 不单独建库，直接复用 finance 数据库读取台账数据做业绩统计
+  { name: 'hrms', port: 7105, db: 'finance' },
 ];
 
 function randomSecret(bytes = 24) {
@@ -63,14 +65,15 @@ function main() {
       console.log(`skip existing ${path.relative(root, file)} (use --force to overwrite)`);
       continue;
     }
+    const dbName = service.db || service.name;
     const lines = [
       `PORT=${service.port}`,
       `SERVICE_NAME=${service.name}`,
       `DB_HOST=${dbHost}`,
       `DB_PORT=${dbPort}`,
-      `DB_USER=solar_${service.name}`,
-      `DB_PASSWORD=${passwords[service.name]}`,
-      `DB_NAME=solar_${service.name}`,
+      `DB_USER=solar_${dbName}`,
+      `DB_PASSWORD=${passwords[dbName]}`,
+      `DB_NAME=solar_${dbName}`,
       `INTERNAL_SERVICE_SECRET=${internalSecret}`,
       `IDENTITY_URL=${urls.identity}`,
       `SALES_URL=${urls.sales}`,
@@ -99,6 +102,7 @@ function main() {
   sql.push('-- Contains generated passwords. Never commit this file.');
   sql.push('');
   for (const service of services) {
+    if (service.db) continue;
     sql.push(`CREATE DATABASE IF NOT EXISTS solar_${service.name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
     sql.push(`CREATE USER IF NOT EXISTS 'solar_${service.name}'@'%' IDENTIFIED BY '${passwords[service.name]}';`);
     sql.push(`ALTER USER 'solar_${service.name}'@'%' IDENTIFIED BY '${passwords[service.name]}';`);

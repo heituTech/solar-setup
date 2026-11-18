@@ -12,6 +12,9 @@ export const routerArrays = [
   { path: '/workbench/catalog', meta: { key: 'catalog', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
   { path: '/workbench/ledger', meta: { key: 'ledger', requiresRoles: ['super_admin'] } },
   { path: '/workbench/settlements', meta: { key: 'settlements', requiresRoles: ['super_admin'] } },
+  { path: '/workbench/hrms/performance', meta: { key: 'hrmsPerformance', requiresRoles: ['super_admin'] } },
+  { path: '/workbench/hrms/rules', meta: { key: 'hrmsRules', requiresRoles: ['super_admin'] } },
+  { path: '/workbench/hrms/reports', meta: { key: 'hrmsReports', requiresRoles: ['super_admin'] } },
   { path: '/workbench/admin', meta: { key: 'admin', requiresRoles: ['super_admin', 'sales_manager'] } },
   { path: '/workbench/health', meta: { key: 'serviceHealth', requiresRoles: ['super_admin'] } },
 ];

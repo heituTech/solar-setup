@@ -10,25 +10,28 @@
   ],
   "scripts": {
     "dev": "npm run dev:all",
-    "dev:all": "concurrently -n web,identity,sales,delivery,finance -c cyan,yellow,green,magenta,blue \"npm run dev:web\" \"npm run dev:identity\" \"npm run dev:sales\" \"npm run dev:delivery\" \"npm run dev:finance\"",
+    "dev:all": "concurrently -n web,identity,sales,delivery,finance,hrms -c cyan,yellow,green,magenta,blue,white \"npm run dev:web\" \"npm run dev:identity\" \"npm run dev:sales\" \"npm run dev:delivery\" \"npm run dev:finance\" \"npm run dev:hrms\"",
     "dev:web": "npm run dev --workspace @solar/web",
     "dev:identity": "npm run dev --workspace @solar/identity-service",
     "dev:sales": "npm run dev --workspace @solar/sales-service",
     "dev:delivery": "npm run dev --workspace @solar/delivery-service",
     "dev:finance": "npm run dev --workspace @solar/finance-service",
+    "dev:hrms": "npm run dev --workspace @solar/hrms-service",
     "build": "npm run build --workspace @solar/web",
     "migrate": "npm run migrate --workspaces --if-present",
     "migrate:identity": "npm run migrate --workspace @solar/identity-service",
     "migrate:sales": "npm run migrate --workspace @solar/sales-service",
     "migrate:delivery": "npm run migrate --workspace @solar/delivery-service",
     "migrate:finance": "npm run migrate --workspace @solar/finance-service",
+    "migrate:hrms": "npm run migrate --workspace @solar/hrms-service",
     "test": "npm run test --workspaces --if-present",
     "setup:env": "node scripts/setup-local-env.js",
     "seed:admin": "npm run seed --workspace @solar/identity-service",
     "start:identity": "npm run start --workspace @solar/identity-service",
     "start:sales": "npm run start --workspace @solar/sales-service",
     "start:delivery": "npm run start --workspace @solar/delivery-service",
-    "start:finance": "npm run start --workspace @solar/finance-service"
+    "start:finance": "npm run start --workspace @solar/finance-service",
+    "start:hrms": "npm run start --workspace @solar/hrms-service"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

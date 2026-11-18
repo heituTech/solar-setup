@@ -1,34 +1,9 @@
 <template>
   <div>
-    <div class="panel">
-      <div class="panel-title">
-        <h3>{{ t('commissionRate') }}</h3>
-        <el-button v-if="canFinance" link type="primary" :loading="savingConfig" @click="saveConfig">{{ t('save') }}</el-button>
-      </div>
-      <div class="form-grid">
-        <el-form-item :label="`${t('commissionRate')} (%)`">
-          <el-input-number v-model="configPercent.base_rate" :min="0" :max="100" :step="0.1" :disabled="!canFinance" style="width: 100%" />
-        </el-form-item>
-        <el-form-item :label="`${t('referral')} (%)`">
-          <el-input-number v-model="configPercent.referral_rate" :min="0" :max="100" :step="0.1" :disabled="!canFinance" style="width: 100%" />
-        </el-form-item>
-        <el-form-item :label="`${t('commissionDue')} / ${t('remaining') || 'remaining'} (%)`">
-          <el-input-number v-model="configPercent.remaining_rate" :min="0" :max="100" :step="1" :disabled="!canFinance" style="width: 100%" />
-        </el-form-item>
-        <el-form-item :label="t('firstOrderReward')">
-          <el-input-number v-model="config.first_order_reward" :min="0" :disabled="!canFinance" style="width: 100%" />
-        </el-form-item>
-        <el-form-item :label="t('surveyReward')">
-          <el-input-number v-model="config.survey_reward" :min="0" :disabled="!canFinance" style="width: 100%" />
-        </el-form-item>
-      </div>
-    </div>
-
     <div class="page-toolbar section-gap">
       <h3>{{ t('monthlySettlement') }}</h3>
       <div class="toolbar-actions">
         <el-date-picker v-model="periodValue" type="month" value-format="YYYY-MM" :placeholder="t('month')" />
-        <el-input-number v-model="baseSalary" :min="0" :placeholder="t('baseSalary')" />
         <el-button v-if="canFinance" type="primary" :disabled="loading" @click="generate">{{ t('generateSettlement') }}</el-button>
         <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
       </div>
@@ -135,7 +110,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { get, post, put } from '../../api/client';
+import { get, post } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { currentPeriod, dt, money, statusType } from '../../utils/format';
 import { useStatusLabel } from '../../utils/status';
@@ -151,46 +126,11 @@ const filters = reactive({ q: '', status: '' });
 const statusOptions = ['draft', 'confirmed', 'paid'];
 const loading = ref(false);
 const saving = ref(false);
-const savingConfig = ref(false);
 const periodValue = ref(currentPeriod());
-const baseSalary = ref(300);
 const drawer = ref(false);
 const detail = ref({ settlement: null, items: [], payouts: [] });
-const config = reactive({ base_rate: 0.03, remaining_rate: 0.7, referral_rate: 0.01, first_order_reward: 0, survey_reward: 0 });
-const configPercent = reactive({ base_rate: 3, remaining_rate: 70, referral_rate: 1 });
 
 const canFinance = computed(() => ['super_admin', 'accountant'].includes(auth.role));
-
-async function loadConfig() {
-  try {
-    const data = await get('/pv/api/workbench/compensation-config');
-    Object.assign(config, data.config);
-    configPercent.base_rate = Number((data.config.base_rate * 100).toFixed(2));
-    configPercent.remaining_rate = Number((data.config.remaining_rate * 100).toFixed(2));
-    configPercent.referral_rate = Number((data.config.referral_rate * 100).toFixed(2));
-  } catch (error) {
-    ElMessage.error(error.message);
-  }
-}
-
-async function saveConfig() {
-  savingConfig.value = true;
-  try {
-    await put('/pv/api/workbench/compensation-config', {
-      base_rate: configPercent.base_rate / 100,
-      remaining_rate: configPercent.remaining_rate / 100,
-      referral_rate: configPercent.referral_rate / 100,
-      first_order_reward: config.first_order_reward,
-      survey_reward: config.survey_reward,
-    });
-    ElMessage.success(t('operationSuccess'));
-    await loadConfig();
-  } catch (error) {
-    ElMessage.error(error.message);
-  } finally {
-    savingConfig.value = false;
-  }
-}
 
 async function load() {
   loading.value = true;
@@ -229,7 +169,7 @@ function resetFilters() {
 async function generate() {
   saving.value = true;
   try {
-    await post('/pv/api/workbench/settlements', { period: periodValue.value, base_salary: baseSalary.value });
+    await post('/pv/api/workbench/settlements', { period: periodValue.value });
     ElMessage.success(t('operationSuccess'));
     await reload();
   } catch (error) {
@@ -275,6 +215,6 @@ async function pay(row) {
 }
 
 onMounted(async () => {
-  await Promise.all([loadConfig(), load()]);
+  await load();
 });
 </script>

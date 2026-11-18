@@ -3,6 +3,7 @@
 const { withTransaction, enqueueEvent } = require('@solar/service-kit');
 const { EVENTS } = require('@solar/contracts');
 const { num, salesScopeFor, scopeClause } = require('../../lib/finance');
+const { resolveRule, rateForAmount, periodOfDate } = require('../../lib/commission-rules');
 
 function toSettlement(row) {
   return {
@@ -79,8 +80,10 @@ module.exports = {
     const body = ctx.request.body || {};
     const period = String(body.period || '');
     if (!/^\d{4}-\d{2}$/.test(period)) ctx.throw(400, 'invalid_period');
+    // 当月规则版本：底薪、奖励、勤奋奖门槛、销冠奖等关键参数均按月取值
+    const periodRule = await resolveRule(ctx.app.db, period);
     const baseSalary = body.base_salary === undefined || body.base_salary === null || body.base_salary === ''
-      ? 300 : Number(body.base_salary);
+      ? num(periodRule.base_salary) : Number(body.base_salary);
     const [candidates] = await ctx.app.db.query(
       `SELECT l.salesperson_id AS user_id, MAX(l.salesperson_name) AS name
        FROM order_ledger l
@@ -96,6 +99,30 @@ module.exports = {
     for (const row of candidates) users.set(Number(row.user_id), row.name);
     for (const row of adjustUsers) if (!users.has(Number(row.user_id))) users.set(Number(row.user_id), null);
 
+    // 销冠：按当月规则指定的口径，在当期待结算销售人员中取第一名
+    const [championRows] = await ctx.app.db.query(
+      `SELECT salesperson_id,
+              COALESCE(SUM(order_amount), 0) AS amount,
+              COALESCE(SUM(received_amount), 0) AS received,
+              COALESCE(SUM(commission_amount), 0) AS commission
+       FROM order_ledger
+       WHERE status = 'accepted' AND outstanding <= 0 AND settled_at IS NULL AND salesperson_id IS NOT NULL
+         AND DATE_FORMAT(accepted_at, '%Y-%m') = ?
+       GROUP BY salesperson_id`, [period]
+    );
+    const championMetric = { received: 'received', amount: 'amount', commission: 'commission' }[
+      periodRule.champion_basis
+    ] || 'received';
+    let championUserId = null;
+    let championValue = 0;
+    for (const row of championRows) {
+      const value = num(row[championMetric]);
+      if (value > championValue) {
+        championValue = value;
+        championUserId = Number(row.salesperson_id);
+      }
+    }
+
     for (const [userId, name] of users) {
       await withTransaction(ctx.app.db, async (connection) => {
         const [ledger] = await connection.query(
@@ -110,28 +137,54 @@ module.exports = {
           [userId, period]
         );
         if (!ledger.length && !adjustments.length) return;
-        const [configRows] = await connection.query('SELECT * FROM compensation_config WHERE id = 1');
-        const config = configRows[0] || {};
-        const depositCommissionTotal = round2(ledger.reduce((sum, row) => sum + num(row.deposit_commission), 0));
-        const settlementCommissionTotal = round2(ledger.reduce((sum, row) => sum + num(row.settlement_commission), 0));
+        // 逐单按成交月份对应的规则版本重算提成，保证规则调整后当月结算口径一致
+        const ruleCache = new Map();
+        let depositCommissionTotal = 0;
+        let settlementCommissionTotal = 0;
+        for (const row of ledger) {
+          const dealPeriod = periodOfDate(row.deal_date || row.created_at) || period;
+          let rowRule = ruleCache.get(dealPeriod);
+          if (!rowRule) {
+            rowRule = await resolveRule(connection, dealPeriod);
+            ruleCache.set(dealPeriod, rowRule);
+          }
+          const band = rateForAmount(rowRule, num(row.order_amount));
+          const rate = Number(row.referral_flag) && rowRule.referral_exclusive ? 0 : band.rate;
+          const commissionAmount = round2(num(row.order_amount) * rate);
+          const depositCommission = round2(commissionAmount * rowRule.first_stage_ratio);
+          const settlementCommission = round2(commissionAmount - depositCommission);
+          await connection.query(
+            `UPDATE order_ledger
+             SET commission_rate = ?, commission_amount = ?, deposit_commission = ?, settlement_commission = ?,
+                 order_type = COALESCE(order_type, ?)
+             WHERE id = ?`,
+            [rate, commissionAmount, depositCommission, settlementCommission, band.order_type, Number(row.id)]
+          );
+          row.commission_rate = rate;
+          row.commission_amount = commissionAmount;
+          row.deposit_commission = depositCommission;
+          row.settlement_commission = settlementCommission;
+          depositCommissionTotal = round2(depositCommissionTotal + depositCommission);
+          settlementCommissionTotal = round2(settlementCommissionTotal + settlementCommission);
+        }
         const commissionTotal = round2(depositCommissionTotal + settlementCommissionTotal);
         const referralBase = ledger.filter((row) => Number(row.referral_flag) === 1)
           .reduce((sum, row) => sum + num(row.received_amount), 0);
-        const referralReward = round2(referralBase * num(config.referral_rate));
+        const referralReward = round2(referralBase * num(periodRule.referral_rate));
         const [[surveyTotals]] = await connection.query(
           "SELECT COUNT(*) AS total FROM survey_records WHERE salesperson_id = ? AND is_valid = 1 AND DATE_FORMAT(survey_date, '%Y-%m') = ?",
           [userId, period]
         );
         const surveyCount = Number(surveyTotals.total || 0);
-        const diligenceReward = surveyCount >= 15 ? num(config.survey_reward) : 0;
+        const diligenceReward = surveyCount >= Number(periodRule.survey_threshold) ? num(periodRule.survey_reward) : 0;
         const awardTotal = round2(adjustments.filter((row) => row.type === 'award')
           .reduce((sum, row) => sum + num(row.amount), 0));
         const [[prior]] = await connection.query(
           'SELECT COUNT(*) AS total FROM settlements WHERE user_id = ? AND period < ?', [userId, period]
         );
-        const autoFirstOrder = Number(prior.total) === 0 && ledger.length ? num(config.first_order_reward) : 0;
+        const autoFirstOrder = Number(prior.total) === 0 && ledger.length ? num(periodRule.first_order_reward) : 0;
         const firstOrderReward = round2(awardTotal + autoFirstOrder);
-        const championReward = 0;
+        const championReward = championUserId === userId ? num(periodRule.champion_reward) : 0;
         const deductionTotal = round2(adjustments.filter((row) => row.type !== 'award')
           .reduce((sum, row) => sum + num(row.amount), 0));
         const adjustmentTotal = round2(firstOrderReward + referralReward + diligenceReward + championReward - deductionTotal);
@@ -189,6 +242,12 @@ module.exports = {
           await connection.query(
             'INSERT INTO settlement_items (settlement_id, order_id, order_no, kind, amount, note) VALUES (?,?,?,?,?,?)',
             [settlementId, null, null, 'reward', diligenceReward, 'Diligence reward']
+          );
+        }
+        if (championReward > 0) {
+          await connection.query(
+            'INSERT INTO settlement_items (settlement_id, order_id, order_no, kind, amount, note) VALUES (?,?,?,?,?,?)',
+            [settlementId, null, null, 'reward', championReward, 'Champion reward']
           );
         }
         for (const row of adjustments) {

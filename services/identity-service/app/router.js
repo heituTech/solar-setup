@@ -10,7 +10,7 @@ const internal = require('./controller/internal');
 module.exports = (app) => {
   const { router } = app;
   const authMiddleware = app.auth;
-  const internalGuard = verifyInternal({ services: ['sales', 'delivery', 'finance'] });
+  const internalGuard = verifyInternal({ services: ['sales', 'delivery', 'finance', 'hrms'] });
   const staff = requireRoles('super_admin', 'sales_manager', 'salesperson', 'electrical_engineer',
     'structural_engineer', 'warehouse', 'accountant', 'after_sales');
   const admin = requireRoles('super_admin');
@@ -37,5 +37,6 @@ module.exports = (app) => {
   router.get('/pv/api/admin/flows', authMiddleware, admin, approvals.flows);
 
   router.post('/internal/auth/introspect', internalGuard, internal.introspect);
+  router.post('/internal/users/contacts', internalGuard, internal.contacts);
   router.post('/internal/events', internalGuard, internal.events);
 };

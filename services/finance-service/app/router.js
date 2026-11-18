@@ -5,6 +5,7 @@ const health = require('./controller/health');
 const ledger = require('./controller/ledger');
 const payments = require('./controller/payments');
 const commissions = require('./controller/commissions');
+const commissionRules = require('./controller/commissionRules');
 const settlements = require('./controller/settlements');
 const internal = require('./controller/internal');
 const exportController = require('./controller/export');
@@ -15,7 +16,8 @@ module.exports = (app) => {
   const staff = requireRoles('super_admin', 'sales_manager', 'salesperson', 'electrical_engineer',
     'structural_engineer', 'warehouse', 'accountant', 'after_sales');
   const finance = requireRoles('super_admin', 'accountant');
-  const internalGuard = verifyInternal({ services: ['identity', 'sales', 'delivery'] });
+  const superAdmin = requireRoles('super_admin');
+  const internalGuard = verifyInternal({ services: ['identity', 'sales', 'delivery', 'hrms'] });
 
   router.get('/health', health.health);
   router.get('/pv/api/health', health.health);
@@ -31,6 +33,11 @@ module.exports = (app) => {
   router.put('/pv/api/workbench/compensation-config', auth, finance, commissions.updateConfig);
   router.get('/pv/api/workbench/adjustments', auth, staff, commissions.listAdjustments);
   router.post('/pv/api/workbench/adjustments', auth, finance, commissions.createAdjustment);
+
+  // 提成规则关键参数：按月份版本维护，仅超级管理员可读写
+  router.get('/pv/api/workbench/commission-rules', auth, superAdmin, commissionRules.list);
+  router.get('/pv/api/workbench/commission-rules/resolve', auth, superAdmin, commissionRules.resolve);
+  router.put('/pv/api/workbench/commission-rules/:period', auth, superAdmin, commissionRules.save);
 
   router.get('/pv/api/workbench/settlements', auth, staff, settlements.list);
   router.post('/pv/api/workbench/settlements', auth, finance, settlements.generate);

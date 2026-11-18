@@ -42,7 +42,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="(p) => { page.value = p; load(); }" />
+      <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="onPage" />
     </div>
 
     <el-dialog v-model="dialog" :title="form.id ? t('edit') : t('newCustomer')" width="640px">
@@ -185,6 +185,11 @@ async function load() {
   } finally {
     loading.value = false;
   }
+}
+
+function onPage(p) {
+  page.value = p;
+  load();
 }
 
 function reload() {

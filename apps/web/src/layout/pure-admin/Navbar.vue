@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Fold, Expand, Menu } from '@element-plus/icons-vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAppStoreHook } from '@/stores/app';
 import { useAuthStore } from '@/stores/auth';
@@ -14,6 +14,7 @@ const appStore = useAppStoreHook();
 const auth = useAuthStore();
 const settingStore = useSettingStoreHook();
 const route = useRoute();
+const router = useRouter();
 
 const device = computed(() => appStore.device);
 const username = computed(() => auth.user?.name || 'User');
@@ -74,17 +75,23 @@ function logout() {
         </template>
       </el-dropdown>
 
-      <el-dropdown trigger="click">
-        <span class="el-dropdown-link">
-          <el-avatar :size="24" style="background: #1f7a4d">{{ username.charAt(0) }}</el-avatar>
-          <span class="username">{{ username }}</span>
-        </span>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item @click="logout">{{ t('logout') }}</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <template v-if="auth.authenticated">
+        <el-dropdown trigger="click">
+          <span class="el-dropdown-link">
+            <el-avatar :size="24" style="background: #1f7a4d">{{ username.charAt(0) }}</el-avatar>
+            <span class="username">{{ username }}</span>
+          </span>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="logout">{{ t('logout') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </template>
+      <template v-else>
+        <el-button size="small" @click="router.push('/login')">{{ t('login') }}</el-button>
+        <el-button size="small" type="primary" @click="router.push('/register')">{{ t('register') }}</el-button>
+      </template>
     </div>
   </div>
 </template>

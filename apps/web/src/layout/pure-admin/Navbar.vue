@@ -6,9 +6,10 @@ import { useI18n } from 'vue-i18n';
 import { useAppStoreHook } from '@/stores/app';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingStoreHook } from '@/stores/settings';
+import { languages } from '@/locales';
 import { routerArrays } from './menu';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const appStore = useAppStoreHook();
 const auth = useAuthStore();
 const settingStore = useSettingStoreHook();
@@ -16,11 +17,20 @@ const route = useRoute();
 
 const device = computed(() => appStore.device);
 const username = computed(() => auth.user?.name || 'User');
+const currentLanguage = computed(
+  () => (languages.find(([code]) => code === locale.value) || languages[0])[1]
+);
 
 const breadcrumb = computed(() => {
   const match = routerArrays.find((m) => m.path === route.path);
-  return match ? match.meta.title : t('workspace');
+  return match ? t(match.meta.key) : t('workspace');
 });
+
+function changeLocale(code) {
+  locale.value = code;
+  localStorage.setItem('lang', code);
+  document.documentElement.lang = code;
+}
 
 function toggleSideBar() {
   appStore.toggleSideBar();
@@ -46,6 +56,24 @@ function logout() {
     </div>
 
     <div class="navbar-right">
+      <el-dropdown trigger="click" class="lang-dropdown" @command="changeLocale">
+        <span class="el-dropdown-link lang-link">
+          <span class="lang-label">{{ currentLanguage }}</span>
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item
+              v-for="[code, label] in languages"
+              :key="code"
+              :command="code"
+              :disabled="code === locale"
+            >
+              {{ label }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
       <el-dropdown trigger="click">
         <span class="el-dropdown-link">
           <el-avatar :size="24" style="background: #1f7a4d">{{ username.charAt(0) }}</el-avatar>
@@ -110,5 +138,23 @@ function logout() {
 .username {
   font-size: 14px;
   color: #303133;
+}
+
+.lang-dropdown {
+  margin-right: 16px;
+}
+
+.lang-label {
+  font-size: 13px;
+  color: #606266;
+  padding: 2px 8px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.lang-link:hover .lang-label {
+  color: #1f7a4d;
+  border-color: #1f7a4d;
 }
 </style>

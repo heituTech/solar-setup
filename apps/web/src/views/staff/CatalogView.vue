@@ -6,8 +6,8 @@
         <el-select v-model="category" clearable :placeholder="t('category')" style="width: 160px" @change="load">
           <el-option v-for="item in categories" :key="item" :label="item" :value="item" />
         </el-select>
-        <el-button @click="load">{{ t('refresh') }}</el-button>
-        <el-button type="primary" @click="openCreate">{{ t('create') }}</el-button>
+        <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
+        <el-button type="primary" :disabled="loading" @click="openCreate">{{ t('create') }}</el-button>
       </div>
     </div>
 
@@ -25,7 +25,7 @@
         </el-table-column>
         <el-table-column :label="t('actions')" width="120">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row)">{{ t('edit') }}</el-button>
+            <el-button link type="primary" :disabled="loading" @click="openEdit(row)">{{ t('edit') }}</el-button>
           </template>
         </el-table-column>
       </el-table>

@@ -2,7 +2,7 @@
   <div>
     <div class="page-toolbar">
       <h3>{{ t('orders') }}</h3>
-      <el-button @click="load">{{ t('refresh') }}</el-button>
+      <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
     </div>
 
     <div class="panel">
@@ -26,8 +26,8 @@
         </el-table-column>
         <el-table-column :label="t('actions')" width="210">
           <template #default="{ row }">
-            <el-button v-if="isManager && row.status !== 'accepted'" link type="primary" @click="openCommission(row)">{{ t('commissionRate') }}</el-button>
-            <el-button v-if="row.project_id" link @click="$router.push('/workbench/projects')">{{ t('projects') }}</el-button>
+            <el-button v-if="isManager && row.status !== 'accepted'" link type="primary" :disabled="loading || saving" @click="openCommission(row)">{{ t('commissionRate') }}</el-button>
+            <el-button v-if="row.project_id" link :disabled="loading" @click="$router.push('/workbench/projects')">{{ t('projects') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -41,7 +41,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialog = false">{{ t('cancel') }}</el-button>
-        <el-button type="primary" @click="saveCommission">{{ t('save') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="saveCommission">{{ t('save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -59,6 +59,7 @@ const { t } = useI18n();
 const auth = useAuthStore();
 const orders = ref([]);
 const loading = ref(false);
+const saving = ref(false);
 const dialog = ref(false);
 const commissionPercent = ref(3);
 const editing = ref(null);
@@ -83,6 +84,7 @@ function openCommission(row) {
 }
 
 async function saveCommission() {
+  saving.value = true;
   try {
     await patch(`/pv/api/workbench/orders/${editing.value.id}`, { commission_rate: commissionPercent.value / 100 });
     ElMessage.success(t('operationSuccess'));
@@ -90,6 +92,8 @@ async function saveCommission() {
     await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 

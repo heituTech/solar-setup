@@ -1,7 +1,14 @@
 <template>
   <div class="auth-card">
     <el-card shadow="never">
-      <template #header><strong>{{ t('login') }}</strong></template>
+      <template #header>
+        <div class="auth-header">
+          <strong>{{ t('login') }}</strong>
+          <el-select :model-value="locale" size="small" style="width: 110px" @change="changeLocale">
+            <el-option v-for="[code, label] in languages" :key="code" :value="code" :label="label" />
+          </el-select>
+        </div>
+      </template>
       <el-form :model="form" label-position="top" @submit.prevent="submit">
         <el-form-item :label="t('identifier')">
           <el-input v-model="form.identifier" autocomplete="username" />
@@ -24,8 +31,15 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useAuthStore } from '../../stores/auth';
+import { languages } from '../../locales';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+function changeLocale(code) {
+  locale.value = code;
+  localStorage.setItem('lang', code);
+  document.documentElement.lang = code;
+}
 const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
@@ -45,3 +59,11 @@ async function submit() {
   }
 }
 </script>
+
+<style scoped>
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+</style>

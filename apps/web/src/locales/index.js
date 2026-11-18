@@ -66,7 +66,7 @@ export const languages = [
 ];
 export const i18n = createI18n({
   legacy: false,
-  locale: localStorage.getItem('lang') || 'en',
+  locale: localStorage.getItem('lang') || (navigator.language?.toLowerCase().startsWith('zh') ? 'zh' : 'en'),
   fallbackLocale: 'en',
   messages,
 });

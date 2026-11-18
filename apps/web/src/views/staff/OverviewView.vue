@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-loading="loading">
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">{{ t('customers') }}</div>
@@ -59,11 +59,11 @@
     <div class="panel">
       <div class="panel-title"><h3>{{ t('actions') }}</h3></div>
       <div class="toolbar-actions">
-        <el-button @click="$router.push('/workbench/customers')">{{ t('newCustomer') }}</el-button>
-        <el-button @click="$router.push('/workbench/surveys')">{{ t('newSurvey') }}</el-button>
-        <el-button @click="$router.push('/workbench/quotes')">{{ t('newQuote') }}</el-button>
-        <el-button @click="$router.push('/workbench/projects')">{{ t('projects') }}</el-button>
-        <el-button @click="$router.push('/workbench/ledger')">{{ t('ledger') }}</el-button>
+        <el-button :disabled="loading" @click="$router.push('/workbench/customers')">{{ t('newCustomer') }}</el-button>
+        <el-button :disabled="loading" @click="$router.push('/workbench/surveys')">{{ t('newSurvey') }}</el-button>
+        <el-button :disabled="loading" @click="$router.push('/workbench/quotes')">{{ t('newQuote') }}</el-button>
+        <el-button :disabled="loading" @click="$router.push('/workbench/projects')">{{ t('projects') }}</el-button>
+        <el-button :disabled="loading" @click="$router.push('/workbench/ledger')">{{ t('ledger') }}</el-button>
       </div>
     </div>
   </div>
@@ -81,22 +81,28 @@ const summary = ref({});
 const finance = ref({});
 const orders = ref([]);
 const projects = ref([]);
+const loading = ref(false);
 
 const activeProjects = computed(() => projects.value.filter((item) => ['initializing', 'pending_assignment', 'in_delivery'].includes(item.status)).length);
 
 async function load() {
-  const results = await Promise.allSettled([
-    get('/pv/api/workbench/summary'),
-    get('/pv/api/workbench/finance/summary'),
-    get('/pv/api/workbench/orders'),
-    get('/pv/api/workbench/projects'),
-  ]);
-  if (results[0].status === 'fulfilled') summary.value = results[0].value;
-  if (results[1].status === 'fulfilled') finance.value = results[1].value;
-  if (results[2].status === 'fulfilled') orders.value = results[2].value.orders || [];
-  if (results[3].status === 'fulfilled') projects.value = results[3].value.projects || [];
-  const failed = results.find((item) => item.status === 'rejected');
-  if (failed) ElMessage.error(failed.reason.message);
+  loading.value = true;
+  try {
+    const results = await Promise.allSettled([
+      get('/pv/api/workbench/summary'),
+      get('/pv/api/workbench/finance/summary'),
+      get('/pv/api/workbench/orders'),
+      get('/pv/api/workbench/projects'),
+    ]);
+    if (results[0].status === 'fulfilled') summary.value = results[0].value;
+    if (results[1].status === 'fulfilled') finance.value = results[1].value;
+    if (results[2].status === 'fulfilled') orders.value = results[2].value.orders || [];
+    if (results[3].status === 'fulfilled') projects.value = results[3].value.projects || [];
+    const failed = results.find((item) => item.status === 'rejected');
+    if (failed) ElMessage.error(failed.reason.message);
+  } finally {
+    loading.value = false;
+  }
 }
 
 onMounted(load);

@@ -18,8 +18,29 @@ for (const path of ['/pv/api/products', '/pv/api/config', '/pv/api/geo', '/pv/ap
 }
 proxy['/pv/api/health'] = { target: 'http://127.0.0.1:7101', changeOrigin: true };
 
+// base 为 /pv/ 时，访问 /pv 需重定向到 /pv/（dev / preview 与线上 nginx 行为保持一致）
+function baseTrailingSlashPlugin() {
+  const redirect = (req, res, next) => {
+    if (req.url === '/pv' || req.url.startsWith('/pv?')) {
+      res.writeHead(301, { Location: `/pv/${req.url.slice(3)}` });
+      res.end();
+      return;
+    }
+    next();
+  };
+  return {
+    name: 'base-trailing-slash-redirect',
+    configureServer(server) {
+      server.middlewares.use(redirect);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(redirect);
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), baseTrailingSlashPlugin()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

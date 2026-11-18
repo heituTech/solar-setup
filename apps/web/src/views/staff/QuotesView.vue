@@ -57,8 +57,8 @@
         </el-form-item>
         <div v-for="(item, index) in form.items" :key="index" class="item-row">
           <el-input v-model="item.name" :placeholder="t('product')" />
-          <el-input-number v-model="item.qty" :min="1" :controls="false" />
-          <el-input-number v-model="item.unit_price" :min="0" :controls="false" />
+          <el-input-number v-model="item.qty" :min="1" :controls="false" style="width:100%" />
+          <el-input-number v-model="item.unit_price" :min="0" :controls="false" style="width:100%" />
           <el-button link type="danger" @click="form.items.splice(index, 1)">{{ t('delete') }}</el-button>
         </div>
         <div class="toolbar-actions section-gap">

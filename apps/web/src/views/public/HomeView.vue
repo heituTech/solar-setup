@@ -74,6 +74,6 @@ const router = useRouter();
 
 function enter() {
   if (!auth.authenticated) router.push('/login');
-  else router.push(auth.staff ? '/workbench' : '/cases');
+  else router.push(auth.staff ? '/workbench' : '/home');
 }
 </script>

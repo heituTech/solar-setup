@@ -10,7 +10,6 @@
       <nav class="public-nav" :class="{ open: navOpen }">
         <router-link to="/" @click="navOpen = false">{{ t('home') }}</router-link>
         <router-link v-if="auth.staff" to="/workbench" @click="navOpen = false">{{ t('workspace') }}</router-link>
-        <router-link v-if="auth.authenticated && !auth.staff" to="/cases" @click="navOpen = false">{{ t('memberCases') }}</router-link>
         <template v-if="auth.authenticated">
           <span class="muted">{{ auth.user?.name }}</span>
           <el-button size="small" @click="logout">{{ t('logout') }}</el-button>

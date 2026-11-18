@@ -242,7 +242,8 @@ html, body { height: 100%; margin: 0; }
 .app-wrapper.withoutAnimation .sidebar-container,
 .app-wrapper.withoutAnimation .main-container { transition: none; }
 .app-wrapper.mobile .sidebar-container { transform: translateX(-100%); width: 210px; }
-.app-wrapper.mobile.openSidebar .sidebar-container { transform: translateX(0); }
+/* 侧边栏必须高于遮罩层，否则移动端抽屉菜单会被遮罩拦截点击 */
+.app-wrapper.mobile.openSidebar .sidebar-container { transform: translateX(0); z-index: 2002; }
 .app-wrapper.mobile .main-container { margin-left: 0; }
 
 /* scrollbar in sidebar */

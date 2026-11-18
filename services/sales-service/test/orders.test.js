@@ -15,14 +15,15 @@ const configItems = JSON.stringify([
 
 const surveyProduct = { id: 1, category: 'survey_service', model: 'SURVEY-001', name: '现场踏勘服务', price: 150, unit: '次', status: 'active' };
 
-function buildDbForCreateFromConfig({ orderId = 1, itemsSubtotal = 1955 } = {}) {
+function buildDbForCreateFromConfig({ orderId = 1, itemsSubtotal = 1955, ownerId = 83 } = {}) {
   const insertedItems = [];
   let recalcTotal = 0;
+  let orderInsertParams = null;
   const db = mockDb([
-    { match: 'SELECT * FROM customers WHERE id = ?', return: [{ id: 1, name: 'X Cafe', owner_id: 83, address: 'Boeng Tuk' }] },
+    { match: 'SELECT * FROM customers WHERE id = ?', return: [{ id: 1, name: 'X Cafe', owner_id: ownerId, address: 'Boeng Tuk' }] },
     { match: 'SELECT * FROM system_configs WHERE id = ?', return: [{ id: 2, scenario_id: 1, items: configItems, reference_total: itemsSubtotal }] },
     { match: "category = 'survey_service'", return: [surveyProduct] },
-    { match: 'INSERT INTO orders', return: { insertId: orderId } },
+    { match: 'INSERT INTO orders', return: (params) => { orderInsertParams = params; return { insertId: orderId }; } },
     { match: 'INSERT INTO order_items', return: (params, sql) => {
       // 根据 SQL 区分 product / survey_service / construction 三种列布局
       let item;
@@ -51,7 +52,7 @@ function buildDbForCreateFromConfig({ orderId = 1, itemsSubtotal = 1955 } = {}) 
     { match: 'UPDATE orders SET amount = ? WHERE id = ?', return: [{ affectedRows: 1 }] },
     { match: 'SELECT * FROM orders WHERE id = ?', return: (params) => [{
       id: params[0], order_no: 'ORD-TEST', customer_id: 1, customer_name: 'X Cafe', address: 'Boeng Tuk',
-      salesperson_id: 83, amount: recalcTotal, received_amount: 0, commission_rate: 0.03, status: 'initializing',
+      salesperson_id: orderInsertParams ? orderInsertParams[4] : ownerId, amount: recalcTotal, received_amount: 0, commission_rate: 0.03, status: 'initializing',
       project_id: null, quote_id: null, accepted_at: null, created_at: '2026-01-01', updated_at: '2026-01-01',
     }] },
     { match: 'SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC', return: (params) => {
@@ -60,7 +61,7 @@ function buildDbForCreateFromConfig({ orderId = 1, itemsSubtotal = 1955 } = {}) 
       }));
     } },
   ]);
-  return { db, insertedItems };
+  return { db, insertedItems, getOrderSalespersonId: () => orderInsertParams ? orderInsertParams[4] : null };
 }
 
 test('orders.createFromConfig - 缺少参数抛 400', async () => {
@@ -109,6 +110,23 @@ test('orders.createFromConfig - 成功创建含产品+踏勘服务+施工费用�
 
   // 总额 = 1050 + 680 + 225 + 150 + 0 = 2105
   assert.equal(ctx.body.order.amount, 2105);
+});
+
+test('orders.createFromConfig - 默认归属人=客户owner_id，而非当前操作人', async () => {
+  // 客户归属人是 80，当前操作人是 83，订单应挂到 80 名下
+  const { db, getOrderSalespersonId } = buildDbForCreateFromConfig({ ownerId: 80 });
+  const ctx = mockCtx({ user: adminUser, db, body: { customer_id: 1, system_config_id: 2 } });
+  await orders.createFromConfig(ctx);
+  assert.equal(getOrderSalespersonId(), 80);
+  assert.equal(ctx.body.order.salesperson_id, 80);
+});
+
+test('orders.createFromConfig - 传 salesperson_id 时覆盖客户归属人', async () => {
+  const { db, getOrderSalespersonId } = buildDbForCreateFromConfig({ ownerId: 80 });
+  const ctx = mockCtx({ user: adminUser, db, body: { customer_id: 1, system_config_id: 2, salesperson_id: 91 } });
+  await orders.createFromConfig(ctx);
+  assert.equal(getOrderSalespersonId(), 91);
+  assert.equal(ctx.body.order.salesperson_id, 91);
 });
 
 test('orders.createFromConfig - 无踏勘服务产品时仅生成产品+施工费用', async () => {

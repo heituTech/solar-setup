@@ -108,11 +108,18 @@ module.exports = {
       "SELECT * FROM products WHERE category = 'survey_service' AND status = 'active' LIMIT 1"
     );
 
+    // 订单归属跟随客户归属人（customer.owner_id）；
+    // 经理/管理员可通过 salesperson_id 入参显式指定归属人（代下单场景）
+    const overrideSalesperson = body.salesperson_id ? Number(body.salesperson_id) : null;
+    const salespersonId = overrideSalesperson && overrideSalesperson > 0
+      ? overrideSalesperson
+      : Number(customer.owner_id);
+
     const orderNo = newNo('ORD');
     const [result] = await ctx.app.db.query(
       `INSERT INTO orders (order_no, customer_id, customer_name, address, salesperson_id, status, amount)
        VALUES (?,?,?,?,?,'initializing',0)`,
-      [orderNo, customerId, customer.name, customer.address || null, Number(ctx.state.user.id)]
+      [orderNo, customerId, customer.name, customer.address || null, salespersonId]
     );
     const orderId = result.insertId;
 

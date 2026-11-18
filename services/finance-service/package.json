@@ -5,7 +5,7 @@
   "description": "Payments, sales ledger, commissions and payroll microservice",
   "scripts": {
     "dev": "egg-bin dev",
-    "start": "egg-bin dev",
+    "start": "egg-bin start --port 7104",
     "migrate": "node ../../packages/service-kit/migrate.js"
   },
   "dependencies": {

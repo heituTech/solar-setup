@@ -1,11 +1,14 @@
 <script setup>
 import { computed } from 'vue';
 import { Coin, DArrowLeft, DArrowRight } from '@element-plus/icons-vue';
+import { useI18n } from 'vue-i18n';
 import { useAppStoreHook } from '@/stores/app';
 import { useSettingStoreHook } from '@/stores/settings';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router';
 import { routerArrays } from './menu';
+
+const { t } = useI18n();
 
 const appStore = useAppStoreHook();
 const pureSetting = useSettingStoreHook();
@@ -53,7 +56,7 @@ function toggleSideBar() {
       >
         <el-menu-item v-for="item in menus" :key="item.path" :index="item.path">
           <el-icon><Coin /></el-icon>
-          <template #title>{{ item.meta.title }}</template>
+          <template #title>{{ t(item.meta.key) }}</template>
         </el-menu-item>
       </el-menu>
     </el-scrollbar>

@@ -250,3 +250,29 @@ html, body { height: 100%; margin: 0; }
 .sidebar-container .el-sub-menu__title { color: rgba(255,255,255,.75); }
 .sidebar-container .el-menu-item.is-active { color: #fff; background: #1f7a4d; }
 .sidebar-container .el-menu-item:hover { color: #fff; background: rgba(255,255,255,.08); }
+
+/* 数据库读取门控：数据响应并渲染完成前，阻断用户的下一次操作（含鼠标、触摸） */
+.db-busy-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  cursor: progress;
+  touch-action: none;
+  user-select: none;
+  overscroll-behavior: contain;
+}
+.db-busy-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 3px solid rgba(31, 122, 77, .2);
+  border-top-color: #1f7a4d;
+  border-radius: 50%;
+  opacity: 0;
+  animation: db-busy-spin .8s linear infinite, db-busy-fade .18s ease .25s forwards;
+}
+@keyframes db-busy-spin { to { transform: rotate(360deg); } }
+@keyframes db-busy-fade { to { opacity: 1; } }

@@ -3,8 +3,8 @@
     <div class="page-toolbar">
       <h3>{{ t('customers') }}</h3>
       <div class="toolbar-actions">
-        <el-button @click="load">{{ t('refresh') }}</el-button>
-        <el-button v-if="canEdit" type="primary" @click="openCreate">{{ t('newCustomer') }}</el-button>
+        <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
+        <el-button v-if="canEdit" type="primary" :disabled="loading" @click="openCreate">{{ t('newCustomer') }}</el-button>
       </div>
     </div>
 

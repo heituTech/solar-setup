@@ -3,8 +3,8 @@
     <div class="page-toolbar">
       <h3>{{ t('tickets') }}</h3>
       <div class="toolbar-actions">
-        <el-button @click="load">{{ t('refresh') }}</el-button>
-        <el-button type="primary" @click="openCreate">{{ t('createTicket') }}</el-button>
+        <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
+        <el-button type="primary" :disabled="loading" @click="openCreate">{{ t('createTicket') }}</el-button>
       </div>
     </div>
 
@@ -21,9 +21,9 @@
         </el-table-column>
         <el-table-column :label="t('actions')" width="220">
           <template #default="{ row }">
-            <el-button v-if="canHandle && row.status === 'open'" link type="primary" @click="setStatus(row, 'in_progress')">{{ t('progress') }}</el-button>
-            <el-button v-if="canHandle && ['open', 'in_progress'].includes(row.status)" link type="success" @click="openUpdate(row)">{{ t('resolve') }}</el-button>
-            <el-button v-if="canHandle && row.status === 'resolved'" link @click="setStatus(row, 'closed')">{{ t('markClosed') }}</el-button>
+            <el-button v-if="canHandle && row.status === 'open'" link type="primary" :disabled="saving" @click="setStatus(row, 'in_progress')">{{ t('progress') }}</el-button>
+            <el-button v-if="canHandle && ['open', 'in_progress'].includes(row.status)" link type="success" :disabled="saving" @click="openUpdate(row)">{{ t('resolve') }}</el-button>
+            <el-button v-if="canHandle && row.status === 'resolved'" link :disabled="saving" @click="setStatus(row, 'closed')">{{ t('markClosed') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -49,7 +49,7 @@
       </el-form>
       <template #footer>
         <el-button @click="createDialog = false">{{ t('cancel') }}</el-button>
-        <el-button type="primary" @click="create">{{ t('save') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="create">{{ t('save') }}</el-button>
       </template>
     </el-dialog>
 
@@ -61,7 +61,7 @@
       </el-form>
       <template #footer>
         <el-button @click="updateDialog = false">{{ t('cancel') }}</el-button>
-        <el-button type="primary" @click="resolve">{{ t('save') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="resolve">{{ t('save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -80,6 +80,7 @@ const auth = useAuthStore();
 const tickets = ref([]);
 const projects = ref([]);
 const loading = ref(false);
+const saving = ref(false);
 const createDialog = ref(false);
 const updateDialog = ref(false);
 const resolution = ref('');
@@ -110,6 +111,7 @@ function openCreate() {
 
 async function create() {
   if (!form.title) return ElMessage.warning(t('title'));
+  saving.value = true;
   try {
     await post('/pv/api/workbench/tickets', form);
     ElMessage.success(t('operationSuccess'));
@@ -117,6 +119,8 @@ async function create() {
     await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
@@ -127,21 +131,27 @@ function openUpdate(row) {
 }
 
 async function resolve() {
+  saving.value = true;
   try {
     await patch(`/pv/api/workbench/tickets/${editing.value.id}`, { status: 'resolved', resolution: resolution.value });
     updateDialog.value = false;
     await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
 async function setStatus(row, status) {
+  saving.value = true;
   try {
     await patch(`/pv/api/workbench/tickets/${row.id}`, { status });
     await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 

@@ -25,11 +25,11 @@
         <el-tab-pane :label="t('payments')" name="payments" />
         <el-tab-pane :label="t('adjustments')" name="adjustments" />
       </el-tabs>
-      <el-button v-if="tab === 'payments' && canFinance" type="primary" @click="openPayment">{{ t('recordPayment') }}</el-button>
-      <el-button v-if="tab === 'adjustments' && canFinance" type="primary" @click="openAdjustment">{{ t('adjust') }}</el-button>
+      <el-button v-if="tab === 'payments' && canFinance" type="primary" :disabled="loading" @click="openPayment">{{ t('recordPayment') }}</el-button>
+      <el-button v-if="tab === 'adjustments' && canFinance" type="primary" :disabled="loading" @click="openAdjustment">{{ t('adjust') }}</el-button>
       <template v-if="tab === 'ledger' && canFinance">
         <el-date-picker v-model="exportPeriod" type="month" value-format="YYYY-MM" :placeholder="t('month')" />
-        <el-button @click="exportLedger">{{ t('exportLedger') }}</el-button>
+        <el-button @click="exportLedger" :loading="exporting">{{ t('exportLedger') }}</el-button>
       </template>
     </div>
 
@@ -142,7 +142,7 @@
       </el-form>
       <template #footer>
         <el-button @click="paymentDialog = false">{{ t('cancel') }}</el-button>
-        <el-button type="primary" @click="savePayment">{{ t('save') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="savePayment">{{ t('save') }}</el-button>
       </template>
     </el-dialog>
 
@@ -167,7 +167,7 @@
       </el-form>
       <template #footer>
         <el-button @click="adjustDialog = false">{{ t('cancel') }}</el-button>
-        <el-button type="primary" @click="saveAdjustment">{{ t('save') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="saveAdjustment">{{ t('save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -190,6 +190,8 @@ const payments = ref([]);
 const adjustments = ref([]);
 const directory = ref([]);
 const loading = ref(false);
+const saving = ref(false);
+const exporting = ref(false);
 const exportPeriod = ref(currentPeriod());
 const paymentDialog = ref(false);
 const adjustDialog = ref(false);
@@ -227,6 +229,7 @@ function openPayment() {
 }
 
 async function exportLedger() {
+  exporting.value = true;
   try {
     await download(
       `/pv/api/workbench/ledger/export?period=${encodeURIComponent(exportPeriod.value || '')}`,
@@ -234,11 +237,14 @@ async function exportLedger() {
     );
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    exporting.value = false;
   }
 }
 
 async function savePayment() {
   if (!paymentForm.order_id || paymentForm.amount <= 0) return ElMessage.warning(t('amount'));
+  saving.value = true;
   try {
     await post('/pv/api/workbench/payments', paymentForm);
     ElMessage.success(t('operationSuccess'));
@@ -246,6 +252,8 @@ async function savePayment() {
     await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
@@ -256,12 +264,15 @@ function openAdjustment() {
 
 async function saveAdjustment() {
   if (!adjustForm.salesperson_id || adjustForm.amount <= 0 || !adjustForm.reason) return ElMessage.warning(t('notes'));
+  saving.value = true;
   try {
     await post('/pv/api/workbench/adjustments', adjustForm);
     adjustDialog.value = false;
     await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 

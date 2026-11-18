@@ -3,7 +3,7 @@
     <div class="panel">
       <div class="panel-title">
         <h3>{{ t('settings') }}</h3>
-        <el-button v-if="canFinance" link type="primary" @click="saveConfig">{{ t('save') }}</el-button>
+        <el-button v-if="canFinance" link type="primary" :loading="savingConfig" @click="saveConfig">{{ t('save') }}</el-button>
       </div>
       <div class="form-grid">
         <el-form-item :label="`${t('commissionRate')} (%)`">
@@ -29,8 +29,8 @@
       <div class="toolbar-actions">
         <el-date-picker v-model="periodValue" type="month" value-format="YYYY-MM" :placeholder="t('month')" />
         <el-input-number v-model="baseSalary" :min="0" :placeholder="t('baseSalary')" />
-        <el-button v-if="canFinance" type="primary" @click="generate">{{ t('generateSettlement') }}</el-button>
-        <el-button @click="load">{{ t('refresh') }}</el-button>
+        <el-button v-if="canFinance" type="primary" :disabled="loading" @click="generate">{{ t('generateSettlement') }}</el-button>
+        <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
       </div>
     </div>
 
@@ -70,9 +70,9 @@
         </el-table-column>
         <el-table-column :label="t('actions')" width="260">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openDetail(row)">{{ t('viewDetail') }}</el-button>
-            <el-button v-if="canFinance && row.status === 'draft'" link type="success" @click="confirm(row)">{{ t('confirm') }}</el-button>
-            <el-button v-if="canFinance && row.status === 'confirmed'" link type="success" @click="pay(row)">{{ t('payout') }}</el-button>
+            <el-button link type="primary" :disabled="loading || saving" @click="openDetail(row)">{{ t('viewDetail') }}</el-button>
+            <el-button v-if="canFinance && row.status === 'draft'" link type="success" :disabled="loading || saving" @click="confirm(row)">{{ t('confirm') }}</el-button>
+            <el-button v-if="canFinance && row.status === 'confirmed'" link type="success" :disabled="loading || saving" @click="pay(row)">{{ t('payout') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -129,6 +129,8 @@ const { t } = useI18n();
 const auth = useAuthStore();
 const settlements = ref([]);
 const loading = ref(false);
+const saving = ref(false);
+const savingConfig = ref(false);
 const periodValue = ref(currentPeriod());
 const baseSalary = ref(300);
 const drawer = ref(false);
@@ -151,6 +153,7 @@ async function loadConfig() {
 }
 
 async function saveConfig() {
+  savingConfig.value = true;
   try {
     await put('/pv/api/workbench/compensation-config', {
       base_rate: configPercent.base_rate / 100,
@@ -163,6 +166,8 @@ async function saveConfig() {
     await loadConfig();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    savingConfig.value = false;
   }
 }
 
@@ -179,12 +184,15 @@ async function load() {
 }
 
 async function generate() {
+  saving.value = true;
   try {
     await post('/pv/api/workbench/settlements', { period: periodValue.value, base_salary: baseSalary.value });
     ElMessage.success(t('operationSuccess'));
     await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
@@ -198,15 +206,19 @@ async function openDetail(row) {
 }
 
 async function confirm(row) {
+  saving.value = true;
   try {
     await post(`/pv/api/workbench/settlements/${row.id}/confirm`, {});
     await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
 async function pay(row) {
+  saving.value = true;
   try {
     await ElMessageBox.confirm(`${t('payout')} ${row.user_name} ${money(row.payable)}?`, t('confirm'));
     await post(`/pv/api/workbench/settlements/${row.id}/pay`, { type: 'actual' });
@@ -214,11 +226,12 @@ async function pay(row) {
     await load();
   } catch (error) {
     if (error?.message) ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
-onMounted(() => {
-  loadConfig();
-  load();
+onMounted(async () => {
+  await Promise.all([loadConfig(), load()]);
 });
 </script>

@@ -5,11 +5,11 @@
         <h3>{{ t('myCases') }}</h3>
         <div class="muted">{{ t('memberArea') }} · {{ auth.user?.name }}</div>
       </div>
-      <el-button type="primary" @click="dialog = true">{{ t('create') }}</el-button>
+      <el-button type="primary" :disabled="loading" @click="dialog = true">{{ t('create') }}</el-button>
     </div>
 
     <div class="panel">
-      <el-table :data="cases" empty-text="暂无记录">
+      <el-table :data="cases" v-loading="loading" empty-text="暂无记录">
         <el-table-column prop="title" :label="t('caseName')" min-width="160" />
         <el-table-column :label="t('usageScenario')" min-width="160">
           <template #default="{ row }">{{ row.snapshot?.scenario || '-' }}</template>
@@ -22,8 +22,8 @@
         </el-table-column>
         <el-table-column :label="t('actions')" width="200">
           <template #default="{ row }">
-            <el-button link type="primary" @click="copyLink(row)">分享</el-button>
-            <el-button link type="danger" @click="remove(row)">{{ t('delete') }}</el-button>
+            <el-button link type="primary" :disabled="loading || saving" @click="copyLink(row)">分享</el-button>
+            <el-button link type="danger" :disabled="loading || saving" @click="remove(row)">{{ t('delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -44,7 +44,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialog = false">{{ t('cancel') }}</el-button>
-        <el-button type="primary" @click="save">{{ t('save') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="save">{{ t('save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -61,20 +61,26 @@ import { dt } from '../../utils/format';
 const { t } = useI18n();
 const auth = useAuthStore();
 const cases = ref([]);
+const loading = ref(false);
+const saving = ref(false);
 const dialog = ref(false);
 const form = reactive({ title: '', scenario: '', mode: 'offgrid', note: '' });
 
 async function load() {
+  loading.value = true;
   try {
     const data = await get('/pv/api/cases');
     cases.value = data.cases || [];
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    loading.value = false;
   }
 }
 
 async function save() {
   if (!form.title) return ElMessage.warning(t('caseName'));
+  saving.value = true;
   try {
     await post('/pv/api/cases', {
       title: form.title,
@@ -83,9 +89,11 @@ async function save() {
     dialog.value = false;
     form.title = '';
     ElMessage.success(t('caseSaved'));
-    load();
+    await load();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
@@ -93,7 +101,7 @@ async function remove(row) {
   try {
     await ElMessageBox.confirm(t('delete') + ` ${row.title}?`, t('confirm'));
     await del(`/pv/api/cases/${row.id}`);
-    load();
+    await load();
   } catch (error) {
     if (error !== 'cancel' && error?.message) ElMessage.error(error.message);
   }

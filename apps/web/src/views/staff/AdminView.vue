@@ -5,8 +5,8 @@
         <div class="page-toolbar">
           <h3>{{ t('users') }}</h3>
           <div class="toolbar-actions">
-            <el-button @click="loadUsers">{{ t('refresh') }}</el-button>
-            <el-button v-if="isAdmin" type="primary" @click="openCreate">{{ t('create') }}</el-button>
+            <el-button @click="loadUsers" :loading="loadingUsers">{{ t('refresh') }}</el-button>
+            <el-button v-if="isAdmin" type="primary" :disabled="loadingUsers" @click="openCreate">{{ t('create') }}</el-button>
           </div>
         </div>
 
@@ -38,7 +38,7 @@
         <div class="page-toolbar">
           <h3>{{ t('approvals') }}</h3>
           <div class="toolbar-actions">
-            <el-button @click="loadApprovals">{{ t('refresh') }}</el-button>
+            <el-button @click="loadApprovals" :loading="loadingApprovals">{{ t('refresh') }}</el-button>
           </div>
         </div>
 
@@ -59,8 +59,8 @@
             <el-table-column :label="t('actions')" width="190">
               <template #default="{ row }">
                 <template v-if="row.status === 'pending' && canDecide">
-                  <el-button link type="success" @click="decide(row, 'approved')">{{ t('approve') }}</el-button>
-                  <el-button link type="danger" @click="decide(row, 'rejected')">{{ t('reject') }}</el-button>
+                  <el-button link type="success" :disabled="saving" @click="decide(row, 'approved')">{{ t('approve') }}</el-button>
+                  <el-button link type="danger" :disabled="saving" @click="decide(row, 'rejected')">{{ t('reject') }}</el-button>
                 </template>
                 <span v-else>{{ row.decision_note || '-' }}</span>
               </template>
@@ -208,6 +208,7 @@ async function save() {
 }
 
 async function decide(row, decision) {
+  saving.value = true;
   try {
     const { value } = await ElMessageBox.prompt(t('notes'), decision === 'approved' ? t('approve') : t('reject'), {
       inputType: 'textarea',
@@ -220,11 +221,12 @@ async function decide(row, decision) {
     await loadApprovals();
   } catch (error) {
     if (error?.message && error.message !== 'cancel') ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
-onMounted(() => {
-  loadUsers();
-  loadApprovals();
+onMounted(async () => {
+  await Promise.all([loadUsers(), loadApprovals()]);
 });
 </script>

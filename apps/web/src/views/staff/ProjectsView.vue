@@ -2,7 +2,7 @@
   <div>
     <div class="page-toolbar">
       <h3>{{ t('projects') }}</h3>
-      <el-button @click="load">{{ t('refresh') }}</el-button>
+      <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
     </div>
 
     <div class="panel">
@@ -17,7 +17,7 @@
         </el-table-column>
         <el-table-column :label="t('actions')" width="120">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openDetail(row)">{{ t('viewDetail') }}</el-button>
+            <el-button link type="primary" :disabled="loading" @click="openDetail(row)">{{ t('viewDetail') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -49,7 +49,7 @@
               </el-select>
             </el-form-item>
           </div>
-          <el-button type="primary" @click="assign">{{ t('save') }}</el-button>
+          <el-button type="primary" :loading="saving" @click="assign">{{ t('save') }}</el-button>
         </div>
 
         <div v-if="canProgress && detail.project.status !== 'accepted'" class="panel section-gap">
@@ -65,8 +65,8 @@
             </el-form-item>
             <el-form-item :label="t('notes')"><el-input v-model="progressForm.note" /></el-form-item>
           </div>
-          <el-button @click="addProgress">{{ t('save') }}</el-button>
-          <el-button v-if="canAccept && detail.project.status === 'in_delivery'" type="success" @click="accept">{{ t('finalAcceptance') }}</el-button>
+          <el-button :loading="saving" @click="addProgress">{{ t('save') }}</el-button>
+          <el-button v-if="canAccept && detail.project.status === 'in_delivery'" type="success" :loading="saving" @click="accept">{{ t('finalAcceptance') }}</el-button>
         </div>
 
         <div class="panel section-gap">
@@ -94,7 +94,7 @@
             <el-form-item :label="t('name')"><el-input v-model="deviceForm.name" /></el-form-item>
             <el-form-item :label="t('serialNumber')"><el-input v-model="deviceForm.serial_no" /></el-form-item>
             <el-form-item :label="t('quantity')"><el-input-number v-model="deviceForm.quantity" :min="1" style="width: 100%" /></el-form-item>
-            <el-form-item><el-button type="primary" @click="addDevice">{{ t('addDevice') }}</el-button></el-form-item>
+            <el-form-item><el-button type="primary" :loading="saving" @click="addDevice">{{ t('addDevice') }}</el-button></el-form-item>
           </div>
         </div>
 
@@ -124,6 +124,7 @@ const auth = useAuthStore();
 const projects = ref([]);
 const directory = ref([]);
 const loading = ref(false);
+const saving = ref(false);
 const drawer = ref(false);
 const detail = ref({ project: null, devices: [], progress: [], tickets: [] });
 const assignForm = reactive({ electrical_engineer_id: null, structural_engineer_id: null });
@@ -175,6 +176,7 @@ async function refreshDetail() {
 }
 
 async function assign() {
+  saving.value = true;
   try {
     const nameOf = (id) => directory.value.find((item) => item.id === id)?.name || null;
     await post(`/pv/api/workbench/projects/${detail.value.project.id}/assign`, {
@@ -187,10 +189,13 @@ async function assign() {
     await refreshDetail();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
 async function addProgress() {
+  saving.value = true;
   try {
     await post(`/pv/api/workbench/projects/${detail.value.project.id}/progress`, {
       stage: progressForm.stage, note: progressForm.note,
@@ -199,10 +204,13 @@ async function addProgress() {
     await refreshDetail();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
 async function accept() {
+  saving.value = true;
   try {
     await ElMessageBox.confirm(`${t('finalAcceptance')}?`, t('confirm'));
     await post(`/pv/api/workbench/projects/${detail.value.project.id}/accept`, {});
@@ -210,11 +218,14 @@ async function accept() {
     await refreshDetail();
   } catch (error) {
     if (error?.message) ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
 async function addDevice() {
   if (!deviceForm.model || !deviceForm.name) return ElMessage.warning(t('name'));
+  saving.value = true;
   try {
     await post('/pv/api/workbench/devices', {
       project_id: detail.value.project.id, ...deviceForm,
@@ -223,14 +234,19 @@ async function addDevice() {
     await refreshDetail();
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 
 async function updateDevice(device) {
+  saving.value = true;
   try {
     await patch(`/pv/api/workbench/devices/${device.id}`, { status: device.status });
   } catch (error) {
     ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 

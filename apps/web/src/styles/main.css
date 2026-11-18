@@ -208,3 +208,45 @@ a { color: var(--solar-green); text-decoration: none; }
   .staff-user span { display: none; }
   .el-button + .el-button { margin-left: 6px; }
 }
+
+/* ============ pure-admin layout ============ */
+#app { height: 100%; }
+html, body { height: 100%; margin: 0; }
+
+.app-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+.app-wrapper.mobile.openSidebar { position: fixed; top: 0; }
+.app-mask { position: absolute; inset: 0; z-index: 2001; background: #000; opacity: .3; }
+
+.sidebar-container {
+  position: fixed; left: 0; top: 0; bottom: 0; z-index: 1001;
+  transition: width .28s ease, transform .28s ease;
+  overflow: hidden;
+}
+.main-container {
+  margin-left: 210px;
+  min-height: 100vh;
+  transition: margin-left .28s ease;
+  background: #f0f2f5;
+}
+.app-wrapper.hideSidebar .sidebar-container { width: 64px; }
+.app-wrapper.hideSidebar .main-container { margin-left: 64px; }
+.app-wrapper.withoutAnimation .sidebar-container,
+.app-wrapper.withoutAnimation .main-container { transition: none; }
+.app-wrapper.mobile .sidebar-container { transform: translateX(-100%); width: 210px; }
+.app-wrapper.mobile.openSidebar .sidebar-container { transform: translateX(0); }
+.app-wrapper.mobile .main-container { margin-left: 0; }
+
+/* scrollbar in sidebar */
+.scrollbar-wrapper { height: calc(100vh - 50px - 40px); }
+
+/* element-plus overrides for dark sidebar */
+.sidebar-container .el-menu { background: #001529; }
+.sidebar-container .el-menu-item,
+.sidebar-container .el-sub-menu__title { color: rgba(255,255,255,.75); }
+.sidebar-container .el-menu-item.is-active { color: #fff; background: #1f7a4d; }
+.sidebar-container .el-menu-item:hover { color: #fff; background: rgba(255,255,255,.08); }

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import { fileURLToPath, URL } from 'node:url';
 
 const proxy = {};
 for (const path of ['/pv/api/auth', '/pv/api/admin/users', '/pv/api/admin/health', '/pv/api/admin/flows', '/pv/api/workbench/directory', '/pv/api/approvals']) {
@@ -19,6 +20,11 @@ proxy['/pv/api/health'] = { target: 'http://127.0.0.1:7101', changeOrigin: true 
 
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   base: '/pv/',
   server: { port: 5173, proxy },
   build: { outDir: 'dist', emptyOutDir: true },

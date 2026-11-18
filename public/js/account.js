@@ -229,7 +229,7 @@
 
   function redirectToLogin() {
     localStorage.removeItem(TOKEN_KEY);
-    location.replace('/pv/admin');
+    location.replace('/pv/home');
   }
 
   /* ===================== Change login password ===================== */

@@ -56,6 +56,31 @@ Object.assign(zh, {
   commissionSubtotal: '提成小计',
 });
 
+Object.assign(en, {
+  businessChain: 'Business chain',
+  heroDescription: 'Customer leads, site surveys, quote approvals, order-to-project conversion, dual-discipline delivery, acceptance & payment, and after-sales tickets all run on one chain, with an event trail at every step.',
+  featureCustomerSurveys: 'Leads belong to the sales owner; survey submissions are reviewed by the electrical engineer. Customer 360 aggregates surveys, quotes and orders.',
+  featureQuotesOrders: 'Quotes are approved by the sales manager and converted to orders once the customer accepts; orders are dispatched to delivery to create projects.',
+  featureProjectsAcceptance: 'Electrical and structural engineers work in parallel with trackable device status; final acceptance triggers commission calculation.',
+  featurePaymentLedger: 'Finance records payments; the ledger derives outstanding balance and payable commission automatically. Settlement is available only after full payment and acceptance.',
+  featureSettlements: 'Generate monthly payroll with base salary, commissions and reward/deduction adjustments, then confirm and pay out.',
+  featureTickets: 'After-sales tickets created after acceptance link to projects and devices, and their progress syncs back to the sales order.',
+  share: 'Share',
+  noRecords: 'No records',
+});
+Object.assign(zh, {
+  businessChain: '业务链路',
+  heroDescription: '客户线索、现场勘测、报价审批、订单转项目、双专业交付、验收回款与售后工单在同一条链路上流转，每一步都有事件留痕。',
+  featureCustomerSurveys: '线索归属销售，勘测提交后由电气工程师审核；客户 360 汇总勘测、报价与订单。',
+  featureQuotesOrders: '报价经销售经理审批、客户接受后转订单，订单自动下发到交付服务创建项目。',
+  featureProjectsAcceptance: '电气与结构工程师共同推进，设备状态可追踪；最终验收触发提成计算。',
+  featurePaymentLedger: '财务登记回款，台账自动计算未回款与应发提成，全部结清且验收后才可结算。',
+  featureSettlements: '按月份生成薪酬结算单，含底薪、提成与奖惩调整，支持确认与发放。',
+  featureTickets: '验收后的售后工单可关联项目与设备，处理进度同步回销售订单。',
+  share: '分享',
+  noRecords: '暂无记录',
+});
+
 const messages = {};
 for (const lang of Object.keys(legacy)) messages[lang] = { ...en, ...(lang === 'zh' ? zh : lang === 'km' ? km : {}), ...legacy[lang] };
 if (!messages.en) messages.en = en;

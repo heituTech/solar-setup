@@ -9,7 +9,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="customers" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="customers" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="name" :label="t('name')" min-width="140" />
         <el-table-column prop="phone" :label="t('phone')" width="140" />
         <el-table-column prop="region" :label="t('region')" width="130" />
@@ -87,7 +87,7 @@
 
       <div class="section-gap">
         <div class="panel-title"><h3>{{ t('surveys') }}</h3></div>
-        <el-table :data="detail.surveys || []" size="small" empty-text="暂无记录">
+        <el-table :data="detail.surveys || []" size="small" :empty-text="t('noData')">
           <el-table-column prop="status" :label="t('status')" width="110" />
           <el-table-column prop="roof_type" :label="t('roofType')" width="120" />
           <el-table-column prop="roof_area" :label="t('roofArea')" width="110" />
@@ -99,7 +99,7 @@
 
       <div class="section-gap">
         <div class="panel-title"><h3>{{ t('quotes') }}</h3></div>
-        <el-table :data="detail.quotes || []" size="small" empty-text="暂无记录">
+        <el-table :data="detail.quotes || []" size="small" :empty-text="t('noData')">
           <el-table-column prop="quote_no" :label="t('quoteNumber')" width="180" />
           <el-table-column :label="t('amount')" width="120">
             <template #default="{ row }">{{ money(row.total_amount) }}</template>
@@ -110,7 +110,7 @@
 
       <div class="section-gap">
         <div class="panel-title"><h3>{{ t('orders') }}</h3></div>
-        <el-table :data="detail.orders || []" size="small" empty-text="暂无记录">
+        <el-table :data="detail.orders || []" size="small" :empty-text="t('noData')">
           <el-table-column prop="order_no" :label="t('orderNumber')" width="180" />
           <el-table-column :label="t('amount')" width="120">
             <template #default="{ row }">{{ money(row.amount) }}</template>

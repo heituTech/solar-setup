@@ -34,7 +34,7 @@
     </div>
 
     <div v-show="tab === 'ledger'" class="panel">
-      <el-table :data="ledger" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="ledger" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="order_no" :label="t('orderNumber')" width="190" />
         <el-table-column :label="t('dealDate')" width="120">
           <template #default="{ row }">{{ dateOnly(row.deal_date) }}</template>
@@ -89,7 +89,7 @@
     </div>
 
     <div v-show="tab === 'payments'" class="panel">
-      <el-table :data="payments" empty-text="暂无记录">
+      <el-table :data="payments" :empty-text="t('noData')">
         <el-table-column prop="order_no" :label="t('orderNumber')" width="190" />
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="130" />
         <el-table-column :label="t('amount')" width="130">
@@ -107,7 +107,7 @@
     </div>
 
     <div v-show="tab === 'adjustments'" class="panel">
-      <el-table :data="adjustments" empty-text="暂无记录">
+      <el-table :data="adjustments" :empty-text="t('noData')">
         <el-table-column prop="salesperson_id" :label="t('owner')" width="110" />
         <el-table-column prop="type" :label="t('type')" width="120" />
         <el-table-column :label="t('amount')" width="130">

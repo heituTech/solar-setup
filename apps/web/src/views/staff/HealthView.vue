@@ -21,7 +21,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="services" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="services" v-loading="loading" :empty-text="t('noData')">
         <el-table-column :label="t('service')" width="160">
           <template #default="{ row }">{{ t(row.service) }}</template>
         </el-table-column>

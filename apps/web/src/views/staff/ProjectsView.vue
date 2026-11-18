@@ -6,7 +6,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="projects" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="projects" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="order_no" :label="t('orderNumber')" width="190" />
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="130" />
         <el-table-column prop="address" :label="t('address')" min-width="150" />
@@ -71,7 +71,7 @@
 
         <div class="panel section-gap">
           <div class="panel-title"><h3>{{ t('devices') }}</h3></div>
-          <el-table :data="detail.devices" size="small" empty-text="暂无记录">
+          <el-table :data="detail.devices" size="small" :empty-text="t('noData')">
             <el-table-column prop="name" :label="t('name')" min-width="120" />
             <el-table-column prop="model" :label="t('product')" width="120" />
             <el-table-column prop="serial_no" :label="t('serialNumber')" width="130" />

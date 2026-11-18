@@ -9,7 +9,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="cases" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="cases" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="title" :label="t('caseName')" min-width="160" />
         <el-table-column :label="t('usageScenario')" min-width="160">
           <template #default="{ row }">{{ row.snapshot?.scenario || '-' }}</template>
@@ -22,7 +22,7 @@
         </el-table-column>
         <el-table-column :label="t('actions')" width="200">
           <template #default="{ row }">
-            <el-button link type="primary" :disabled="loading || saving" @click="copyLink(row)">分享</el-button>
+            <el-button link type="primary" :disabled="loading || saving" @click="copyLink(row)">{{ t('share') }}</el-button>
             <el-button link type="danger" :disabled="loading || saving" @click="remove(row)">{{ t('delete') }}</el-button>
           </template>
         </el-table-column>

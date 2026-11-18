@@ -12,7 +12,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="products" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="products" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="category" :label="t('category')" width="140" />
         <el-table-column prop="model" :label="t('reference')" width="160" />
         <el-table-column prop="name" :label="t('name')" min-width="180" />

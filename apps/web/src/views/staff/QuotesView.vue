@@ -9,7 +9,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="quotes" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="quotes" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="quote_no" :label="t('quoteNumber')" width="190" />
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="140" />
         <el-table-column :label="t('total')" width="140">

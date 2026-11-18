@@ -4,7 +4,7 @@
       <h3>{{ t('catalog') }}</h3>
       <div class="toolbar-actions">
         <el-select v-model="category" clearable :placeholder="t('category')" style="width: 160px" @change="load">
-          <el-option v-for="item in categories" :key="item" :label="item" :value="item" />
+          <el-option v-for="item in categories" :key="item" :label="statusLabel(item)" :value="item" />
         </el-select>
         <el-button @click="load" :loading="loading">{{ t('refresh') }}</el-button>
         <el-button type="primary" :disabled="loading" @click="openCreate">{{ t('create') }}</el-button>
@@ -13,15 +13,19 @@
 
     <div class="panel">
       <el-table :data="products" v-loading="loading" :empty-text="t('noData')">
-        <el-table-column prop="category" :label="t('category')" width="140" />
+        <el-table-column :label="t('category')" width="140">
+          <template #default="{ row }">{{ statusLabel(row.category) }}</template>
+        </el-table-column>
         <el-table-column prop="model" :label="t('reference')" width="160" />
         <el-table-column prop="name" :label="t('name')" min-width="180" />
         <el-table-column :label="t('unitPrice')" width="130">
           <template #default="{ row }">{{ money(row.price) }}</template>
         </el-table-column>
-        <el-table-column prop="unit" :label="t('unit')" width="90" />
+        <el-table-column :label="t('unit')" width="90">
+          <template #default="{ row }">{{ statusLabel(row.unit) }}</template>
+        </el-table-column>
         <el-table-column :label="t('status')" width="110">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('actions')" width="120">
           <template #default="{ row }">
@@ -64,8 +68,10 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { get, patch, post } from '../../api/client';
 import { money, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const products = ref([]);
 const categories = ['panel', 'inverter', 'battery', 'mounting', 'cable', 'accessory', 'service'];
 const category = ref('');

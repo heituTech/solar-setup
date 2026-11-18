@@ -12,9 +12,11 @@
       <el-table :data="tickets" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="title" :label="t('title')" min-width="150" />
         <el-table-column prop="customer_name" :label="t('customerName')" width="130" />
-        <el-table-column prop="priority" :label="t('priority')" width="100" />
+        <el-table-column :label="t('priority')" width="100">
+          <template #default="{ row }">{{ statusLabel(row.priority) }}</template>
+        </el-table-column>
         <el-table-column :label="t('status')" width="130">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
@@ -40,10 +42,10 @@
         <el-form-item :label="t('description')"><el-input v-model="form.description" type="textarea" :rows="3" /></el-form-item>
         <el-form-item :label="t('priority')">
           <el-select v-model="form.priority" style="width: 100%">
-            <el-option label="low" value="low" />
-            <el-option label="normal" value="normal" />
-            <el-option label="high" value="high" />
-            <el-option label="urgent" value="urgent" />
+            <el-option :label="statusLabel('low')" value="low" />
+            <el-option :label="statusLabel('normal')" value="normal" />
+            <el-option :label="statusLabel('high')" value="high" />
+            <el-option :label="statusLabel('urgent')" value="urgent" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -74,8 +76,10 @@ import { ElMessage } from 'element-plus';
 import { get, post, patch } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const tickets = ref([]);
 const projects = ref([]);

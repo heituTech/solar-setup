@@ -48,7 +48,7 @@
           <template #default="{ row }">{{ money(row.outstanding) }}</template>
         </el-table-column>
         <el-table-column :label="t('status')" width="160">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
@@ -75,8 +75,10 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { get } from '../../api/client';
 import { dt, money, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const summary = ref({});
 const finance = ref({});
 const orders = ref([]);

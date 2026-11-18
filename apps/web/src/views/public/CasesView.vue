@@ -15,7 +15,7 @@
           <template #default="{ row }">{{ row.snapshot?.scenario || '-' }}</template>
         </el-table-column>
         <el-table-column :label="t('systemMode')" width="120">
-          <template #default="{ row }">{{ row.snapshot?.mode || '-' }}</template>
+          <template #default="{ row }">{{ statusLabel(row.snapshot?.mode) || '-' }}</template>
         </el-table-column>
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
@@ -57,8 +57,10 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { get, post, del } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const cases = ref([]);
 const loading = ref(false);

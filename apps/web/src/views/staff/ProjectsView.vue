@@ -13,7 +13,7 @@
         <el-table-column prop="electrical_engineer_name" :label="t('electricalEngineer')" width="140" />
         <el-table-column prop="structural_engineer_name" :label="t('structuralEngineer')" width="140" />
         <el-table-column :label="t('status')" width="160">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('actions')" width="120">
           <template #default="{ row }">
@@ -29,7 +29,7 @@
           <div class="detail-item"><span>{{ t('orderNumber') }}</span>{{ detail.project.order_no }}</div>
           <div class="detail-item"><span>{{ t('customerName') }}</span>{{ detail.project.customer_name }}</div>
           <div class="detail-item span-2"><span>{{ t('address') }}</span>{{ detail.project.address || '-' }}</div>
-          <div class="detail-item"><span>{{ t('status') }}</span>{{ detail.project.status }}</div>
+          <div class="detail-item"><span>{{ t('status') }}</span>{{ statusLabel(detail.project.status) }}</div>
           <div class="detail-item"><span>{{ t('acceptedAt') }}</span>{{ dt(detail.project.accepted_at) }}</div>
           <div class="detail-item"><span>{{ t('electricalEngineer') }}</span>{{ detail.project.electrical_engineer_name || '-' }}</div>
           <div class="detail-item"><span>{{ t('structuralEngineer') }}</span>{{ detail.project.structural_engineer_name || '-' }}</div>
@@ -58,9 +58,9 @@
             <el-form-item :label="t('stage')">
               <el-select v-model="progressForm.stage" style="width: 100%">
                 <el-option :label="t('start')" value="start" />
-                <el-option label="material_delivered" value="material_delivered" />
-                <el-option label="installed" value="installed" />
-                <el-option label="testing" value="testing" />
+                <el-option :label="statusLabel('material_delivered')" value="material_delivered" />
+                <el-option :label="statusLabel('installed')" value="installed" />
+                <el-option :label="statusLabel('testing')" value="testing" />
               </el-select>
             </el-form-item>
             <el-form-item :label="t('notes')"><el-input v-model="progressForm.note" /></el-form-item>
@@ -79,11 +79,11 @@
             <el-table-column :label="t('status')" width="140">
               <template #default="{ row }">
                 <el-select v-model="row.status" size="small" :disabled="!canDevice" @change="updateDevice(row)">
-                  <el-option label="pending" value="pending" />
-                  <el-option label="in_stock" value="in_stock" />
-                  <el-option label="delivered" value="delivered" />
-                  <el-option label="installed" value="installed" />
-                  <el-option label="accepted" value="accepted" />
+                  <el-option :label="statusLabel('pending')" value="pending" />
+                  <el-option :label="statusLabel('in_stock')" value="in_stock" />
+                  <el-option :label="statusLabel('delivered')" value="delivered" />
+                  <el-option :label="statusLabel('installed')" value="installed" />
+                  <el-option :label="statusLabel('accepted')" value="accepted" />
                 </el-select>
               </template>
             </el-table-column>
@@ -102,7 +102,7 @@
           <div class="panel-title"><h3>{{ t('timeline') }}</h3></div>
           <el-timeline>
             <el-timeline-item v-for="item in detail.progress" :key="item.id" :timestamp="dt(item.created_at)">
-              {{ item.stage }} · {{ item.actor_name || '-' }} {{ item.note ? `· ${item.note}` : '' }}
+              {{ statusLabel(item.stage) }} · {{ item.actor_name || '-' }} {{ item.note ? `· ${item.note}` : '' }}
             </el-timeline-item>
           </el-timeline>
         </div>
@@ -118,8 +118,10 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { get, post, patch } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const projects = ref([]);
 const directory = ref([]);

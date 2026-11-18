@@ -22,7 +22,7 @@
           <template #default="{ row }">{{ (row.commission_rate * 100).toFixed(2) }}%</template>
         </el-table-column>
         <el-table-column :label="t('status')" width="150">
-          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ row.status }}</el-tag></template>
+          <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
         <el-table-column :label="t('actions')" width="210">
           <template #default="{ row }">
@@ -54,8 +54,10 @@ import { ElMessage } from 'element-plus';
 import { get, patch } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { money, statusType } from '../../utils/format';
+import { useStatusLabel } from '../../utils/status';
 
 const { t } = useI18n();
+const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const orders = ref([]);
 const loading = ref(false);

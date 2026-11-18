@@ -56,11 +56,11 @@ const allMenus = [
   { path: '/workbench/orders', label: 'orders' },
   { path: '/workbench/projects', label: 'projects' },
   { path: '/workbench/tickets', label: 'tickets' },
-  { path: '/workbench/ledger', label: 'ledger' },
-  { path: '/workbench/settlements', label: 'settlements' },
+  { path: '/workbench/ledger', label: 'ledger', roles: ['super_admin'] },
+  { path: '/workbench/settlements', label: 'settlements', roles: ['super_admin'] },
   { path: '/workbench/catalog', label: 'catalog' },
   { path: '/workbench/admin', label: 'admin', roles: ['super_admin', 'sales_manager'] },
-  { path: '/workbench/health', label: 'serviceHealth', roles: ['super_admin', 'accountant'] },
+  { path: '/workbench/health', label: 'serviceHealth', roles: ['super_admin'] },
 ];
 
 const menus = computed(() => allMenus.filter((item) => !item.roles || item.roles.includes(auth.role)));

@@ -2,7 +2,7 @@
   <div>
     <div class="panel">
       <div class="panel-title">
-        <h3>{{ t('settings') }}</h3>
+        <h3>{{ t('commissionRate') }}</h3>
         <el-button v-if="canFinance" link type="primary" :loading="savingConfig" @click="saveConfig">{{ t('save') }}</el-button>
       </div>
       <div class="form-grid">

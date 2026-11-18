@@ -129,6 +129,27 @@ test('orders.createFromConfig - 传 salesperson_id 时覆盖客户归属人', as
   assert.equal(ctx.body.order.salesperson_id, 91);
 });
 
+test('orders.createFromConfig - salesperson_id=0 时回退到客户归属人', async () => {
+  const { db, getOrderSalespersonId } = buildDbForCreateFromConfig({ ownerId: 80 });
+  const ctx = mockCtx({ user: adminUser, db, body: { customer_id: 1, system_config_id: 2, salesperson_id: 0 } });
+  await orders.createFromConfig(ctx);
+  assert.equal(getOrderSalespersonId(), 80);
+});
+
+test('orders.createFromConfig - salesperson_id 为负数时回退到客户归属人', async () => {
+  const { db, getOrderSalespersonId } = buildDbForCreateFromConfig({ ownerId: 80 });
+  const ctx = mockCtx({ user: adminUser, db, body: { customer_id: 1, system_config_id: 2, salesperson_id: -1 } });
+  await orders.createFromConfig(ctx);
+  assert.equal(getOrderSalespersonId(), 80);
+});
+
+test('orders.createFromConfig - salesperson_id 为字符串数字时转换为数值', async () => {
+  const { db, getOrderSalespersonId } = buildDbForCreateFromConfig({ ownerId: 80 });
+  const ctx = mockCtx({ user: adminUser, db, body: { customer_id: 1, system_config_id: 2, salesperson_id: '91' } });
+  await orders.createFromConfig(ctx);
+  assert.equal(getOrderSalespersonId(), 91);
+});
+
 test('orders.createFromConfig - 无踏勘服务产品时仅生成产品+施工费用', async () => {
   const insertedItems = [];
   let recalcTotal = 0;

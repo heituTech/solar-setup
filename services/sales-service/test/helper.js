@@ -41,7 +41,15 @@ function mockDb(rules = []) {
     // 默认返回空结果
     return [[]];
   }
-  return { query, calls };
+  // 支持事务：getConnection 返回一个共享 query 规则的 connection
+  const connection = {
+    query,
+    beginTransaction: async () => {},
+    commit: async () => {},
+    rollback: async () => {},
+    release: () => {},
+  };
+  return { query, calls, getConnection: async () => connection };
 }
 
 /**

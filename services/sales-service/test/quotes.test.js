@@ -149,3 +149,53 @@ test('quotes.approve - 驳回', async () => {
   await quotes.approve(ctx);
   assert.deepEqual(ctx.body, { id: 1, status: 'rejected' });
 });
+
+// ===================== convert（报价转订单）归属人一致性 =====================
+
+test('quotes.convert - 订单归属人=quote.salesperson_id，而非当前操作人', async () => {
+  let orderInsertParams = null;
+  const quoteSalesperson = 90; // 报价归属人
+  const db = mockDb([
+    { match: 'SELECT * FROM quotes WHERE id = ? FOR UPDATE', return: [{
+      id: 1, quote_no: 'Q-1', customer_id: 1, salesperson_id: quoteSalesperson,
+      status: 'accepted', currency: 'USD', total_amount: 5000,
+      items: JSON.stringify(validItems), notes: null,
+    }] },
+    { match: 'SELECT * FROM customers WHERE id = ?', return: [{
+      id: 1, name: 'X Cafe', owner_id: 80, address: 'Boeng Tuk', source: 'walk-in',
+    }] },
+    { match: 'INSERT INTO orders', return: (params) => { orderInsertParams = params; return { insertId: 100 }; } },
+    { match: 'UPDATE quotes SET status', return: [{ affectedRows: 1 }] },
+    { match: 'UPDATE customers SET status', return: [{ affectedRows: 1 }] },
+    { match: 'INSERT INTO event_outbox', return: { insertId: 1 } },
+    { match: 'SELECT * FROM orders WHERE id = ?', return: (params) => [{
+      id: params[0], order_no: 'SO-TEST', customer_id: 1, customer_name: 'X Cafe',
+      address: 'Boeng Tuk', salesperson_id: orderInsertParams ? orderInsertParams[5] : quoteSalesperson,
+      amount: 5000, received_amount: 0, commission_rate: 0.05, status: 'initializing',
+      project_id: null, quote_id: 1, accepted_at: null, created_at: '2026-01-01', updated_at: '2026-01-01',
+    }] },
+  ]);
+  // 当前操作人是 admin(83)，但订单应挂到报价归属人 90 名下
+  const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db });
+  await quotes.convert(ctx);
+
+  // INSERT params: [orderNo, quoteId, customerId, customerName, address, salespersonId, amount, rate, status]
+  assert.equal(orderInsertParams[5], quoteSalesperson, 'INSERT 的 salesperson_id 应取 quote.salesperson_id');
+  assert.equal(ctx.body.order.salesperson_id, quoteSalesperson);
+  assert.equal(ctx.body.order.salesperson_id, 90);
+});
+
+test('quotes.convert - 报价不存在抛 404', async () => {
+  const db = mockDb([{ match: 'SELECT * FROM quotes WHERE id = ? FOR UPDATE', return: [] }]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 999 }, db });
+  await expectThrow(() => quotes.convert(ctx), 404, 'quote_not_found');
+});
+
+test('quotes.convert - 非 accepted 状态抛 409', async () => {
+  const db = mockDb([{
+    match: 'SELECT * FROM quotes WHERE id = ? FOR UPDATE',
+    return: [{ id: 1, status: 'approved', customer_id: 1, salesperson_id: 90, total_amount: 1000, items: '[]' }],
+  }]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db });
+  await expectThrow(() => quotes.convert(ctx), 409, 'quote_not_accepted');
+});

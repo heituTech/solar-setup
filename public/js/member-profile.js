@@ -157,7 +157,7 @@
 
   function redirectToLogin() {
     localStorage.removeItem(TOKEN_KEY);
-    location.replace('/pv/member');
+    location.replace('/pv/home');
   }
 
   /* ===================== Actions ===================== */

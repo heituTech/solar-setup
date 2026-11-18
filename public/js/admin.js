@@ -143,10 +143,8 @@
     token = '';
     me = null;
     localStorage.removeItem(TOKEN_KEY);
-    document.getElementById('loginBox').style.display = '';
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('loginPassword').value = '';
-    if (!silent) showToast(t('logged_out'));
+    // 整页跳转到首页，确保所有 admin 面板组件和数据完全清空
+    location.replace('/pv/home');
   }
 
   /* ===================== Staff registration ===================== */

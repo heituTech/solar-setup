@@ -198,7 +198,8 @@
     token = '';
     me = null;
     localStorage.removeItem(TOKEN_KEY);
-    showAuth();
+    // 整页跳转到首页，确保所有 member 面板数据完全清空
+    location.replace('/pv/home');
   }
 
   document.getElementById('memberLogoutBtn').addEventListener('click', () => {

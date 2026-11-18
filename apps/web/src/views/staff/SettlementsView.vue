@@ -35,7 +35,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="settlements" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="settlements" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="period" :label="t('month')" width="110" />
         <el-table-column prop="user_name" :label="t('name')" min-width="130" />
         <el-table-column :label="t('baseSalary')" width="120">
@@ -93,7 +93,7 @@
         <div class="detail-item"><span>{{ t('total') }}</span>{{ money(detail.settlement.payable) }}</div>
       </div>
       <div class="section-gap">
-        <el-table :data="detail.items" size="small" empty-text="暂无记录">
+        <el-table :data="detail.items" size="small" :empty-text="t('noData')">
           <el-table-column prop="kind" :label="t('type')" width="120" />
           <el-table-column prop="order_no" :label="t('orderNumber')" width="180" />
           <el-table-column :label="t('amount')" width="120">
@@ -103,7 +103,7 @@
         </el-table>
       </div>
       <div class="section-gap">
-        <el-table :data="detail.payouts" size="small" empty-text="暂无记录">
+        <el-table :data="detail.payouts" size="small" :empty-text="t('noData')">
           <el-table-column prop="type" :label="t('type')" width="120" />
           <el-table-column :label="t('amount')" width="120">
             <template #default="{ row }">{{ money(row.amount) }}</template>

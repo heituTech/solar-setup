@@ -9,7 +9,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="surveys" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="surveys" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="130" />
         <el-table-column prop="address" :label="t('address')" min-width="160" />
         <el-table-column prop="roof_type" :label="t('roofType')" width="120" />

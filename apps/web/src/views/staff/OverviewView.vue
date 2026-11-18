@@ -38,7 +38,7 @@
         <h3>{{ t('orders') }}</h3>
         <el-button link type="primary" @click="$router.push('/workbench/orders')">{{ t('viewDetail') }}</el-button>
       </div>
-      <el-table :data="orders.slice(0, 8)" empty-text="暂无记录">
+      <el-table :data="orders.slice(0, 8)" :empty-text="t('noData')">
         <el-table-column prop="order_no" :label="t('orderNumber')" width="190" />
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="140" />
         <el-table-column :label="t('amount')" width="140">

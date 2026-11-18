@@ -9,7 +9,7 @@
     </div>
 
     <div class="panel">
-      <el-table :data="tickets" v-loading="loading" empty-text="暂无记录">
+      <el-table :data="tickets" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="title" :label="t('title')" min-width="150" />
         <el-table-column prop="customer_name" :label="t('customerName')" width="130" />
         <el-table-column prop="priority" :label="t('priority')" width="100" />

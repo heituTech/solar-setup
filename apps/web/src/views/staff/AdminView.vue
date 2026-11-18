@@ -11,7 +11,7 @@
         </div>
 
         <div class="panel">
-          <el-table :data="users" v-loading="loadingUsers" empty-text="暂无记录">
+          <el-table :data="users" v-loading="loadingUsers" :empty-text="t('noData')">
             <el-table-column prop="id" :label="t('staffId')" width="90" />
             <el-table-column prop="name" :label="t('name')" min-width="130" />
             <el-table-column prop="email" :label="t('email')" min-width="180" />
@@ -43,7 +43,7 @@
         </div>
 
         <div class="panel">
-          <el-table :data="approvals" v-loading="loadingApprovals" empty-text="暂无记录">
+          <el-table :data="approvals" v-loading="loadingApprovals" :empty-text="t('noData')">
             <el-table-column prop="id" label="ID" width="80" />
             <el-table-column prop="type" :label="t('type')" width="160" />
             <el-table-column prop="requester_name" :label="t('owner')" width="130" />

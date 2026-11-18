@@ -4,7 +4,7 @@
       <div>
         <el-tag effect="plain" type="success">{{ t('salesChain') }}</el-tag>
         <h1 style="margin-top: 18px">{{ t('workspace') }}</h1>
-        <p>{{ t('mvpIntro') }} 客户线索、现场勘测、报价审批、订单转项目、双专业交付、验收回款与售后工单在同一条链路上流转，每一步都有事件留痕。</p>
+        <p>{{ t('mvpIntro') }} {{ t('heroDescription') }}</p>
         <div class="toolbar-actions">
           <el-button type="primary" size="large" @click="enter">
             {{ auth.authenticated ? t('workspace') : t('login') }}
@@ -13,7 +13,7 @@
         </div>
       </div>
       <div class="hero-card">
-        <h3>业务链路</h3>
+        <h3>{{ t('businessChain') }}</h3>
         <div class="chain">
           <span>{{ t('leads') }}</span>
           <span>{{ t('surveys') }}</span>
@@ -37,27 +37,27 @@
     <section class="feature-grid">
       <div class="feature">
         <h4>{{ t('customers') }} · {{ t('surveys') }}</h4>
-        <p>线索归属销售，勘测提交后由电气工程师审核；客户 360 汇总勘测、报价与订单。</p>
+        <p>{{ t('featureCustomerSurveys') }}</p>
       </div>
       <div class="feature">
         <h4>{{ t('quotes') }} · {{ t('orders') }}</h4>
-        <p>报价经销售经理审批、客户接受后转订单，订单自动下发到交付服务创建项目。</p>
+        <p>{{ t('featureQuotesOrders') }}</p>
       </div>
       <div class="feature">
         <h4>{{ t('projects') }} · {{ t('finalAcceptance') }}</h4>
-        <p>电气与结构工程师共同推进，设备状态可追踪；最终验收触发提成计算。</p>
+        <p>{{ t('featureProjectsAcceptance') }}</p>
       </div>
       <div class="feature">
         <h4>{{ t('payment') }} · {{ t('ledger') }}</h4>
-        <p>财务登记回款，台账自动计算未回款与应发提成，全部结清且验收后才可结算。</p>
+        <p>{{ t('featurePaymentLedger') }}</p>
       </div>
       <div class="feature">
         <h4>{{ t('settlements') }}</h4>
-        <p>按月份生成薪酬结算单，含底薪、提成与奖惩调整，支持确认与发放。</p>
+        <p>{{ t('featureSettlements') }}</p>
       </div>
       <div class="feature">
         <h4>{{ t('tickets') }}</h4>
-        <p>验收后的售后工单可关联项目与设备，处理进度同步回销售订单。</p>
+        <p>{{ t('featureTickets') }}</p>
       </div>
     </section>
   </div>

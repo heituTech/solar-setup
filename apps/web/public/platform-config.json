@@ -1,0 +1,22 @@
+{
+  "Version": "2.0.0",
+  "Title": "HEITU ERP v2.0",
+  "FixedHeader": true,
+  "HiddenSideBar": false,
+  "Layout": "vertical",
+  "Theme": "light",
+  "DarkMode": false,
+  "OverallStyle": "light",
+  "SidebarStatus": true,
+  "EpThemeColor": "#1f7a4d",
+  "Theme": "light",
+  "Grey": false,
+  "Weak": false,
+  "HideTabs": true,
+  "HideFooter": true,
+  "ShowLogo": true,
+  "ShowModel": "smart",
+  "MultiTagsCache": false,
+  "Stretch": false,
+  "ResponsiveStorageNameSpace": "pure-admin-"
+}

@@ -1,15 +1,7 @@
 <script setup>
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import PublicLayout from './layouts/PublicLayout.vue';
-import StaffLayout from './layouts/StaffLayout.vue';
-
-const route = useRoute();
-const layout = computed(() => route.meta.layout === 'staff' ? StaffLayout : PublicLayout);
+// Layout 由 router 的父级组件提供
 </script>
 
 <template>
-  <component :is="layout">
-    <router-view />
-  </component>
+  <router-view />
 </template>

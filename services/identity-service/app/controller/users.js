@@ -3,16 +3,18 @@
 const bcrypt = require('bcryptjs');
 const { withTransaction, enqueueEvent } = require('@solar/service-kit');
 const { EVENTS, ROLES } = require('@solar/contracts');
-const { toUser, loadUser } = require('../../lib/users');
+const { toUser, loadUser, insertUser } = require('../../lib/users');
 
 const ASSIGNABLE = new Set(ROLES);
 
 module.exports = {
   async directory(ctx) {
     const [rows] = await ctx.app.db.query(
-      "SELECT id, name, role FROM users WHERE status = 'active' AND role <> 'member' ORDER BY role, name"
+      "SELECT id, user_no, name, role FROM users WHERE status = 'active' AND role <> 'member' ORDER BY role, name"
     );
-    ctx.body = { users: rows.map((row) => ({ id: Number(row.id), name: row.name, role: row.role })) };
+    ctx.body = {
+      users: rows.map((row) => ({ id: Number(row.id), user_no: row.user_no, name: row.name, role: row.role })),
+    };
   },
 
   async list(ctx) {
@@ -44,7 +46,7 @@ module.exports = {
     const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total FROM users u${where}`, params);
     const offset = (page - 1) * pageSize;
     const [rows] = await ctx.app.db.query(
-      `SELECT u.id,u.name,u.email,u.phone,u.role,u.status,u.manager_id,u.created_at FROM users u${where} ORDER BY u.id DESC LIMIT ? OFFSET ?`,
+      `SELECT u.id,u.user_no,u.name,u.email,u.phone,u.role,u.status,u.manager_id,u.created_at FROM users u${where} ORDER BY u.id DESC LIMIT ? OFFSET ?`,
       [...params, pageSize, offset]
     );
     ctx.body = { users: rows.map(toUser), total: Number(countRows[0].total), page, page_size: pageSize };
@@ -68,11 +70,10 @@ module.exports = {
     if (exists.length) ctx.throw(409, 'account_exists');
     const hash = await bcrypt.hash(password, 10);
     const managerId = body.manager_id ? Number(body.manager_id) : null;
-    const [result] = await ctx.app.db.query(
-      'INSERT INTO users (name, email, phone, password_hash, role, status, manager_id) VALUES (?,?,?,?,?,?,?)',
-      [name, email, phone, hash, role, 'active', managerId]
-    );
-    const user = await loadUser(ctx.app.db, result.insertId);
+    const created = await insertUser(ctx.app.db, {
+      name, email, phone, passwordHash: hash, role, status: 'active', managerId,
+    });
+    const user = await loadUser(ctx.app.db, created.id);
     ctx.status = 201;
     ctx.body = { user };
   },

@@ -26,4 +26,20 @@ module.exports = () => ({
     tokenTtl: process.env.JWT_EXPIRES_IN || '12h',
     teamRoles: ['salesperson'],
   },
+  mail: {
+    devMode: process.env.MAIL_DEV_MODE !== 'false',
+    from: process.env.MAIL_FROM || 'Solar Setup <public@heitu.tech>',
+    alimail: {
+      appId: process.env.ALI_MAIL_APP_ID || '',
+      appSecret: process.env.ALI_MAIL_APP_SECRET || '',
+      sender: process.env.ALI_MAIL_SENDER || 'public@heitu.tech',
+    },
+    smtp: {
+      host: process.env.SMTP_HOST || '',
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_SECURE !== 'false',
+      user: process.env.SMTP_USER || '',
+      pass: process.env.SMTP_PASS || '',
+    },
+  },
 });

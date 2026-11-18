@@ -18,6 +18,8 @@ function toSurvey(row) {
     reviewed_by: row.reviewed_by ? Number(row.reviewed_by) : null,
     roof_area: row.roof_area === null ? null : num(row.roof_area),
     monthly_consumption: row.monthly_consumption === null ? null : num(row.monthly_consumption),
+    construction_cost: row.construction_cost === null ? null : num(row.construction_cost),
+    order_id: row.order_id ? Number(row.order_id) : null,
     payload: parseJson(row.payload, {}),
   };
 }
@@ -115,5 +117,46 @@ module.exports = {
       });
     });
     ctx.body = { id, status: isValid ? 'reviewed' : 'invalid' };
+  },
+
+  // 踏勘人员填施工费用 → 回填到订单的施工费用行
+  async fillConstructionCost(ctx) {
+    const id = Number(ctx.params.id);
+    const body = ctx.request.body || {};
+    const cost = Number(body.construction_cost);
+    if (!Number.isFinite(cost) || cost < 0) ctx.throw(400, 'invalid_construction_cost');
+    const [rows] = await ctx.app.db.query('SELECT * FROM surveys WHERE id = ?', [id]);
+    if (!rows.length) ctx.throw(404, 'survey_not_found');
+    const survey = rows[0];
+
+    await ctx.app.db.query('UPDATE surveys SET construction_cost = ? WHERE id = ?', [cost, id]);
+
+    // 如果有关联订单，回填到订单的施工费用行
+    if (survey.order_id) {
+      await ctx.app.db.query(
+        "UPDATE order_items SET unit_price = ?, subtotal = ?, notes = ? WHERE order_id = ? AND item_type = 'construction'",
+        [cost, cost, body.note || '踏勘后勘察人员已填写', survey.order_id]
+      );
+      // 重算订单总额
+      const [sumRows] = await ctx.app.db.query(
+        'SELECT COALESCE(SUM(subtotal),0) AS total FROM order_items WHERE order_id = ?', [survey.order_id]
+      );
+      await ctx.app.db.query('UPDATE orders SET amount = ? WHERE id = ?',
+        [Math.round(num(sumRows[0].total) * 100) / 100, survey.order_id]);
+    }
+    ctx.body = { id, construction_cost: cost, order_id: survey.order_id || null };
+  },
+
+  // 把踏勘和订单关联（销售在订单详情里绑定）
+  async linkOrder(ctx) {
+    const id = Number(ctx.params.id);
+    const orderId = Number((ctx.request.body || {}).order_id);
+    if (!orderId) ctx.throw(400, 'order_id_required');
+    const [surveys] = await ctx.app.db.query('SELECT id FROM surveys WHERE id = ?', [id]);
+    if (!surveys.length) ctx.throw(404, 'survey_not_found');
+    const [orders] = await ctx.app.db.query('SELECT id FROM orders WHERE id = ?', [orderId]);
+    if (!orders.length) ctx.throw(404, 'order_not_found');
+    await ctx.app.db.query('UPDATE surveys SET order_id = ? WHERE id = ?', [orderId, id]);
+    ctx.body = { id, order_id: orderId };
   },
 };

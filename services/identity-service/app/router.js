@@ -20,6 +20,8 @@ module.exports = (app) => {
 
   router.post('/pv/api/auth/register', auth.register);
   router.post('/pv/api/auth/login', auth.login);
+  router.post('/pv/api/auth/email-code', auth.requestEmailCode);
+  router.post('/pv/api/auth/login-code', auth.loginWithCode);
   router.get('/pv/api/auth/me', authMiddleware, auth.me);
   router.post('/pv/api/auth/logout', authMiddleware, auth.logout);
 

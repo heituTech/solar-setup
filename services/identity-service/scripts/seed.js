@@ -4,6 +4,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const bcrypt = require('bcryptjs');
 const { createDatabase } = require('@solar/service-kit');
+const { insertUser } = require('../lib/users');
 
 async function main() {
   const email = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
@@ -21,11 +22,10 @@ async function main() {
         [hash, 'super_admin', 'active', rows[0].id]);
       console.log(`updated super admin #${rows[0].id} ${email}`);
     } else {
-      const [result] = await db.query(
-        'INSERT INTO users (name, email, password_hash, role, status) VALUES (?,?,?,?,?)',
-        [name, email, hash, 'super_admin', 'active']
-      );
-      console.log(`created super admin #${result.insertId} ${email}`);
+      const created = await insertUser(db, {
+        name, email, passwordHash: hash, role: 'super_admin', status: 'active', managerId: null,
+      });
+      console.log(`created super admin ${created.user_no} ${email}`);
     }
   } finally {
     await db.end();

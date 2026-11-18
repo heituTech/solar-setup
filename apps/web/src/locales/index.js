@@ -225,6 +225,47 @@ Object.assign(zh, {
   enum_quote_discount: '报价折扣',
 });
 
+Object.assign(en, {
+  userId: 'User ID',
+  loginByPassword: 'Password login',
+  loginByEmailCode: 'Email code login',
+  loginIdentifier: 'User ID / Phone / Email',
+  loginIdentifierPlaceholder: 'e.g. P000001, phone or email',
+  emailCode: 'Email code',
+  sendCode: 'Send code',
+  codeSent: 'Code sent to {email}',
+  err_credentials_required: 'Please enter your user ID, phone or email and password',
+  err_email_required: 'Please enter your email and the code',
+  err_invalid_credentials: 'Invalid user ID, phone, email or password',
+  err_too_many_attempts: 'Too many attempts, please try again later',
+  err_invalid_code: 'Invalid or expired code',
+  err_code_expired: 'The code has expired, please request a new one',
+  err_code_too_frequent: 'Please wait 60 seconds before requesting another code',
+  err_code_send_failed: 'Failed to send the code, please try again later',
+  err_account_disabled: 'This account has been disabled',
+  err_user_not_found: 'No account found for this email',
+});
+Object.assign(zh, {
+  userId: '用户ID',
+  loginByPassword: '密码登录',
+  loginByEmailCode: '邮箱验证码',
+  loginIdentifier: '用户ID / 手机号 / 邮箱',
+  loginIdentifierPlaceholder: '例如 P000001、手机号或邮箱',
+  emailCode: '邮箱验证码',
+  sendCode: '获取验证码',
+  codeSent: '验证码已发送至 {email}',
+  err_credentials_required: '请输入用户ID、手机号或邮箱以及密码',
+  err_email_required: '请输入邮箱和验证码',
+  err_invalid_credentials: '用户ID、手机号、邮箱或密码错误',
+  err_too_many_attempts: '尝试次数过多，请稍后再试',
+  err_invalid_code: '验证码错误或已失效',
+  err_code_expired: '验证码已过期，请重新获取',
+  err_code_too_frequent: '获取过于频繁，请 60 秒后再试',
+  err_code_send_failed: '验证码发送失败，请稍后再试',
+  err_account_disabled: '账号已停用',
+  err_user_not_found: '该邮箱未注册账号',
+});
+
 const messages = {};
 for (const lang of Object.keys(legacy)) messages[lang] = { ...en, ...(lang === 'zh' ? zh : lang === 'km' ? km : {}), ...legacy[lang] };
 if (!messages.en) messages.en = en;

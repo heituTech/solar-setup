@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { get, post, setToken, getToken } from '../api/client';
+import router from '../router';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -45,6 +46,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       setToken('');
       localStorage.removeItem('solar_user');
+      router.push('/home');
     },
   },
 });

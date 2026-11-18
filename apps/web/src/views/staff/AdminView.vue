@@ -26,7 +26,7 @@
 
         <div class="panel">
           <el-table :data="users" v-loading="loadingUsers" :empty-text="t('noData')">
-            <el-table-column prop="id" :label="t('staffId')" width="90" />
+            <el-table-column prop="user_no" :label="t('userId')" width="110" />
             <el-table-column prop="name" :label="t('name')" min-width="130" />
             <el-table-column prop="email" :label="t('email')" min-width="180" />
             <el-table-column prop="phone" :label="t('phone')" width="140" />

@@ -6,8 +6,12 @@ const { salesScopeFor, scopeClause, num } = require('../../lib/scope');
 const OWNER_ROLES = new Set(['super_admin', 'sales_manager']);
 
 function toCustomer(row) {
+  const data = { ...row };
+  // 已弃用字段，不再对外暴露（前端已不使用）
+  delete data.source;
+  delete data.customer_type;
   return {
-    ...row,
+    ...data,
     id: Number(row.id),
     owner_id: row.owner_id ? Number(row.owner_id) : null,
     created_by: row.created_by ? Number(row.created_by) : null,

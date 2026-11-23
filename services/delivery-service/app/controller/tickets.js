@@ -96,6 +96,26 @@ async function notifyAfterSalesManagers(ctx, { ticket, orderNo, actorName }) {
   }
 }
 
+async function notifyAddedStakeholders(ctx, { ticket, added, actorName }) {
+  const base = ctx.app.config && ctx.app.config.internal && ctx.app.config.internal.services
+    && ctx.app.config.internal.services.identity;
+  if (!base || !added.length) return;
+  try {
+    await internalFetch(`${base}/internal/notifications`, {
+      service: ctx.app.config.serviceName,
+      body: {
+        user_ids: added.map((item) => item.user_id),
+        title: `工单协作：${ticket.title}`,
+        content: `你已被添加为工单 #${ticket.id}（${ticket.title}）的干系人。\n订单：${ticket.order_no || '-'}\n操作人：${actorName || '-'}`,
+        type: 'ticket',
+        link: '/workbench/tickets',
+      },
+    });
+  } catch (error) {
+    ctx.logger.warn('[tickets] notify stakeholders failed: %s', error.message);
+  }
+}
+
 module.exports = {
   async list(ctx) {
     const page = Math.max(1, Number(ctx.query.page) || 1);
@@ -233,6 +253,10 @@ module.exports = {
         role: item.role ? String(item.role) : null,
       });
     }
+    const [existingRows] = await ctx.app.db.query(
+      'SELECT user_id FROM ticket_stakeholders WHERE ticket_id = ?', [id]
+    );
+    const existing = new Set(existingRows.map((row) => Number(row.user_id)));
     await withTransaction(ctx.app.db, async (connection) => {
       await connection.query('DELETE FROM ticket_stakeholders WHERE ticket_id = ?', [id]);
       if (cleaned.length) {
@@ -242,6 +266,12 @@ module.exports = {
           cleaned.flatMap((item) => [id, item.user_id, item.user_name, item.role])
         );
       }
+    });
+    const added = cleaned.filter((item) => !existing.has(item.user_id));
+    await notifyAddedStakeholders(ctx, {
+      ticket: rows[0],
+      added,
+      actorName: ctx.state.user.name || null,
     });
     const [stakeholders] = await ctx.app.db.query(
       'SELECT * FROM ticket_stakeholders WHERE ticket_id = ? ORDER BY id', [id]

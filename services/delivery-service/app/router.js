@@ -35,7 +35,7 @@ module.exports = (app) => {
 
   router.get('/pv/api/workbench/tickets', auth, staff, tickets.list);
   router.get('/pv/api/workbench/tickets/:id', auth, staff, tickets.detail);
-  router.post('/pv/api/workbench/tickets', auth, tickets.create);
+  router.post('/pv/api/workbench/tickets', auth, staff, tickets.create);
   router.patch('/pv/api/workbench/tickets/:id', auth, afterSales, tickets.update);
   router.patch('/pv/api/workbench/tickets/:id/stakeholders', auth, ticketManagers, tickets.updateStakeholders);
 

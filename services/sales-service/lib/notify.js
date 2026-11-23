@@ -17,9 +17,10 @@ async function notify(app, payload) {
 }
 
 function notifyOrderCreated(app, { salespersonId, orderNo, customerName }) {
-  if (!salespersonId) return Promise.resolve();
+  const userIds = salespersonId ? [Number(salespersonId)] : [];
   return notify(app, {
-    user_ids: [Number(salespersonId)],
+    user_ids: userIds,
+    roles: ['sales_manager', 'after_sales_manager', 'super_admin'],
     title: '新订单已创建',
     content: `订单 ${orderNo}（客户：${customerName || '-'}）已创建。`,
     type: 'order',

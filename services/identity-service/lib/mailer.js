@@ -86,4 +86,20 @@ async function sendVerificationCode(mail, email, code) {
   throw new Error('mail_not_configured');
 }
 
-module.exports = { sendVerificationCode };
+async function sendMail(mail, { to, subject, text, html, senderName }) {
+  if (mail.devMode) {
+    console.log(`[MAIL DEV] to=${to} subject=${subject}`);
+    return { dev: true };
+  }
+  if (mail.alimail.appId && mail.alimail.appSecret) {
+    await sendViaAliMail(mail, { to, subject, text, html });
+    return { dev: false };
+  }
+  if (mail.smtp.host && mail.smtp.pass) {
+    await getTransporter(mail).sendMail({ from: mail.from, to, subject, text, html });
+    return { dev: false };
+  }
+  throw new Error('mail_not_configured');
+}
+
+module.exports = { sendVerificationCode, sendMail };

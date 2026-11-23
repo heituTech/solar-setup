@@ -17,11 +17,16 @@ const route = useRoute();
 
 const isCollapse = computed(() => !appStore.sidebar.opened);
 const device = computed(() => appStore.device);
+const SALES_ROLES = ['super_admin', 'sales_manager', 'salesperson'];
+const FIELD_ROLES = ['electrical_engineer', 'structural_engineer', 'after_sales', 'after_sales_manager'];
 const menus = computed(() => {
-  // 首页与概览合并为同一入口：员工进概览，访客进首页
-  const primary = auth.role !== 'member'
-    ? { path: '/workbench', meta: { key: 'overview', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } }
-    : { path: '/home', meta: { key: 'home' } };
+  // 首页与概览合并为同一入口：销售进概览，现场角色进工单，访客进首页
+  let primary = { path: '/home', meta: { key: 'home' } };
+  if (SALES_ROLES.includes(auth.role)) {
+    primary = { path: '/workbench', meta: { key: 'overview', requiresRoles: SALES_ROLES } };
+  } else if (FIELD_ROLES.includes(auth.role)) {
+    primary = { path: '/workbench/tickets', meta: { key: 'tickets' } };
+  }
   const rest = routerArrays.filter((m) => {
     if (m.path === '/home' || m.path === '/workbench') return false;
     const reqRoles = m.meta.requiresRoles;
@@ -32,7 +37,8 @@ const menus = computed(() => {
     if (m.meta.requiresAuth) return auth.authenticated;
     return true;
   });
-  return [primary, ...rest];
+  const dedup = rest.filter((m) => m.path !== primary.path);
+  return [primary, ...dedup];
 });
 
 const defaultActive = computed(() => route.path);
@@ -53,7 +59,7 @@ function handleSelect() {
   >
     <div class="sidebar-logo-container">
       <transition name="sidebarLogoFade">
-        <router-link to="/workbench" class="sidebar-logo-link" v-if="!isCollapse || device === 'mobile'">
+        <router-link :to="menus[0].path" class="sidebar-logo-link" v-if="!isCollapse || device === 'mobile'">
           <span class="sidebar-logo-title">HEITU ERP</span>
         </router-link>
       </transition>

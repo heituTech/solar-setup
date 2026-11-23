@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'node:url';
 
 const proxy = {};
-for (const path of ['/pv/api/auth', '/pv/api/admin/users', '/pv/api/admin/health', '/pv/api/admin/flows', '/pv/api/workbench/directory', '/pv/api/approvals']) {
+for (const path of ['/pv/api/auth', '/pv/api/admin/users', '/pv/api/admin/health', '/pv/api/admin/flows', '/pv/api/workbench/directory', '/pv/api/approvals', '/pv/api/notifications']) {
   proxy[path] = { target: 'http://127.0.0.1:7101', changeOrigin: true };
 }
 for (const path of ['/pv/api/workbench/projects', '/pv/api/workbench/devices', '/pv/api/workbench/tickets']) {

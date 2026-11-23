@@ -42,6 +42,25 @@ async function loadProject(ctx, id, connection = ctx.app.db) {
   return rows[0];
 }
 
+const AMOUNT_ROLES = new Set(['super_admin', 'sales_manager', 'salesperson', 'accountant']);
+
+function stripAmount(ctx, project) {
+  if (!AMOUNT_ROLES.has(ctx.state.user.role)) delete project.amount;
+  return project;
+}
+
+async function buildDetail(ctx, project) {
+  const [devices] = await ctx.app.db.query('SELECT * FROM devices WHERE project_id = ? ORDER BY id', [project.id]);
+  const [progress] = await ctx.app.db.query('SELECT * FROM project_progress WHERE project_id = ? ORDER BY id DESC', [project.id]);
+  const [tickets] = await ctx.app.db.query('SELECT * FROM tickets WHERE project_id = ? ORDER BY id DESC', [project.id]);
+  return {
+    project: stripAmount(ctx, toProject(project)),
+    devices: devices.map((row) => ({ ...row, id: Number(row.id), project_id: Number(row.project_id), quantity: Number(row.quantity) })),
+    progress,
+    tickets,
+  };
+}
+
 module.exports = {
   async list(ctx) {
     const page = Math.max(1, Number(ctx.query.page) || 1);
@@ -66,21 +85,23 @@ module.exports = {
       [...params, pageSize, (page - 1) * pageSize]
     );
     const [count] = await ctx.app.db.query(`SELECT COUNT(*) AS total ${sql}`, params);
-    ctx.body = { projects: rows.map(toProject), total: Number(count[0].total), page, page_size: pageSize };
+    ctx.body = { projects: rows.map((row) => stripAmount(ctx, toProject(row))), total: Number(count[0].total), page, page_size: pageSize };
   },
 
   async detail(ctx) {
     const project = await loadProject(ctx, Number(ctx.params.id));
     await assertAccess(ctx, project);
-    const [devices] = await ctx.app.db.query('SELECT * FROM devices WHERE project_id = ? ORDER BY id', [project.id]);
-    const [progress] = await ctx.app.db.query('SELECT * FROM project_progress WHERE project_id = ? ORDER BY id DESC', [project.id]);
-    const [tickets] = await ctx.app.db.query('SELECT * FROM tickets WHERE project_id = ? ORDER BY id DESC', [project.id]);
-    ctx.body = {
-      project: toProject(project),
-      devices: devices.map((row) => ({ ...row, id: Number(row.id), project_id: Number(row.project_id), quantity: Number(row.quantity) })),
-      progress,
-      tickets,
-    };
+    ctx.body = await buildDetail(ctx, project);
+  },
+
+  async byOrder(ctx) {
+    const orderId = Number(ctx.params.orderId);
+    if (!Number.isInteger(orderId) || orderId <= 0) ctx.throw(400, 'invalid_order_id');
+    const [rows] = await ctx.app.db.query('SELECT * FROM projects WHERE order_id = ?', [orderId]);
+    if (!rows.length) ctx.throw(404, 'project_not_found');
+    const project = rows[0];
+    await assertAccess(ctx, project);
+    ctx.body = await buildDetail(ctx, project);
   },
 
   async assign(ctx) {

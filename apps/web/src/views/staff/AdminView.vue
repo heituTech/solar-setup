@@ -179,7 +179,7 @@ const userFilters = reactive({ q: '', role: '', status: '' });
 const approvalFilters = reactive({ q: '', status: '' });
 const userStatusOptions = ['active', 'disabled'];
 const approvalStatusOptions = ['pending', 'approved', 'rejected'];
-const roles = ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'member'];
+const roles = ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager', 'member'];
 const form = reactive({ id: null, name: '', email: '', phone: '', role: 'salesperson', manager_id: null, status: 'active', password: '' });
 
 const isAdmin = computed(() => auth.role === 'super_admin');

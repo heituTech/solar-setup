@@ -289,4 +289,9 @@ onMounted(load);
 .detail-item span { display: block; color: #909399; font-size: 12px; margin-bottom: 4px; }
 .detail-item.span-2 { grid-column: span 2; }
 .muted { color: #909399; }
+
+@media (max-width: 768px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-item.span-2 { grid-column: span 1; }
+}
 </style>

@@ -62,7 +62,7 @@
         <el-button :disabled="loading" @click="$router.push('/workbench/customers')">{{ t('newCustomer') }}</el-button>
         <el-button :disabled="loading" @click="$router.push('/workbench/surveys')">{{ t('newSurvey') }}</el-button>
         <el-button :disabled="loading" @click="$router.push('/workbench/quotes')">{{ t('newQuote') }}</el-button>
-        <el-button :disabled="loading" @click="$router.push('/workbench/projects')">{{ t('projects') }}</el-button>
+        <el-button :disabled="loading" @click="$router.push('/workbench/orders')">{{ t('orders') }}</el-button>
         <el-button :disabled="loading" @click="$router.push('/workbench/ledger')">{{ t('ledger') }}</el-button>
       </div>
     </div>

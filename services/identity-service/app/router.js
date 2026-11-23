@@ -5,6 +5,7 @@ const health = require('./controller/health');
 const auth = require('./controller/auth');
 const users = require('./controller/users');
 const approvals = require('./controller/approvals');
+const notifications = require('./controller/notifications');
 const internal = require('./controller/internal');
 
 module.exports = (app) => {
@@ -12,7 +13,7 @@ module.exports = (app) => {
   const authMiddleware = app.auth;
   const internalGuard = verifyInternal({ services: ['sales', 'delivery', 'finance', 'hrms'] });
   const staff = requireRoles('super_admin', 'sales_manager', 'salesperson', 'electrical_engineer',
-    'structural_engineer', 'warehouse', 'accountant', 'after_sales');
+    'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager');
   const admin = requireRoles('super_admin');
 
   router.get('/health', health.health);
@@ -36,6 +37,10 @@ module.exports = (app) => {
   router.post('/pv/api/approvals/:id/decide', authMiddleware, requireRoles('super_admin', 'sales_manager'), approvals.decide);
   router.get('/pv/api/admin/flows', authMiddleware, admin, approvals.flows);
 
+  router.get('/pv/api/notifications', authMiddleware, staff, notifications.list);
+  router.post('/pv/api/notifications/read', authMiddleware, staff, notifications.markRead);
+
+  router.post('/internal/notifications', internalGuard, notifications.internalCreate);
   router.post('/internal/auth/introspect', internalGuard, internal.introspect);
   router.post('/internal/users/contacts', internalGuard, internal.contacts);
   router.post('/internal/events', internalGuard, internal.events);

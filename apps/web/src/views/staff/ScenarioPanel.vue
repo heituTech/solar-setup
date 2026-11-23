@@ -404,4 +404,16 @@ onMounted(loadScenarios);
 .form-grid .span-2 { grid-column: span 2; }
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .detail-item span { display: block; color: #909399; font-size: 12px; margin-bottom: 4px; }
+
+@media (max-width: 768px) {
+  .scenario-detail,
+  .form-grid,
+  .detail-grid { grid-template-columns: 1fr; }
+  .form-grid .span-2 { grid-column: span 1; }
+  .formula-preview { flex-direction: column; gap: 6px; }
+  .scenario-panel :deep(.el-collapse-item__header) {
+    height: auto; min-height: 48px; align-items: flex-start; padding: 8px 0;
+  }
+  .scenario-panel :deep(.el-collapse-item__header > div) { flex-wrap: wrap; }
+}
 </style>

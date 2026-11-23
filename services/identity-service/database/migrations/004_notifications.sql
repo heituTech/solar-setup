@@ -1,0 +1,14 @@
+-- 系统内通知
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  type VARCHAR(40) NOT NULL DEFAULT 'system',
+  title VARCHAR(190) NOT NULL,
+  content VARCHAR(2000) NULL,
+  link VARCHAR(300) NULL,
+  is_read TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_notifications_user (user_id, is_read, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

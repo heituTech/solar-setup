@@ -113,13 +113,12 @@ async function load() {
     const params = new URLSearchParams({ page: String(page.value), page_size: '10' });
     if (filters.q.trim()) params.set('q', filters.q.trim());
     if (filters.status) params.set('status', filters.status);
-    const [surveyData, customerData] = await Promise.all([
-      get(`/pv/api/workbench/surveys?${params.toString()}`),
-      get('/pv/api/workbench/customers?page=1&page_size=100'),
-    ]);
+    const requests = [get(`/pv/api/workbench/surveys?${params.toString()}`)];
+    if (canEdit.value) requests.push(get('/pv/api/workbench/customers?page=1&page_size=100'));
+    const [surveyData, customerData] = await Promise.all(requests);
     surveys.value = surveyData.surveys || [];
     total.value = surveyData.total || 0;
-    customers.value = customerData.customers || [];
+    if (customerData) customers.value = customerData.customers || [];
   } catch (error) {
     ElMessage.error(error.message);
   } finally {

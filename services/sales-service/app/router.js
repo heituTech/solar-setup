@@ -18,7 +18,7 @@ module.exports = (app) => {
   const { router } = app;
   const auth = app.auth;
   const staff = requireRoles('super_admin', 'sales_manager', 'salesperson', 'electrical_engineer',
-    'structural_engineer', 'warehouse', 'accountant', 'after_sales');
+    'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager');
   const sales = requireRoles('super_admin', 'sales_manager', 'salesperson');
   const managers = requireRoles('super_admin', 'sales_manager');
   const engineers = requireRoles('super_admin', 'electrical_engineer', 'structural_engineer');
@@ -31,25 +31,25 @@ module.exports = (app) => {
   router.get('/pv/api/geo', misc.geo);
   router.get('/pv/skill', misc.skill);
 
-  router.get('/pv/api/workbench/summary', auth, staff, workbench.summary);
+  router.get('/pv/api/workbench/summary', auth, sales, workbench.summary);
 
-  router.get('/pv/api/workbench/customers', auth, staff, customers.list);
-  router.get('/pv/api/workbench/customers/:id', auth, staff, customers.detail);
+  router.get('/pv/api/workbench/customers', auth, sales, customers.list);
+  router.get('/pv/api/workbench/customers/:id', auth, sales, customers.detail);
   router.post('/pv/api/workbench/customers', auth, sales, customers.create);
   router.patch('/pv/api/workbench/customers/:id', auth, sales, customers.update);
 
   // 用电场景
-  router.get('/pv/api/workbench/customers/:customerId/scenarios', auth, staff, scenarios.list);
+  router.get('/pv/api/workbench/customers/:customerId/scenarios', auth, sales, scenarios.list);
   router.post('/pv/api/workbench/customers/:customerId/scenarios', auth, sales, scenarios.create);
-  router.get('/pv/api/workbench/scenarios/:id', auth, staff, scenarios.detail);
+  router.get('/pv/api/workbench/scenarios/:id', auth, sales, scenarios.detail);
   router.patch('/pv/api/workbench/scenarios/:id', auth, sales, scenarios.update);
   router.delete('/pv/api/workbench/scenarios/:id', auth, sales, scenarios.remove);
 
   // 系统配置（预算参考）
-  router.get('/pv/api/workbench/scenarios/:scenarioId/configs', auth, staff, systemConfigs.list);
-  router.get('/pv/api/workbench/scenarios/:scenarioId/formula-preview', auth, staff, systemConfigs.formulaPreview);
+  router.get('/pv/api/workbench/scenarios/:scenarioId/configs', auth, sales, systemConfigs.list);
+  router.get('/pv/api/workbench/scenarios/:scenarioId/formula-preview', auth, sales, systemConfigs.formulaPreview);
   router.post('/pv/api/workbench/scenarios/:scenarioId/configs', auth, sales, systemConfigs.create);
-  router.get('/pv/api/workbench/configs/:id', auth, staff, systemConfigs.detail);
+  router.get('/pv/api/workbench/configs/:id', auth, sales, systemConfigs.detail);
   router.patch('/pv/api/workbench/configs/:id', auth, sales, systemConfigs.update);
   router.delete('/pv/api/workbench/configs/:id', auth, sales, systemConfigs.remove);
 
@@ -60,7 +60,7 @@ module.exports = (app) => {
   router.post('/pv/api/workbench/surveys/:id/construction-cost', auth, engineers, surveys.fillConstructionCost);
   router.post('/pv/api/workbench/surveys/:id/link-order', auth, sales, surveys.linkOrder);
 
-  router.get('/pv/api/workbench/quotes', auth, staff, quotes.list);
+  router.get('/pv/api/workbench/quotes', auth, sales, quotes.list);
   router.post('/pv/api/workbench/quotes', auth, sales, quotes.create);
   router.patch('/pv/api/workbench/quotes/:id', auth, sales, quotes.update);
   router.post('/pv/api/workbench/quotes/:id/submit', auth, sales, quotes.submit);
@@ -75,9 +75,9 @@ module.exports = (app) => {
   router.patch('/pv/api/workbench/orders/:id/items/:itemId', auth, sales, orders.updateItem);
   router.delete('/pv/api/workbench/orders/:id/items/:itemId', auth, sales, orders.removeItem);
 
-  router.get('/pv/api/products', auth, staff, catalog.list);
-  router.post('/pv/api/products', auth, staff, catalog.create);
-  router.patch('/pv/api/products/:id', auth, staff, catalog.update);
+  router.get('/pv/api/products', auth, sales, catalog.list);
+  router.post('/pv/api/products', auth, sales, catalog.create);
+  router.patch('/pv/api/products/:id', auth, sales, catalog.update);
 
   router.get('/pv/api/cases', auth, cases.list);
   router.post('/pv/api/cases', auth, cases.create);

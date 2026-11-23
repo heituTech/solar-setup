@@ -1,12 +1,14 @@
 <script setup>
-import { computed } from 'vue';
-import { Fold, Expand, Menu } from '@element-plus/icons-vue';
+import { computed, onMounted, ref } from 'vue';
+import { Bell, Fold, Expand, Menu } from '@element-plus/icons-vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAppStoreHook } from '@/stores/app';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingStoreHook } from '@/stores/settings';
 import { languages } from '@/locales';
+import { get, post } from '@/api/client';
+import { dt } from '@/utils/format';
 import { routerArrays } from './menu';
 
 const { t, locale } = useI18n();
@@ -21,17 +23,61 @@ const username = computed(() => auth.user?.name || 'User');
 const currentLanguage = computed(
   () => (languages.find(([code]) => code === locale.value) || languages[0])[1]
 );
+const canNotify = computed(() => auth.authenticated && auth.role !== 'member');
+const notifications = ref([]);
+const unread = ref(0);
+const noticeVisible = ref(false);
 
-const breadcrumb = computed(() => {
-  const match = routerArrays.find((m) => m.path === route.path);
-  return match ? t(match.meta.key) : t('workspace');
-});
+async function loadNotifications() {
+  if (!canNotify.value) return;
+  try {
+    const data = await get('/pv/api/notifications');
+    notifications.value = data.notifications || [];
+    unread.value = Number(data.unread || 0);
+  } catch (error) {
+    notifications.value = [];
+    unread.value = 0;
+  }
+}
+
+async function openNotice(item) {
+  if (!item.is_read) {
+    try {
+      await post('/pv/api/notifications/read', { ids: [item.id] });
+      item.is_read = true;
+      unread.value = Math.max(0, unread.value - 1);
+    } catch (error) {
+      // 忽略已读标记失败
+    }
+  }
+  if (item.link && item.link.startsWith('/')) {
+    noticeVisible.value = false;
+    router.push(item.link);
+  }
+}
+
+async function markAllRead() {
+  try {
+    await post('/pv/api/notifications/read', { all: true });
+    notifications.value.forEach((item) => { item.is_read = true; });
+    unread.value = 0;
+  } catch (error) {
+    // 忽略
+  }
+}
+
+onMounted(loadNotifications);
 
 function changeLocale(code) {
   locale.value = code;
   localStorage.setItem('lang', code);
   document.documentElement.lang = code;
 }
+
+const breadcrumb = computed(() => {
+  const match = routerArrays.find((m) => m.path === route.path);
+  return match ? t(match.meta.key) : t('workspace');
+});
 
 function toggleSideBar() {
   appStore.toggleSideBar();
@@ -57,6 +103,44 @@ function logout() {
     </div>
 
     <div class="navbar-right">
+      <el-popover
+        v-if="canNotify"
+        v-model:visible="noticeVisible"
+        placement="bottom-end"
+        :width="340"
+        trigger="click"
+        popper-class="notice-popover"
+        @show="loadNotifications"
+      >
+        <template #reference>
+          <span class="notice-trigger" :title="t('notifications')">
+            <el-badge :value="unread" :max="99" :hidden="!unread">
+              <el-icon :size="18"><Bell /></el-icon>
+            </el-badge>
+          </span>
+        </template>
+        <div class="notice-panel">
+          <div class="notice-head">
+            <span class="notice-head-title">{{ t('notifications') }}</span>
+            <el-button link type="primary" size="small" :disabled="!unread" @click="markAllRead">
+              {{ t('markAllRead') }}
+            </el-button>
+          </div>
+          <div v-if="!notifications.length" class="notice-empty">{{ t('noNotifications') }}</div>
+          <div
+            v-for="item in notifications"
+            :key="item.id"
+            class="notice-item"
+            :class="{ unread: !item.is_read }"
+            @click="openNotice(item)"
+          >
+            <div class="notice-title">{{ item.title }}</div>
+            <div class="notice-content">{{ item.content }}</div>
+            <div class="notice-time">{{ dt(item.created_at) }}</div>
+          </div>
+        </div>
+      </el-popover>
+
       <el-dropdown trigger="click" class="lang-dropdown" @command="changeLocale">
         <span class="el-dropdown-link lang-link">
           <span class="lang-label">{{ currentLanguage }}</span>
@@ -166,5 +250,75 @@ function logout() {
 .lang-link:hover .lang-label {
   color: #1f7a4d;
   border-color: #1f7a4d;
+}
+
+.notice-trigger {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 16px;
+  color: #606266;
+  cursor: pointer;
+}
+
+.notice-panel {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.notice-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.notice-head-title {
+  font-weight: 600;
+  color: #303133;
+}
+
+.notice-empty {
+  padding: 24px 0;
+  text-align: center;
+  color: #909399;
+  font-size: 13px;
+}
+
+.notice-item {
+  padding: 10px 4px;
+  border-bottom: 1px solid #f2f3f5;
+  cursor: pointer;
+}
+
+.notice-item.unread .notice-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #e6a23c;
+  vertical-align: middle;
+}
+
+.notice-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.notice-content {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #606266;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notice-time {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #909399;
 }
 </style>

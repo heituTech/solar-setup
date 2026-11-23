@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { withTransaction, enqueueEvent } = require('@solar/service-kit');
 const { EVENTS } = require('@solar/contracts');
 const { salesScopeFor, scopeClause, num, parseJson } = require('../../lib/scope');
+const { notifyOrderCreated } = require('../../lib/notify');
 
 function normalizeItems(items) {
   if (!Array.isArray(items) || !items.length) return null;
@@ -218,6 +219,11 @@ module.exports = {
         received_amount: num(row.received_amount),
         commission_rate: num(row.commission_rate),
       };
+    });
+    await notifyOrderCreated(ctx.app, {
+      salespersonId: order.salesperson_id,
+      orderNo: order.order_no,
+      customerName: order.customer_name,
     });
     ctx.status = 201;
     ctx.body = { order };

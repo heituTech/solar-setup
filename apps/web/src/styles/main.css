@@ -89,6 +89,11 @@ a { color: var(--solar-green); text-decoration: none; }
 .page-toolbar h3 { margin: 0; font-size: 17px; }
 .toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
+/* 列表筛选栏：桌面端固定宽度，移动端自动铺满 */
+.filter-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.filter-bar .filter-item { width: 170px; }
+.filter-bar .filter-item.filter-date { width: 260px; }
+
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 22px; }
 .kpi-card { background: #fff; border: 1px solid var(--solar-border); border-radius: 12px; padding: 18px; }
 .kpi-label { font-size: 13px; color: var(--solar-muted); margin-bottom: 8px; }
@@ -191,16 +196,34 @@ a { color: var(--solar-green); text-decoration: none; }
   .panel { padding: 12px; }
   .detail-grid { grid-template-columns: 1fr; }
 
-  /* item row for quote items */
-  .item-row { grid-template-columns: 1fr 70px 86px 56px; }
+  /* 筛选栏：输入控件与按钮铺满整行 */
+  .filter-bar { gap: 8px; }
+  .filter-bar .filter-item,
+  .filter-bar .filter-item.filter-date { width: 100%; }
+  .filter-bar > .el-button { flex: 1 1 auto; margin-left: 0; }
 
-  /* tables: horizontal scroll */
+  /* 明细项：名称独占一行，数量/单价/删除在下一行 */
+  .item-row { grid-template-columns: 1fr 1fr 44px; }
+  .item-row > :first-child { grid-column: 1 / -1; }
+
+  /* 表格：阻止撑破容器，允许内部横向滚动 */
   .el-table { font-size: 13px; }
   .el-table .el-table__cell { padding: 8px 6px; }
+
+  /* 抽屉全宽展示，避免固定 size 超出手机屏幕 */
+  .el-drawer { width: 100% !important; max-width: 100%; }
+  .el-drawer__header { margin-bottom: 12px; padding: 14px 14px 0; }
+  .el-drawer__body { padding: 14px; overflow-x: hidden; }
+  .el-drawer .el-table { width: 100% !important; }
+
+  /* 分页在窄屏自动换行居中 */
+  .el-pagination { flex-wrap: wrap; justify-content: center !important; row-gap: 8px; }
+  .el-pagination .el-pagination__jump { margin-left: 0; }
 
   /* element-plus dialog full width on mobile */
   .el-dialog { width: 94% !important; margin: 5vh auto !important; }
   .el-dialog__body { padding: 14px 16px; }
+  .el-message-box { width: 90% !important; }
 }
 
 /* ---- small phones (480px and below) ---- */

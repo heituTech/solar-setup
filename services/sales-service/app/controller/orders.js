@@ -2,37 +2,58 @@
 
 const crypto = require('crypto');
 const { salesScopeFor, scopeClause, num, parseJson } = require('../../lib/scope');
+const { notifyOrderCreated } = require('../../lib/notify');
 
 function newNo(prefix) {
   return `${prefix}-${crypto.randomBytes(4).toString('hex').toUpperCase()}-${Math.floor(Math.random() * 9000 + 1000)}`;
 }
 
-function toOrder(row) {
-  return {
+const PRICE_ROLES = new Set(['super_admin', 'sales_manager', 'salesperson']);
+
+function canSeePrices(user) {
+  return PRICE_ROLES.has(user.role);
+}
+
+function toOrder(row, showPrices = true) {
+  const order = {
     ...row,
     id: Number(row.id),
     customer_id: Number(row.customer_id),
     salesperson_id: Number(row.salesperson_id),
     project_id: row.project_id ? Number(row.project_id) : null,
     quote_id: row.quote_id ? Number(row.quote_id) : null,
-    amount: num(row.amount),
-    received_amount: num(row.received_amount),
-    outstanding: Math.round((num(row.amount) - num(row.received_amount)) * 100) / 100,
-    commission_rate: num(row.commission_rate),
   };
+  if (showPrices) {
+    order.amount = num(row.amount);
+    order.received_amount = num(row.received_amount);
+    order.outstanding = Math.round((num(row.amount) - num(row.received_amount)) * 100) / 100;
+    order.commission_rate = num(row.commission_rate);
+  } else {
+    delete order.amount;
+    delete order.received_amount;
+    delete order.outstanding;
+    delete order.commission_rate;
+  }
+  return order;
 }
 
-function toOrderItem(row) {
-  return {
+function toOrderItem(row, showPrices = true) {
+  const item = {
     ...row,
     id: Number(row.id),
     order_id: Number(row.order_id),
     system_config_id: row.system_config_id ? Number(row.system_config_id) : null,
     product_id: row.product_id ? Number(row.product_id) : null,
     qty: num(row.qty),
-    unit_price: num(row.unit_price),
-    subtotal: num(row.subtotal),
   };
+  if (showPrices) {
+    item.unit_price = num(row.unit_price);
+    item.subtotal = num(row.subtotal);
+  } else {
+    delete item.unit_price;
+    delete item.subtotal;
+  }
+  return item;
 }
 
 async function recalcOrderAmount(db, orderId) {
@@ -58,19 +79,27 @@ module.exports = {
     const [countRows] = await ctx.app.db.query(countSql, params);
     const [rows] = await ctx.app.db.query(`${sql} ORDER BY id DESC LIMIT ? OFFSET ?`,
       params.concat([pageSize, (page - 1) * pageSize]));
-    ctx.body = { orders: rows.map(toOrder), total: Number(countRows[0].total), page, page_size: pageSize };
+    const showPrices = canSeePrices(ctx.state.user);
+    ctx.body = { orders: rows.map((row) => toOrder(row, showPrices)), total: Number(countRows[0].total), page, page_size: pageSize };
   },
 
   async detail(ctx) {
     const id = Number(ctx.params.id);
     const [rows] = await ctx.app.db.query('SELECT * FROM orders WHERE id = ?', [id]);
     if (!rows.length) ctx.throw(404, 'order_not_found');
-    const order = toOrder(rows[0]);
+    const showPrices = canSeePrices(ctx.state.user);
+    const order = toOrder(rows[0], showPrices);
     const scope = salesScopeFor(ctx.state.user);
     if (scope !== null && !scope.includes(order.salesperson_id)) ctx.throw(403, 'forbidden');
-    const [quotes] = await ctx.app.db.query('SELECT * FROM quotes WHERE id = ?', [order.quote_id || 0]);
+    const [quotes] = showPrices
+      ? await ctx.app.db.query('SELECT * FROM quotes WHERE id = ?', [order.quote_id || 0])
+      : [[]];
     const [items] = await ctx.app.db.query('SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC', [id]);
-    ctx.body = { order, quote: quotes[0] || null, items: items.map(toOrderItem) };
+    ctx.body = {
+      order,
+      quote: showPrices ? (quotes[0] || null) : null,
+      items: items.map((row) => toOrderItem(row, showPrices)),
+    };
   },
 
   async updateCommission(ctx) {
@@ -155,6 +184,7 @@ module.exports = {
     const total = await recalcOrderAmount(ctx.app.db, orderId);
     const [orderRows] = await ctx.app.db.query('SELECT * FROM orders WHERE id = ?', [orderId]);
     const [items] = await ctx.app.db.query('SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC', [orderId]);
+    await notifyOrderCreated(ctx.app, { salespersonId, orderNo, customerName: customer.name });
     ctx.status = 201;
     ctx.body = { order: { ...toOrder(orderRows[0]), amount: total }, items: items.map(toOrderItem) };
   },

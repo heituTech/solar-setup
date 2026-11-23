@@ -9,9 +9,20 @@
     </div>
 
     <div class="panel">
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
-        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
-        <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:150px">
+      <div class="filter-bar">
+        <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable class="filter-item" @keyup.enter="reload" />
+        <el-input v-model="filters.owner_id" :placeholder="t('ownerId')" clearable class="filter-item" @keyup.enter="reload" />
+        <el-input v-model="filters.owner_name" :placeholder="t('ownerName')" clearable class="filter-item" @keyup.enter="reload" />
+        <el-date-picker
+          v-model="filters.dateRange"
+          type="daterange"
+          value-format="YYYY-MM-DD"
+          :start-placeholder="t('startDate')"
+          :end-placeholder="t('endDate')"
+          clearable
+          class="filter-item filter-date"
+        />
+        <el-select v-model="filters.status" clearable :placeholder="t('status')" class="filter-item">
           <el-option :label="t('filterAll')" value="" />
           <el-option v-for="s in ['lead','qualified','won','lost']" :key="s" :label="statusLabel(s)" :value="s" />
         </el-select>
@@ -21,14 +32,13 @@
       <el-table :data="customers" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="name" :label="t('name')" min-width="140" />
         <el-table-column prop="phone" :label="t('phone')" width="140" />
-        <el-table-column prop="region" :label="t('region')" width="130" />
-        <el-table-column :label="t('source')" width="120">
-          <template #default="{ row }">{{ statusLabel(row.source) }}</template>
-        </el-table-column>
-        <el-table-column :label="t('customerType')" width="110">
-          <template #default="{ row }">{{ row.customer_type === 'engineering' ? t('engineering') : t('retail') }}</template>
+        <el-table-column :label="t('region')" width="150">
+          <template #default="{ row }">{{ regionLabel(row.region) }}</template>
         </el-table-column>
         <el-table-column prop="owner_name" :label="t('owner')" width="120" />
+        <el-table-column :label="t('createdBy')" width="130">
+          <template #default="{ row }">{{ row.created_by_name || '-' }}</template>
+        </el-table-column>
         <el-table-column :label="t('status')" width="110">
           <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
@@ -51,21 +61,17 @@
           <el-form-item :label="t('name')"><el-input v-model="form.name" /></el-form-item>
           <el-form-item :label="t('phone')"><el-input v-model="form.phone" /></el-form-item>
           <el-form-item :label="t('email')"><el-input v-model="form.email" /></el-form-item>
-          <el-form-item :label="t('region')"><el-input v-model="form.region" /></el-form-item>
-          <el-form-item class="span-2" :label="t('address')"><el-input v-model="form.address" /></el-form-item>
-          <el-form-item :label="t('source')">
-            <el-select v-model="form.source" style="width: 100%">
-              <el-option :label="statusLabel('referral')" value="referral" />
-              <el-option :label="statusLabel('website')" value="website" />
-              <el-option :label="statusLabel('walk-in')" value="walk-in" />
-              <el-option :label="statusLabel('manual')" value="manual" />
+          <el-form-item :label="t('region')">
+            <el-select v-model="form.region" filterable clearable style="width: 100%">
+              <el-option v-for="item in regionOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item :label="t('customerType')">
-            <el-select v-model="form.customer_type" style="width: 100%">
-              <el-option :label="t('retail')" value="retail" />
-              <el-option :label="t('engineering')" value="engineering" />
+          <el-form-item class="span-2" :label="t('address')"><el-input v-model="form.address" /></el-form-item>
+          <el-form-item :label="t('owner')">
+            <el-select v-if="canChangeOwner" v-model="form.owner_id" filterable style="width: 100%" @change="onOwnerChange">
+              <el-option v-for="item in ownerOptions" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
+            <el-input v-else :model-value="form.owner_name || auth.user?.name" disabled />
           </el-form-item>
           <el-form-item :label="t('status')">
             <el-select v-model="form.status" style="width: 100%">
@@ -91,10 +97,30 @@
         <div class="detail-item span-2"><span>{{ t('name') }}</span>{{ detail.customer.name }}</div>
         <div class="detail-item"><span>{{ t('phone') }}</span>{{ detail.customer.phone || '-' }}</div>
         <div class="detail-item"><span>{{ t('email') }}</span>{{ detail.customer.email || '-' }}</div>
-        <div class="detail-item"><span>{{ t('region') }}</span>{{ detail.customer.region || '-' }}</div>
+        <div class="detail-item"><span>{{ t('region') }}</span>{{ regionLabel(detail.customer.region) }}</div>
+        <div class="detail-item"><span>{{ t('owner') }}</span>{{ detail.customer.owner_name || '-' }}</div>
+        <div class="detail-item"><span>{{ t('createdBy') }}</span>{{ detail.customer.created_by_name || '-' }}</div>
+        <div class="detail-item"><span>{{ t('date') }}</span>{{ dt(detail.customer.created_at) }}</div>
         <div class="detail-item"><span>{{ t('status') }}</span>{{ statusLabel(detail.customer.status) }}</div>
-        <div class="detail-item"><span>{{ t('customerType') }}</span>{{ detail.customer.customer_type === 'engineering' ? t('engineering') : t('retail') }}</div>
         <div class="detail-item span-2"><span>{{ t('address') }}</span>{{ detail.customer.address || '-' }}</div>
+      </div>
+
+      <div class="section-gap" v-if="detail.owner_logs && detail.owner_logs.length">
+        <div class="panel-title"><h3>{{ t('ownerHistory') }}</h3></div>
+        <el-table :data="detail.owner_logs" size="small" :empty-text="t('noData')">
+          <el-table-column :label="t('oldOwner')" min-width="110">
+            <template #default="{ row }">{{ row.old_owner_name || '-' }}</template>
+          </el-table-column>
+          <el-table-column :label="t('newOwner')" min-width="110">
+            <template #default="{ row }">{{ row.new_owner_name || '-' }}</template>
+          </el-table-column>
+          <el-table-column :label="t('changedBy')" width="110">
+            <template #default="{ row }">{{ row.changed_by_name || '-' }}</template>
+          </el-table-column>
+          <el-table-column :label="t('changedAt')" width="150">
+            <template #default="{ row }">{{ dt(row.created_at) }}</template>
+          </el-table-column>
+        </el-table>
       </div>
 
       <div class="section-gap" v-if="detail.customer">
@@ -157,24 +183,75 @@ import { dt, money, statusType } from '../../utils/format';
 import { useStatusLabel } from '../../utils/status';
 import ScenarioPanel from './ScenarioPanel.vue';
 
-const { t } = useI18n();
+const KH_PROVINCES = [
+  { value: 'banteay_meanchey', zh: '班迭棉吉', en: 'Banteay Meanchey' },
+  { value: 'battambang', zh: '马德望', en: 'Battambang' },
+  { value: 'kampong_cham', zh: '磅湛', en: 'Kampong Cham' },
+  { value: 'kampong_chhnang', zh: '磅清扬', en: 'Kampong Chhnang' },
+  { value: 'kampong_speu', zh: '磅士卑', en: 'Kampong Speu' },
+  { value: 'kampong_thom', zh: '磅同', en: 'Kampong Thom' },
+  { value: 'kampot_kep', zh: '贡布 / 白马', en: 'Kampot / Kep' },
+  { value: 'kandal', zh: '干丹', en: 'Kandal' },
+  { value: 'koh_kong', zh: '国公', en: 'Koh Kong' },
+  { value: 'kratie', zh: '桔井', en: 'Kratie' },
+  { value: 'mondulkiri', zh: '蒙多基里', en: 'Mondulkiri' },
+  { value: 'oddar_meanchey', zh: '奥多棉吉', en: 'Oddar Meanchey' },
+  { value: 'pailin', zh: '拜林', en: 'Pailin' },
+  { value: 'phnom_penh', zh: '金边', en: 'Phnom Penh' },
+  { value: 'preah_sihanouk', zh: '西哈努克', en: 'Preah Sihanouk' },
+  { value: 'preah_vihear', zh: '柏威夏', en: 'Preah Vihear' },
+  { value: 'pursat', zh: '菩萨', en: 'Pursat' },
+  { value: 'prey_veng', zh: '波萝勉', en: 'Prey Veng' },
+  { value: 'ratanakiri', zh: '拉达那基里', en: 'Ratanakiri' },
+  { value: 'siem_reap', zh: '暹粒', en: 'Siem Reap' },
+  { value: 'stung_treng', zh: '上丁', en: 'Stung Treng' },
+  { value: 'svay_rieng', zh: '柴桢', en: 'Svay Rieng' },
+  { value: 'takeo', zh: '茶胶', en: 'Takeo' },
+  { value: 'tboung_khmum', zh: '特本克蒙', en: 'Tboung Khmum' },
+];
+
+const { t, locale } = useI18n();
 const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const customers = ref([]);
 const page = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
-const filters = reactive({ q: '', status: '' });
+const filters = reactive({ q: '', status: '', owner_id: '', owner_name: '', dateRange: null });
 const loading = ref(false);
 const dialog = ref(false);
 const drawer = ref(false);
 const saving = ref(false);
 const detail = ref({});
+const directory = ref([]);
 const form = reactive({
-  id: null, name: '', phone: '', email: '', region: '', address: '', source: 'manual', customer_type: 'retail', status: 'lead', note: '',
+  id: null, name: '', phone: '', email: '', region: '', address: '', status: 'lead', note: '', owner_id: null, owner_name: '',
 });
 
 const canEdit = computed(() => ['super_admin', 'sales_manager', 'salesperson'].includes(auth.role));
+const canChangeOwner = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
+const regionOptions = computed(() => KH_PROVINCES.map((item) => ({
+  value: item.value,
+  label: locale.value === 'zh' ? item.zh : item.en,
+})));
+const ownerOptions = computed(() => directory.value.filter((item) => ['salesperson', 'sales_manager'].includes(item.role)));
+
+function regionLabel(value) {
+  if (!value) return '-';
+  const found = KH_PROVINCES.find((item) => item.value === value);
+  if (!found) return value;
+  return locale.value === 'zh' ? found.zh : found.en;
+}
+
+async function loadDirectory() {
+  if (!canChangeOwner.value) return;
+  try {
+    const data = await get('/pv/api/workbench/directory');
+    directory.value = data.users || [];
+  } catch (error) {
+    directory.value = [];
+  }
+}
 
 async function load() {
   loading.value = true;
@@ -182,6 +259,12 @@ async function load() {
     const params = new URLSearchParams({ page: String(page.value), page_size: '10' });
     if (filters.q.trim()) params.set('q', filters.q.trim());
     if (filters.status) params.set('status', filters.status);
+    if (filters.owner_id.trim()) params.set('owner_id', filters.owner_id.trim());
+    if (filters.owner_name.trim()) params.set('owner_name', filters.owner_name.trim());
+    if (Array.isArray(filters.dateRange) && filters.dateRange.length === 2) {
+      params.set('created_from', filters.dateRange[0]);
+      params.set('created_to', filters.dateRange[1]);
+    }
     const data = await get(`/pv/api/workbench/customers?${params.toString()}`);
     customers.value = data.customers || [];
     total.value = data.total || 0;
@@ -205,12 +288,16 @@ function reload() {
 function resetFilters() {
   filters.q = '';
   filters.status = '';
+  filters.owner_id = '';
+  filters.owner_name = '';
+  filters.dateRange = null;
   reload();
 }
 
 function resetForm() {
   Object.assign(form, {
-    id: null, name: '', phone: '', email: '', region: '', address: '', source: 'manual', customer_type: 'retail', status: 'lead', note: '',
+    id: null, name: '', phone: '', email: '', region: '', address: '', status: 'lead', note: '',
+    owner_id: auth.user?.id || null, owner_name: auth.user?.name || '',
   });
 }
 
@@ -222,10 +309,15 @@ function openCreate() {
 function openEdit(row) {
   Object.assign(form, {
     id: row.id, name: row.name, phone: row.phone || '', email: row.email || '', region: row.region || '',
-    address: row.address || '', source: row.source || 'manual', customer_type: row.customer_type || 'retail',
-    status: row.status || 'lead', note: row.note || '',
+    address: row.address || '', status: row.status || 'lead', note: row.note || '',
+    owner_id: row.owner_id || null, owner_name: row.owner_name || '',
   });
   dialog.value = true;
+}
+
+function onOwnerChange(id) {
+  const found = ownerOptions.value.find((item) => item.id === Number(id));
+  form.owner_name = found ? found.name : '';
 }
 
 async function save() {
@@ -235,8 +327,12 @@ async function save() {
   try {
     const payload = {
       name: form.name, phone: form.phone, email: form.email, region: form.region,
-      address: form.address, source: form.source, customer_type: form.customer_type, status: form.status, note: form.note,
+      address: form.address, status: form.status, note: form.note,
     };
+    if (canChangeOwner.value) {
+      payload.owner_id = form.owner_id;
+      payload.owner_name = form.owner_name;
+    }
     if (form.id) await patch(`/pv/api/workbench/customers/${form.id}`, payload);
     else await post('/pv/api/workbench/customers', payload);
     ElMessage.success(t('operationSuccess'));
@@ -265,5 +361,8 @@ async function onOrderCreated() {
   }
 }
 
-onMounted(load);
+onMounted(() => {
+  load();
+  loadDirectory();
+});
 </script>

@@ -84,13 +84,13 @@ git checkout -f -B main FETCH_HEAD
 
 ```bash
 for p in 7101 7102 7103 7104 7105; do printf "port$p:"; curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:$p/health; done
+curl -s -o /dev/null -w "gateway:%{http_code}\n" http://127.0.0.1:7100/pv/api/health   # 200，网关直连
 curl -sL -o /dev/null -w "pv:%{http_code}\n" https://www.heitu.tech/pv          # 200
 curl -sL -o /dev/null -w "login:%{http_code}\n" https://www.heitu.tech/pv/login # 200
-curl -s -o /dev/null -w "notifications:%{http_code}\n" https://www.heitu.tech/pv/api/notifications   # 401 = 路由已通
-curl -s http://127.0.0.1/pv/api/geo/countries | head -c 80    # 首两个应为 KH、CN
+curl -s -o /dev/null -w "notifications:%{http_code}\n" https://www.heitu.tech/pv/api/notifications   # 401 = 网关链路已通
 ```
 
-五个端口全部 `200`，页面 `200`，受保护接口返回 `401` 即正常（401 说明请求已打到对应微服务、被鉴权拦下；`404` 说明 nginx 路由缺失，`502` 说明服务未启动）。
+五个端口全部 `200`，网关直连 `200`，页面 `200`，受保护接口返回 `401` 即正常。经网关访问时：`401` 说明请求已到达对应微服务、被鉴权拦下；`404` 且响应体是 `{"error":"route_not_found"}` 说明网关路由表缺条目；`502` 说明上游服务未启动；`504` 说明上游超时。
 
 外网 HTTPS：
 
@@ -101,10 +101,125 @@ curl.exe -s -o NUL -w "%{http_code}\n" https://www.heitu.tech/pv/member/profile
 
 再用浏览器打开 `https://www.heitu.tech/pv`、`/pv/member`、`/pv/member/profile`，确认样式、Logo、语言国旗正常，控制台无 404 / CSP 报错。
 
-## 6. 备注
+## 6. API 网关（solar-gateway）
 
-- **新增 API 前缀只改网关路由表**：编辑 `services/gateway-service/routes.js` 的 `TABLE` 即可，不需要动 nginx。nginx 里只有一条 `location /pv/api/ { proxy_pass http://127.0.0.1:7100; ... }`。只有新增微服务或调整端口时，才需要动 nginx 与 systemd 单元。
-- **nginx 与网关分工**：nginx 负责 TLS 终止、静态资源（`apps/web/dist`）、`/pv/skill` 直连 sales；网关负责 `/pv/api/` 前缀分发、透传 `x-request-id`、上游故障返回 502/504、输出一行 JSON 访问日志。鉴权仍由各服务用 `@solar/service-kit` 完成（JWT 验签 + identity 用户状态校验），网关不做拦截。
+### 6.1 拓扑
+
+```
+浏览器 ──https──> nginx(443)
+                   ├─ /pv/api/*  ──> solar-gateway(127.0.0.1:7100) ──前缀表──> identity 7101
+                   │                                                         sales    7102
+                   │                                                         delivery 7103
+                   │                                                         finance  7104
+                   │                                                         hrms     7105
+                   ├─ /pv/skill  ──> sales 7102（直连，不经网关）
+                   └─ 其余 /pv/*  ──> apps/web/dist 静态资源
+```
+
+### 6.2 代码与运行
+
+| 文件 | 作用 |
+|---|---|
+| `services/gateway-service/index.js` | 基于 `node:http` 的转发进程，零第三方依赖：透传请求/响应、补 `x-request-id`、超时 504 / 连接失败 502、每请求一行 JSON 日志 |
+| `services/gateway-service/routes.js` | **唯一路由表** `TABLE`，前缀 → 服务，最长前缀优先（`/pv/api/workbench/directory` 先于 `/pv/api/workbench`） |
+
+启动命令：`npm run start:gateway`（等价于 `node services/gateway-service/index.js`）。
+
+环境变量全部有默认值，正常部署无需 `.env`：
+
+| 变量 | 默认值 |
+|---|---|
+| `PORT` | `7100` |
+| `BIND_HOST` | `127.0.0.1` |
+| `UPSTREAM_TIMEOUT_MS` | `60000` |
+| `IDENTITY_URL` / `SALES_URL` / `DELIVERY_URL` / `FINANCE_URL` / `HRMS_URL` | `http://127.0.0.1:7101` ~ `7105` |
+
+### 6.3 systemd 单元
+
+`/etc/systemd/system/solar-gateway.service`：
+
+```ini
+[Unit]
+Description=Solar API Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=trae
+Group=trae
+WorkingDirectory=/opt/solar-setup
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node services/gateway-service/index.js
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+```
+
+首次安装：
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl enable --now solar-gateway
+systemctl is-active solar-gateway
+```
+
+日志：`sudo journalctl -u solar-gateway -f --no-pager`（普通用户不在 `systemd-journal` 组时看不到，必须加 `sudo`）。每条访问日志形如：
+
+```json
+{"level":"info","requestId":"...","method":"GET","url":"/pv/api/health","service":"identity","status":200,"ms":3}
+```
+
+### 6.4 nginx 侧
+
+两个 server 块（80 与 443）各一条 location，其余 `/pv/api/*` 的 location 已全部删除：
+
+```nginx
+location /pv/api/ {
+    limit_req zone=solar_api burst=60 nodelay;
+    proxy_pass http://127.0.0.1:7100;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 120s;
+}
+```
+
+### 6.5 新增接口 / 新增服务
+
+- **新增接口前缀**：只改 `routes.js` 的 `TABLE`，新增一行 `['/pv/api/xxx', 'sales']`，重启 `solar-gateway` 即可，**不需要动 nginx**。
+- **新增微服务**：`TABLE` 加映射 + `UPSTREAMS` 加地址 + 新建对应 systemd 单元 + 把单元名加入第 4 步的重启列表。nginx 仍然不用改。
+- **匹配规则**：前缀按长度倒序匹配，`path === prefix` 或 `path.startsWith(prefix + '/')`；不使用正则。
+
+### 6.6 排错对照
+
+| 现象 | 含义 |
+|---|---|
+| `404 {"error":"route_not_found"}` | 网关路由表无匹配前缀，去改 `routes.js` |
+| `404` 但响应体是业务错误（如 `{"error":"..."}`） | 网关转发成功，上游服务自身返回 404 |
+| `502 {"error":"bad_gateway"}` | 上游未启动或端口配错，先查对应 `solar-*` 单元 |
+| `504 {"error":"gateway_timeout"}` | 上游超过 `UPSTREAM_TIMEOUT_MS` 未响应 |
+| 响应头带 `x-request-id` | 网关注入的请求 id，可用它 grep journal 日志定位整条链路 |
+
+### 6.7 回滚到改造前的 nginx
+
+改造前的配置以备份形式保留（`/etc/nginx/conf.d/solar-setup.conf.bak.*`）：
+
+```bash
+sudo cp /etc/nginx/conf.d/solar-setup.conf.bak.<时间戳> /etc/nginx/conf.d/solar-setup.conf
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+回滚后 `/pv/api/*` 恢复为直连各微服务，网关可保留运行但不被调用。
+
+## 7. 备注
+
+- **两个“历史遗留 404”**：`/pv/api/hrms/health` 不存在（hrms 只注册了 `/health` 与 `/pv/api/health`）；`/pv/api/geo/countries` 也不存在（sales 的 `misc.geo` 只注册 `/pv/api/geo`）。两者都与网关无关，不要用它们判断网关是否正常，验证网关请用 `/pv/api/health`。
 - **新增迁移文件必须同步第 4 步**：在 `services/<svc>/database/migrations/` 下加 SQL 后，要把对应的 `npm run migrate:<svc>` 写进部署步骤，否则线上表结构会缺列。
 - `services/hrms-service/.env` 的 `DB_NAME` 目前是 `solar_finance`（与 finance 共用库），所以 `npm run migrate:hrms` 日志显示 `[solar_finance]`，属当前预期配置。
 - **静态资源必须用 `/pv/...` 绝对路径**：页面挂载在无尾斜杠的 `/pv`、`/pv/member` 等路由上，相对路径会被解析到上一级目录（曾导致生产首页完全无样式、国旗 404）。

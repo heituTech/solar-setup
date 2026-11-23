@@ -38,12 +38,12 @@
     </div>
 
     <div class="panel">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="filter-row">
         <el-date-picker v-model="logPeriod" type="month" value-format="YYYY-MM" :placeholder="t('month')" clearable @change="reloadLogs" />
         <el-select v-model="logStatus" clearable :placeholder="t('reportStatus')" style="width:160px" @change="reloadLogs">
-          <el-option label="sent" value="sent" />
-          <el-option label="pending" value="pending" />
-          <el-option label="failed" value="failed" />
+          <el-option :label="t('enum_sent')" value="sent" />
+          <el-option :label="t('enum_pending')" value="pending" />
+          <el-option :label="t('enum_failed')" value="failed" />
         </el-select>
         <el-button @click="reloadLogs" :loading="logLoading">{{ t('refresh') }}</el-button>
       </div>

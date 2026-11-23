@@ -12,7 +12,7 @@
           <div style="display:flex;gap:8px;align-items:center;flex:1">
             <el-tag size="small">{{ sc.scenario_no }}</el-tag>
             <span>{{ sceneLabel(sc.scene_type) }} · {{ gridLabel(sc.grid_type) }} · {{ installLabel(sc.install_type) }}</span>
-            <span style="color:#909399;font-size:12px">{{ sc.monthly_kwh || '-' }} kWh/月</span>
+            <span style="color:#909399;font-size:12px">{{ sc.monthly_kwh || '-' }} {{ t('kwhPerMonth') }}</span>
           </div>
           <div @click.stop style="margin-right:8px">
             <el-button v-if="canEdit" link size="small" @click="openScenarioDialog(sc)">{{ t('edit') }}</el-button>

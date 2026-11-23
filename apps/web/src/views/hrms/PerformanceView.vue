@@ -34,7 +34,7 @@
     </div>
 
     <div class="panel section-gap">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="filter-row">
         <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
         <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
         <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>

@@ -10,7 +10,7 @@
           </div>
         </div>
 
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <div class="filter-row">
           <el-input v-model="userFilters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reloadUsers" />
           <el-select v-model="userFilters.role" clearable :placeholder="t('role')" style="width:160px">
             <el-option :label="t('filterAll')" value="" />
@@ -65,7 +65,7 @@
           </div>
         </div>
 
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+        <div class="filter-row">
           <el-input v-model="approvalFilters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reloadApprovals" />
           <el-select v-model="approvalFilters.status" clearable :placeholder="t('status')" style="width:160px">
             <el-option :label="t('filterAll')" value="" />

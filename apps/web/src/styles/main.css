@@ -94,6 +94,9 @@ a { color: var(--solar-green); text-decoration: none; }
 .filter-bar .filter-item { width: 170px; }
 .filter-bar .filter-item.filter-date { width: 260px; }
 
+/* 通用筛选行：替代各页面内联的 display:flex 写法，移动端统一铺满 */
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 22px; }
 .kpi-card { background: #fff; border: 1px solid var(--solar-border); border-radius: 12px; padding: 18px; }
 .kpi-label { font-size: 13px; color: var(--solar-muted); margin-bottom: 8px; }
@@ -196,11 +199,32 @@ a { color: var(--solar-green); text-decoration: none; }
   .panel { padding: 12px; }
   .detail-grid { grid-template-columns: 1fr; }
 
+  /* 通知弹层：手机上不超过屏幕宽度 */
+  .notice-popover { width: calc(100vw - 24px) !important; max-width: 340px; }
+
+  /* 表格：在容器内横向滚动，避免列被压缩成竖排文字 */
+  .el-table { max-width: 100%; }
+  .el-table .el-table__body-wrapper { -webkit-overflow-scrolling: touch; }
+
   /* 筛选栏：输入控件与按钮铺满整行 */
   .filter-bar { gap: 8px; }
   .filter-bar .filter-item,
   .filter-bar .filter-item.filter-date { width: 100%; }
   .filter-bar > .el-button { flex: 1 1 auto; margin-left: 0; }
+
+  /* 通用筛选行：手机上每个控件独占一行，避免 220px 固定宽度把行撑出屏幕 */
+  .filter-row > .el-input,
+  .filter-row > .el-select,
+  .filter-row > .el-date-editor,
+  .filter-row > .el-cascader,
+  .filter-row > .el-button { width: 100% !important; margin-left: 0; }
+
+  /* 工具栏右侧动作区：手机上整体换行、控件占满 */
+  .toolbar-actions { width: 100%; }
+  .toolbar-actions > .el-input,
+  .toolbar-actions > .el-select,
+  .toolbar-actions > .el-date-editor { width: 100% !important; }
+  .toolbar-actions > .el-button { flex: 1 1 auto; margin-left: 0; }
 
   /* 明细项：名称独占一行，数量/单价/删除在下一行 */
   .item-row { grid-template-columns: 1fr 1fr 44px; }

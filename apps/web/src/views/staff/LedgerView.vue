@@ -34,7 +34,7 @@
     </div>
 
     <div v-show="tab === 'ledger'" class="panel">
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px">
+      <div class="filter-row">
         <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
         <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:160px">
           <el-option :label="t('filterAll')" value="" />

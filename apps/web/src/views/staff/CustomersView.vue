@@ -184,30 +184,30 @@ import { useStatusLabel } from '../../utils/status';
 import ScenarioPanel from './ScenarioPanel.vue';
 
 const KH_PROVINCES = [
-  { value: 'banteay_meanchey', zh: '班迭棉吉', en: 'Banteay Meanchey' },
-  { value: 'battambang', zh: '马德望', en: 'Battambang' },
-  { value: 'kampong_cham', zh: '磅湛', en: 'Kampong Cham' },
-  { value: 'kampong_chhnang', zh: '磅清扬', en: 'Kampong Chhnang' },
-  { value: 'kampong_speu', zh: '磅士卑', en: 'Kampong Speu' },
-  { value: 'kampong_thom', zh: '磅同', en: 'Kampong Thom' },
-  { value: 'kampot_kep', zh: '贡布 / 白马', en: 'Kampot / Kep' },
-  { value: 'kandal', zh: '干丹', en: 'Kandal' },
-  { value: 'koh_kong', zh: '国公', en: 'Koh Kong' },
-  { value: 'kratie', zh: '桔井', en: 'Kratie' },
-  { value: 'mondulkiri', zh: '蒙多基里', en: 'Mondulkiri' },
-  { value: 'oddar_meanchey', zh: '奥多棉吉', en: 'Oddar Meanchey' },
-  { value: 'pailin', zh: '拜林', en: 'Pailin' },
-  { value: 'phnom_penh', zh: '金边', en: 'Phnom Penh' },
-  { value: 'preah_sihanouk', zh: '西哈努克', en: 'Preah Sihanouk' },
-  { value: 'preah_vihear', zh: '柏威夏', en: 'Preah Vihear' },
-  { value: 'pursat', zh: '菩萨', en: 'Pursat' },
-  { value: 'prey_veng', zh: '波萝勉', en: 'Prey Veng' },
-  { value: 'ratanakiri', zh: '拉达那基里', en: 'Ratanakiri' },
-  { value: 'siem_reap', zh: '暹粒', en: 'Siem Reap' },
-  { value: 'stung_treng', zh: '上丁', en: 'Stung Treng' },
-  { value: 'svay_rieng', zh: '柴桢', en: 'Svay Rieng' },
-  { value: 'takeo', zh: '茶胶', en: 'Takeo' },
-  { value: 'tboung_khmum', zh: '特本克蒙', en: 'Tboung Khmum' },
+  { value: 'banteay_meanchey', zh: '班迭棉吉', en: 'Banteay Meanchey', km: 'បន្ទាយមានជ័យ' },
+  { value: 'battambang', zh: '马德望', en: 'Battambang', km: 'បាត់ដំបង' },
+  { value: 'kampong_cham', zh: '磅湛', en: 'Kampong Cham', km: 'កំពង់ចាម' },
+  { value: 'kampong_chhnang', zh: '磅清扬', en: 'Kampong Chhnang', km: 'កំពង់ឆ្នាំង' },
+  { value: 'kampong_speu', zh: '磅士卑', en: 'Kampong Speu', km: 'កំពង់ស្ពឺ' },
+  { value: 'kampong_thom', zh: '磅同', en: 'Kampong Thom', km: 'កំពង់ធំ' },
+  { value: 'kampot_kep', zh: '贡布 / 白马', en: 'Kampot / Kep', km: 'កំពត / កែប' },
+  { value: 'kandal', zh: '干丹', en: 'Kandal', km: 'កណ្តាល' },
+  { value: 'koh_kong', zh: '国公', en: 'Koh Kong', km: 'កោះកុង' },
+  { value: 'kratie', zh: '桔井', en: 'Kratie', km: 'ក្រចេះ' },
+  { value: 'mondulkiri', zh: '蒙多基里', en: 'Mondulkiri', km: 'មណ្ឌលគិរី' },
+  { value: 'oddar_meanchey', zh: '奥多棉吉', en: 'Oddar Meanchey', km: 'ឧត្តរមានជ័យ' },
+  { value: 'pailin', zh: '拜林', en: 'Pailin', km: 'ប៉ៃលិន' },
+  { value: 'phnom_penh', zh: '金边', en: 'Phnom Penh', km: 'ភ្នំពេញ' },
+  { value: 'preah_sihanouk', zh: '西哈努克', en: 'Preah Sihanouk', km: 'ព្រះសីហនុ' },
+  { value: 'preah_vihear', zh: '柏威夏', en: 'Preah Vihear', km: 'ព្រះវិហារ' },
+  { value: 'pursat', zh: '菩萨', en: 'Pursat', km: 'ពោធិ៍សាត់' },
+  { value: 'prey_veng', zh: '波萝勉', en: 'Prey Veng', km: 'ព្រៃវែង' },
+  { value: 'ratanakiri', zh: '拉达那基里', en: 'Ratanakiri', km: 'រតនគិរី' },
+  { value: 'siem_reap', zh: '暹粒', en: 'Siem Reap', km: 'សៀមរាប' },
+  { value: 'stung_treng', zh: '上丁', en: 'Stung Treng', km: 'ស្ទឹងត្រែង' },
+  { value: 'svay_rieng', zh: '柴桢', en: 'Svay Rieng', km: 'ស្វាយរៀង' },
+  { value: 'takeo', zh: '茶胶', en: 'Takeo', km: 'តាកែវ' },
+  { value: 'tboung_khmum', zh: '特本克蒙', en: 'Tboung Khmum', km: 'ត្បូងឃ្មុំ' },
 ];
 
 const { t, locale } = useI18n();
@@ -232,7 +232,7 @@ const canEdit = computed(() => ['super_admin', 'sales_manager', 'salesperson'].i
 const canChangeOwner = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
 const regionOptions = computed(() => KH_PROVINCES.map((item) => ({
   value: item.value,
-  label: locale.value === 'zh' ? item.zh : item.en,
+  label: locale.value === 'zh' ? item.zh : locale.value === 'km' ? item.km : item.en,
 })));
 const ownerOptions = computed(() => directory.value.filter((item) => ['salesperson', 'sales_manager'].includes(item.role)));
 
@@ -240,7 +240,7 @@ function regionLabel(value) {
   if (!value) return '-';
   const found = KH_PROVINCES.find((item) => item.value === value);
   if (!found) return value;
-  return locale.value === 'zh' ? found.zh : found.en;
+  return locale.value === 'zh' ? found.zh : locale.value === 'km' ? found.km : found.en;
 }
 
 async function loadDirectory() {

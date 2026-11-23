@@ -1,0 +1,10 @@
+{
+  "name": "@solar/gateway-service",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Lightweight API gateway: routes /pv/api/* to the microservices",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  }
+}

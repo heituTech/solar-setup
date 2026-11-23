@@ -28,6 +28,7 @@
     "setup:env": "node scripts/setup-local-env.js",
     "seed:admin": "npm run seed --workspace @solar/identity-service",
     "start:identity": "npm run start --workspace @solar/identity-service",
+    "start:gateway": "npm run start --workspace @solar/gateway-service",
     "start:sales": "npm run start --workspace @solar/sales-service",
     "start:delivery": "npm run start --workspace @solar/delivery-service",
     "start:finance": "npm run start --workspace @solar/finance-service",

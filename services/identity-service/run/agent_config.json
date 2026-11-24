@@ -188,7 +188,7 @@
       "description": "Identity, authentication and approval microservice",
       "scripts": {
         "dev": "egg-bin dev",
-        "start": "egg-bin dev",
+        "start": "egg-bin start --port 7101",
         "migrate": "node ../../packages/service-kit/migrate.js",
         "seed": "node scripts/seed.js"
       },
@@ -302,7 +302,7 @@
       "listen": {
         "path": "",
         "port": 7101,
-        "hostname": "0.0.0.0"
+        "hostname": "127.0.0.1"
       }
     },
     "clusterClient": {
@@ -335,6 +335,22 @@
       "teamRoles": [
         "salesperson"
       ]
+    },
+    "mail": {
+      "devMode": true,
+      "from": "Solar Setup <public@heitu.tech>",
+      "alimail": {
+        "appId": "",
+        "appSecret": "<String len: 0>",
+        "sender": "public@heitu.tech"
+      },
+      "smtp": {
+        "host": "",
+        "port": 465,
+        "secure": true,
+        "user": "",
+        "pass": "<String len: 0>"
+      }
     },
     "coreMiddlewares": "~config~coreMiddleware",
     "appMiddlewares": "~config~middleware",
@@ -507,7 +523,7 @@
       "description": "Identity, authentication and approval microservice",
       "scripts": {
         "dev": "egg-bin dev",
-        "start": "egg-bin dev",
+        "start": "egg-bin start --port 7101",
         "migrate": "node ../../packages/service-kit/migrate.js",
         "seed": "node scripts/seed.js"
       },

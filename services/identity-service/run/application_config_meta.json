@@ -122,6 +122,22 @@
     "tokenTtl": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
     "teamRoles": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js"
   },
+  "mail": {
+    "devMode": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "from": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+    "alimail": {
+      "appId": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "appSecret": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "sender": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js"
+    },
+    "smtp": {
+      "host": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "port": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "secure": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "user": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js",
+      "pass": "D:\\workspace\\github\\solar-setup\\services\\identity-service\\config\\config.default.js"
+    }
+  },
   "session": {
     "maxAge": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-session\\config\\config.default.js",
     "key": "D:\\workspace\\github\\solar-setup\\node_modules\\egg-session\\config\\config.default.js",

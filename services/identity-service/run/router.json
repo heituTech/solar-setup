@@ -52,6 +52,30 @@
   {
     "name": null,
     "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/auth/email-code",
+    "regexp": "/^\\/pv\\/api\\/auth\\/email-code(?:\\/(?=$))?$/",
+    "stack": [
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/auth/login-code",
+    "regexp": "/^\\/pv\\/api\\/auth\\/login-code(?:\\/(?=$))?$/",
+    "stack": [
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
       "HEAD",
       "GET"
     ],
@@ -59,7 +83,7 @@
     "path": "/pv/api/auth/me",
     "regexp": "/^\\/pv\\/api\\/auth\\/me(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "wrappedController"
     ]
   },
@@ -72,7 +96,7 @@
     "path": "/pv/api/auth/logout",
     "regexp": "/^\\/pv\\/api\\/auth\\/logout(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "wrappedController"
     ]
   },
@@ -86,7 +110,7 @@
     "path": "/pv/api/admin/health",
     "regexp": "/^\\/pv\\/api\\/admin\\/health(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
       "wrappedController"
     ]
@@ -101,7 +125,7 @@
     "path": "/pv/api/workbench/directory",
     "regexp": "/^\\/pv\\/api\\/workbench\\/directory(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
       "wrappedController"
     ]
@@ -116,7 +140,7 @@
     "path": "/pv/api/admin/users",
     "regexp": "/^\\/pv\\/api\\/admin\\/users(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
       "wrappedController"
     ]
@@ -130,7 +154,7 @@
     "path": "/pv/api/admin/users",
     "regexp": "/^\\/pv\\/api\\/admin\\/users(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
       "wrappedController"
     ]
@@ -155,7 +179,7 @@
     "path": "/pv/api/admin/users/:id",
     "regexp": "/^\\/pv\\/api\\/admin\\/users\\/((?:[^\\/]+?))(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
       "wrappedController"
     ]
@@ -170,7 +194,7 @@
     "path": "/pv/api/approvals",
     "regexp": "/^\\/pv\\/api\\/approvals(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
       "wrappedController"
     ]
@@ -184,7 +208,7 @@
     "path": "/pv/api/approvals",
     "regexp": "/^\\/pv\\/api\\/approvals(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
       "wrappedController"
     ]
@@ -209,7 +233,7 @@
     "path": "/pv/api/approvals/:id/decide",
     "regexp": "/^\\/pv\\/api\\/approvals\\/((?:[^\\/]+?))\\/decide(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
       "wrappedController"
     ]
@@ -224,8 +248,50 @@
     "path": "/pv/api/admin/flows",
     "regexp": "/^\\/pv\\/api\\/admin\\/flows(?:\\/(?=$))?$/",
     "stack": [
-      "authenticate",
+      "anonymous",
       "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "HEAD",
+      "GET"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/notifications",
+    "regexp": "/^\\/pv\\/api\\/notifications(?:\\/(?=$))?$/",
+    "stack": [
+      "anonymous",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/pv/api/notifications/read",
+    "regexp": "/^\\/pv\\/api\\/notifications\\/read(?:\\/(?=$))?$/",
+    "stack": [
+      "anonymous",
+      "roleGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/internal/notifications",
+    "regexp": "/^\\/internal\\/notifications(?:\\/(?=$))?$/",
+    "stack": [
+      "internalGuard",
       "wrappedController"
     ]
   },
@@ -237,6 +303,19 @@
     "paramNames": [],
     "path": "/internal/auth/introspect",
     "regexp": "/^\\/internal\\/auth\\/introspect(?:\\/(?=$))?$/",
+    "stack": [
+      "internalGuard",
+      "wrappedController"
+    ]
+  },
+  {
+    "name": null,
+    "methods": [
+      "POST"
+    ],
+    "paramNames": [],
+    "path": "/internal/users/contacts",
+    "regexp": "/^\\/internal\\/users\\/contacts(?:\\/(?=$))?$/",
     "stack": [
       "internalGuard",
       "wrappedController"

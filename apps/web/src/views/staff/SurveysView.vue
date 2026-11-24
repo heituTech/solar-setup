@@ -35,7 +35,7 @@
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column :label="t('actions')" width="280">
+        <el-table-column :label="t('actions')" width="340">
           <template #default="{ row }">
             <el-button v-if="canEdit && row.status === 'draft'" link type="primary" :disabled="saving" @click="submitSurvey(row)">{{ t('submitReview') }}</el-button>
             <template v-if="canReview && row.status === 'submitted'">
@@ -44,6 +44,7 @@
             </template>
             <el-button v-if="canReview && row.status === 'reviewed'" link type="primary" :disabled="saving" @click="fillCost(row)">{{ t('fillConstructionCost') }}</el-button>
             <el-button v-if="canEdit" link @click="linkOrder(row)">{{ t('linkOrder') }}</el-button>
+            <el-button v-if="canEdit" link type="danger" :disabled="saving" @click="remove(row)">{{ t('delete') }}</el-button>
             <span v-if="row.review_note" class="muted">{{ row.review_note }}</span>
           </template>
         </el-table-column>
@@ -83,7 +84,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { get, post } from '../../api/client';
+import { get, post, del } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, statusType } from '../../utils/format';
 import { useStatusLabel } from '../../utils/status';
@@ -222,6 +223,24 @@ async function linkOrder(row) {
     await reload();
   } catch (error) {
     if (error?.message) ElMessage.error(error.message);
+  }
+}
+
+async function remove(row) {
+  try {
+    await ElMessageBox.confirm(t('confirmDelete'), t('delete'), { type: 'warning', confirmButtonText: t('delete'), cancelButtonText: t('cancel') });
+  } catch {
+    return;
+  }
+  saving.value = true;
+  try {
+    await del(`/pv/api/workbench/surveys/${row.id}`);
+    ElMessage.success(t('operationSuccess'));
+    await reload();
+  } catch (error) {
+    ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
   }
 }
 

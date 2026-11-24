@@ -39,7 +39,7 @@
         <el-table-column :label="t('status')" width="150">
           <template #default="{ row }"><el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag></template>
         </el-table-column>
-        <el-table-column :label="t('actions')" width="190">
+        <el-table-column :label="t('actions')" width="240">
           <template #default="{ row }">
             <el-button link type="primary" :disabled="loading" @click="openDetail(row)">{{ t('viewDetail') }}</el-button>
             <el-button
@@ -49,6 +49,13 @@
               :disabled="loading || saving"
               @click="openCommission(row)"
             >{{ t('commissionRate') }}</el-button>
+            <el-button
+              v-if="isManager && row.status !== 'accepted'"
+              link
+              type="danger"
+              :disabled="loading || saving"
+              @click="remove(row)"
+            >{{ t('delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -208,7 +215,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { get, post, patch } from '../../api/client';
+import { get, post, patch, del } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, money, statusType } from '../../utils/format';
 import { useStatusLabel } from '../../utils/status';
@@ -300,6 +307,24 @@ async function saveCommission() {
     await patch(`/pv/api/workbench/orders/${editing.value.id}`, { commission_rate: commissionPercent.value / 100 });
     ElMessage.success(t('operationSuccess'));
     dialog.value = false;
+    await reload();
+  } catch (error) {
+    ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function remove(row) {
+  try {
+    await ElMessageBox.confirm(t('confirmDelete'), t('delete'), { type: 'warning', confirmButtonText: t('delete'), cancelButtonText: t('cancel') });
+  } catch {
+    return;
+  }
+  saving.value = true;
+  try {
+    await del(`/pv/api/workbench/orders/${row.id}`);
+    ElMessage.success(t('operationSuccess'));
     await reload();
   } catch (error) {
     ElMessage.error(error.message);

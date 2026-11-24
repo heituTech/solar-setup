@@ -36,12 +36,13 @@
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column :label="t('actions')" width="300">
+        <el-table-column :label="t('actions')" width="340">
           <template #default="{ row }">
             <el-button link type="primary" :disabled="loading" @click="openDetail(row)">{{ t('viewDetail') }}</el-button>
             <el-button v-if="canHandle && row.status === 'open'" link type="primary" :disabled="saving" @click="setStatus(row, 'in_progress')">{{ t('progress') }}</el-button>
             <el-button v-if="canHandle && ['open', 'in_progress'].includes(row.status)" link type="success" :disabled="saving" @click="openUpdate(row)">{{ t('resolve') }}</el-button>
             <el-button v-if="canHandle && row.status === 'resolved'" link :disabled="saving" @click="setStatus(row, 'closed')">{{ t('markClosed') }}</el-button>
+            <el-button v-if="canDelete" link type="danger" :disabled="loading || saving" @click="remove(row)">{{ t('delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -124,8 +125,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage } from 'element-plus';
-import { get, post, patch } from '../../api/client';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { get, post, patch, del } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, statusType } from '../../utils/format';
 import { useStatusLabel } from '../../utils/status';
@@ -154,6 +155,25 @@ const stakeholderIds = ref([]);
 const form = reactive({ order_id: null, order_no: '', customer_id: null, customer_name: '', title: '', description: '', priority: 'normal' });
 const canHandle = computed(() => ['super_admin', 'after_sales', 'after_sales_manager', 'electrical_engineer', 'structural_engineer'].includes(auth.role));
 const canEditStakeholders = computed(() => ['super_admin', 'after_sales_manager'].includes(auth.role));
+const canDelete = computed(() => ['super_admin', 'after_sales_manager'].includes(auth.role));
+
+async function remove(row) {
+  try {
+    await ElMessageBox.confirm(t('confirmDelete'), t('delete'), { type: 'warning', confirmButtonText: t('delete'), cancelButtonText: t('cancel') });
+  } catch {
+    return;
+  }
+  saving.value = true;
+  try {
+    await del(`/pv/api/workbench/tickets/${row.id}`);
+    ElMessage.success(t('operationSuccess'));
+    await reload();
+  } catch (error) {
+    ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
+  }
+}
 
 async function load() {
   loading.value = true;

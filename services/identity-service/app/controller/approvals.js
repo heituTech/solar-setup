@@ -97,6 +97,7 @@ module.exports = {
           approval_type: request.type,
           decision,
           requester_id: Number(request.requester_id),
+          requester_name: request.requester_name,
           request_payload: typeof request.payload === 'string' ? JSON.parse(request.payload) : request.payload,
         },
       });

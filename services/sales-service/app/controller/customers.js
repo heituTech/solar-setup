@@ -161,4 +161,24 @@ module.exports = {
     const [fresh] = await ctx.app.db.query('SELECT * FROM customers WHERE id = ?', [id]);
     ctx.body = { customer: toCustomer(fresh[0]) };
   },
+
+  async remove(ctx) {
+    const id = Number(ctx.params.id);
+    const [rows] = await ctx.app.db.query('SELECT * FROM customers WHERE id = ?', [id]);
+    if (!rows.length) ctx.throw(404, 'customer_not_found');
+    const scope = salesScopeFor(ctx.state.user);
+    if (scope !== null && !scope.includes(Number(rows[0].owner_id))) ctx.throw(403, 'forbidden');
+    // 存在关联业务数据时禁止删除，避免产生悬空引用
+    const [[o], [q], [s]] = await Promise.all([
+      ctx.app.db.query('SELECT COUNT(*) AS n FROM orders WHERE customer_id = ?', [id]),
+      ctx.app.db.query('SELECT COUNT(*) AS n FROM quotes WHERE customer_id = ?', [id]),
+      ctx.app.db.query('SELECT COUNT(*) AS n FROM surveys WHERE customer_id = ?', [id]),
+    ]);
+    if (o[0].n || q[0].n || s[0].n) {
+      ctx.throw(409, 'customer_has_references');
+    }
+    await ctx.app.db.query('DELETE FROM customer_owner_logs WHERE customer_id = ?', [id]);
+    await ctx.app.db.query('DELETE FROM customers WHERE id = ?', [id]);
+    ctx.body = { id, deleted: true };
+  },
 };

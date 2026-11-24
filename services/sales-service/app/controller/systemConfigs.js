@@ -136,11 +136,11 @@ module.exports = {
       inverterKw = computed.inverter_kw;
       batteryKwh = computed.battery_kwh;
 
-      // 自动选品
-      const panel = await pickProduct(ctx.app.db, 'panel', capacityKw);
-      const inverter = await pickProduct(ctx.app.db, 'inverter', inverterKw);
+      // 自动选品（分类统一英文存储）
+      const panel = await pickProduct(ctx.app.db, 'PV module', capacityKw);
+      const inverter = await pickProduct(ctx.app.db, 'Invertor', inverterKw);
       const battery = await pickProduct(ctx.app.db, 'battery', batteryKwh);
-      const mount = await pickProduct(ctx.app.db, 'mount', null);
+      const mount = await pickProduct(ctx.app.db, 'mounting bracket', null);
 
       // 光伏板数量：capacity_kw ÷ 单板功率（kW）
       if (panel) {

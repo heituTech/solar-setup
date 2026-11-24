@@ -9,15 +9,15 @@ const adminUser = { id: 83, role: 'super_admin', name: 'Super Admin' };
 
 // 基础产品（与 004 seed 一致）
 const products = {
-  panel450:  { id: 2, category: 'panel', model: 'PANEL-450W', name: '单晶硅光伏板 450W', specs: JSON.stringify({ power: 0.45, efficiency: 0.21 }), price: 85, unit: '块', status: 'active', is_package: 0 },
-  panel550:  { id: 3, category: 'panel', model: 'PANEL-550W', name: '单晶硅光伏板 550W', specs: JSON.stringify({ power: 0.55, efficiency: 0.22 }), price: 105, unit: '块', status: 'active', is_package: 0 },
-  inv5:      { id: 4, category: 'inverter', model: 'INV-5K', name: '并网逆变器 5kW', specs: JSON.stringify({ power: 5, type: 'on_grid' }), price: 680, unit: '台', status: 'active', is_package: 0 },
-  inv10:     { id: 5, category: 'inverter', model: 'INV-10K', name: '并网逆变器 10kW', specs: JSON.stringify({ power: 10, type: 'on_grid' }), price: 1250, unit: '台', status: 'active', is_package: 0 },
-  invHybrid: { id: 6, category: 'inverter', model: 'INV-HYB-8K', name: '混合逆变器 8kW', specs: JSON.stringify({ power: 8, type: 'hybrid' }), price: 1480, unit: '台', status: 'active', is_package: 0 },
+  panel450:  { id: 2, category: 'PV module', model: 'PANEL-450W', name: '单晶硅光伏板 450W', specs: JSON.stringify({ power: 0.45, efficiency: 0.21 }), price: 85, unit: '块', status: 'active', is_package: 0 },
+  panel550:  { id: 3, category: 'PV module', model: 'PANEL-550W', name: '单晶硅光伏板 550W', specs: JSON.stringify({ power: 0.55, efficiency: 0.22 }), price: 105, unit: '块', status: 'active', is_package: 0 },
+  inv5:      { id: 4, category: 'Invertor', model: 'INV-5K', name: '并网逆变器 5kW', specs: JSON.stringify({ power: 5, type: 'on_grid' }), price: 680, unit: '台', status: 'active', is_package: 0 },
+  inv10:     { id: 5, category: 'Invertor', model: 'INV-10K', name: '并网逆变器 10kW', specs: JSON.stringify({ power: 10, type: 'on_grid' }), price: 1250, unit: '台', status: 'active', is_package: 0 },
+  invHybrid: { id: 6, category: 'Invertor', model: 'INV-HYB-8K', name: '混合逆变器 8kW', specs: JSON.stringify({ power: 8, type: 'hybrid' }), price: 1480, unit: '台', status: 'active', is_package: 0 },
   bat5:      { id: 7, category: 'battery', model: 'BAT-5KWH', name: '锂电池 5kWh', specs: JSON.stringify({ capacity: 5, type: 'lithium' }), price: 1800, unit: '组', status: 'active', is_package: 0 },
   bat10:     { id: 8, category: 'battery', model: 'BAT-10KWH', name: '锂电池 10kWh', specs: JSON.stringify({ capacity: 10, type: 'lithium' }), price: 3400, unit: '组', status: 'active', is_package: 0 },
-  mountRoof: { id: 9, category: 'mount', model: 'MOUNT-ROOF', name: '屋顶支架（每 kW）', specs: JSON.stringify({ type: 'rooftop' }), price: 45, unit: 'kW', status: 'active', is_package: 0 },
-  mountGround: { id: 10, category: 'mount', model: 'MOUNT-GROUND', name: '地面支架（每 kW）', specs: JSON.stringify({ type: 'ground' }), price: 65, unit: 'kW', status: 'active', is_package: 0 },
+  mountRoof: { id: 9, category: 'mounting bracket', model: 'MOUNT-ROOF', name: '屋顶支架（每 kW）', specs: JSON.stringify({ type: 'rooftop' }), price: 45, unit: 'kW', status: 'active', is_package: 0 },
+  mountGround: { id: 10, category: 'mounting bracket', model: 'MOUNT-GROUND', name: '地面支架（每 kW）', specs: JSON.stringify({ type: 'ground' }), price: 65, unit: 'kW', status: 'active', is_package: 0 },
 };
 
 function scenarioRow(overrides = {}) {
@@ -94,10 +94,10 @@ function buildDbForFormulaCreate() {
     { match: 'SELECT * FROM scenarios WHERE id = ?', return: scenarioRow() },
     { match: 'SELECT owner_id FROM customers', return: customerRow() },
     // pickProduct 按分类查
-    { match: byCategory('panel'), return: [products.panel450, products.panel550] },
-    { match: byCategory('inverter'), return: [products.inv5, products.inv10, products.invHybrid] },
+    { match: byCategory('PV module'), return: [products.panel450, products.panel550] },
+    { match: byCategory('Invertor'), return: [products.inv5, products.inv10, products.invHybrid] },
     { match: byCategory('battery'), return: [products.bat5, products.bat10] },
-    { match: byCategory('mount'), return: [products.mountRoof, products.mountGround] },
+    { match: byCategory('mounting bracket'), return: [products.mountRoof, products.mountGround] },
     { match: 'INSERT INTO system_configs', return: { insertId: 1 } },
     { match: 'SELECT * FROM system_configs WHERE id = ?', return: (params) => {
       // 从 INSERT 调用里取 items，这里用 db.calls 反查
@@ -112,10 +112,10 @@ test('systemConfigs.create - formula 模式自动选品并计算参考总价', a
   const db = mockDb([
     { match: 'SELECT * FROM scenarios WHERE id = ?', return: scenarioRow() },
     { match: 'SELECT owner_id FROM customers', return: customerRow() },
-    { match: byCategory('panel'), return: [products.panel450, products.panel550] },
-    { match: byCategory('inverter'), return: [products.inv5, products.inv10, products.invHybrid] },
+    { match: byCategory('PV module'), return: [products.panel450, products.panel550] },
+    { match: byCategory('Invertor'), return: [products.inv5, products.inv10, products.invHybrid] },
     { match: byCategory('battery'), return: [products.bat5, products.bat10] },
-    { match: byCategory('mount'), return: [products.mountRoof, products.mountGround] },
+    { match: byCategory('mounting bracket'), return: [products.mountRoof, products.mountGround] },
     { match: 'INSERT INTO system_configs', return: (params) => {
       // params: [config_no, scenario_id, method, package_id, capacity, inverter, battery, items(JSON), ref_total, notes, created_by]
       insertedItems = JSON.parse(params[7]);
@@ -171,10 +171,10 @@ test('systemConfigs.create - formula 模式无夜用电时不生成电池项', a
   const db = mockDb([
     { match: 'SELECT * FROM scenarios WHERE id = ?', return: scenarioRow({ night_kwh: 0 }) },
     { match: 'SELECT owner_id FROM customers', return: customerRow() },
-    { match: byCategory('panel'), return: [products.panel550] },
-    { match: byCategory('inverter'), return: [products.inv10] },
+    { match: byCategory('PV module'), return: [products.panel550] },
+    { match: byCategory('Invertor'), return: [products.inv10] },
     { match: byCategory('battery'), return: [products.bat10] },
-    { match: byCategory('mount'), return: [products.mountRoof] },
+    { match: byCategory('mounting bracket'), return: [products.mountRoof] },
     { match: 'INSERT INTO system_configs', return: (params) => {
       insertedItems = JSON.parse(params[7]);
       return { insertId: 1 };

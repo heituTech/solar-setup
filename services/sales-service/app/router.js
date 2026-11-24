@@ -37,6 +37,7 @@ module.exports = (app) => {
   router.get('/pv/api/workbench/customers/:id', auth, sales, customers.detail);
   router.post('/pv/api/workbench/customers', auth, sales, customers.create);
   router.patch('/pv/api/workbench/customers/:id', auth, sales, customers.update);
+  router.delete('/pv/api/workbench/customers/:id', auth, managers, customers.remove);
 
   // 用电场景
   router.get('/pv/api/workbench/customers/:customerId/scenarios', auth, sales, scenarios.list);
@@ -59,6 +60,7 @@ module.exports = (app) => {
   router.post('/pv/api/workbench/surveys/:id/review', auth, engineers, surveys.review);
   router.post('/pv/api/workbench/surveys/:id/construction-cost', auth, engineers, surveys.fillConstructionCost);
   router.post('/pv/api/workbench/surveys/:id/link-order', auth, sales, surveys.linkOrder);
+  router.delete('/pv/api/workbench/surveys/:id', auth, sales, surveys.remove);
 
   router.get('/pv/api/workbench/quotes', auth, sales, quotes.list);
   router.post('/pv/api/workbench/quotes', auth, sales, quotes.create);
@@ -74,10 +76,14 @@ module.exports = (app) => {
   router.post('/pv/api/workbench/orders/from-config', auth, sales, orders.createFromConfig);
   router.patch('/pv/api/workbench/orders/:id/items/:itemId', auth, sales, orders.updateItem);
   router.delete('/pv/api/workbench/orders/:id/items/:itemId', auth, sales, orders.removeItem);
+  router.delete('/pv/api/workbench/orders/:id', auth, managers, orders.remove);
 
   router.get('/pv/api/products', auth, sales, catalog.list);
+  router.get('/pv/api/products/categories', auth, sales, catalog.categories);
+  router.get('/pv/api/products/logs', auth, sales, catalog.logs);
   router.post('/pv/api/products', auth, sales, catalog.create);
   router.patch('/pv/api/products/:id', auth, sales, catalog.update);
+  router.delete('/pv/api/products/:id', auth, sales, catalog.remove);
 
   router.get('/pv/api/cases', auth, cases.list);
   router.post('/pv/api/cases', auth, cases.create);

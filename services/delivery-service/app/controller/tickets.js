@@ -278,4 +278,15 @@ module.exports = {
     );
     ctx.body = { stakeholders: stakeholders.map(toStakeholder) };
   },
+
+  async remove(ctx) {
+    const id = Number(ctx.params.id);
+    const [rows] = await ctx.app.db.query('SELECT * FROM tickets WHERE id = ?', [id]);
+    if (!rows.length) ctx.throw(404, 'ticket_not_found');
+    await withTransaction(ctx.app.db, async (connection) => {
+      await connection.query('DELETE FROM ticket_stakeholders WHERE ticket_id = ?', [id]);
+      await connection.query('DELETE FROM tickets WHERE id = ?', [id]);
+    });
+    ctx.body = { id, deleted: true };
+  },
 };

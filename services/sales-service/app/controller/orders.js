@@ -232,4 +232,18 @@ module.exports = {
     await recalcOrderAmount(ctx.app.db, orderId);
     ctx.body = { id: itemId, deleted: true };
   },
+
+  // 删除订单：仅未受理（initializing / pending_assignment）的订单可删，避免破坏财务数据
+  async remove(ctx) {
+    const id = Number(ctx.params.id);
+    const [orders] = await ctx.app.db.query('SELECT * FROM orders WHERE id = ?', [id]);
+    if (!orders.length) ctx.throw(404, 'order_not_found');
+    const scope = salesScopeFor(ctx.state.user);
+    if (scope !== null && !scope.includes(Number(orders[0].salesperson_id))) ctx.throw(403, 'forbidden');
+    if (orders[0].status === 'accepted') ctx.throw(409, 'order_already_accepted');
+    await ctx.app.db.query('UPDATE surveys SET order_id = NULL WHERE order_id = ?', [id]);
+    await ctx.app.db.query('DELETE FROM order_items WHERE order_id = ?', [id]);
+    await ctx.app.db.query('DELETE FROM orders WHERE id = ?', [id]);
+    ctx.body = { id, deleted: true };
+  },
 };

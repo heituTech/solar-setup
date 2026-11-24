@@ -38,6 +38,7 @@ module.exports = (app) => {
   router.post('/pv/api/workbench/tickets', auth, staff, tickets.create);
   router.patch('/pv/api/workbench/tickets/:id', auth, afterSales, tickets.update);
   router.patch('/pv/api/workbench/tickets/:id/stakeholders', auth, ticketManagers, tickets.updateStakeholders);
+  router.delete('/pv/api/workbench/tickets/:id', auth, ticketManagers, tickets.remove);
 
   router.post('/internal/events', internalGuard, internal.events);
 };

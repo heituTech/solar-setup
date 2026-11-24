@@ -159,4 +159,12 @@ module.exports = {
     await ctx.app.db.query('UPDATE surveys SET order_id = ? WHERE id = ?', [orderId, id]);
     ctx.body = { id, order_id: orderId };
   },
+
+  async remove(ctx) {
+    const id = Number(ctx.params.id);
+    const [rows] = await ctx.app.db.query('SELECT * FROM surveys WHERE id = ?', [id]);
+    if (!rows.length) ctx.throw(404, 'survey_not_found');
+    await ctx.app.db.query('DELETE FROM surveys WHERE id = ?', [id]);
+    ctx.body = { id, deleted: true };
+  },
 };

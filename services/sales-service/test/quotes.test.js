@@ -21,9 +21,10 @@ function customerRow(ownerId = 83) {
 test('quotes.create - 建议价 ≠ 总造价 且无差异原因 → 400', async () => {
   const db = mockDb([
     { match: 'SELECT * FROM customers WHERE id = ?', return: customerRow() },
+    { match: 'SELECT id FROM scenarios WHERE id = ? AND customer_id = ?', return: [{ id: 9 }] },
   ]);
   const ctx = mockCtx({ user: adminUser, db, body: {
-    customer_id: 1, items: validItems, system_total: 4605, suggested_price: 5000,
+    customer_id: 1, scenario_id: 9, items: validItems, system_total: 4605, suggested_price: 5000,
   } });
   await expectThrow(() => quotes.create(ctx), 400, 'diff_reason_required');
 });
@@ -31,16 +32,17 @@ test('quotes.create - 建议价 ≠ 总造价 且无差异原因 → 400', async
 test('quotes.create - 建议价 ≠ 总造价 且有差异原因 → 成功', async () => {
   const db = mockDb([
     { match: 'SELECT * FROM customers WHERE id = ?', return: customerRow() },
+    { match: 'SELECT id FROM scenarios WHERE id = ? AND customer_id = ?', return: [{ id: 9 }] },
     { match: 'INSERT INTO quotes', return: { insertId: 1 } },
     { match: 'SELECT * FROM quotes WHERE id = ?', return: (params) => [{
-      id: params[0], quote_no: 'Q-TEST', customer_id: 1, salesperson_id: 83, status: 'draft',
+      id: params[0], quote_no: 'Q-TEST', customer_id: 1, scenario_id: 9, salesperson_id: 83, status: 'draft',
       currency: 'USD', items: JSON.stringify(validItems), total_amount: 1730, notes: null,
       system_total: 4605, suggested_price: 5000, diff_reason: '含税含运维',
       created_at: '2026-01-01', updated_at: '2026-01-01',
     }] },
   ]);
   const ctx = mockCtx({ user: adminUser, db, body: {
-    customer_id: 1, items: validItems, system_total: 4605, suggested_price: 5000, diff_reason: '含税含运维',
+    customer_id: 1, scenario_id: 9, items: validItems, system_total: 4605, suggested_price: 5000, diff_reason: '含税含运维',
   } });
   await quotes.create(ctx);
   assert.equal(ctx.status, 201);
@@ -52,16 +54,17 @@ test('quotes.create - 建议价 ≠ 总造价 且有差异原因 → 成功', as
 test('quotes.create - 建议价 = 总造价 无需差异原因 → 成功', async () => {
   const db = mockDb([
     { match: 'SELECT * FROM customers WHERE id = ?', return: customerRow() },
+    { match: 'SELECT id FROM scenarios WHERE id = ? AND customer_id = ?', return: [{ id: 9 }] },
     { match: 'INSERT INTO quotes', return: { insertId: 2 } },
     { match: 'SELECT * FROM quotes WHERE id = ?', return: (params) => [{
-      id: params[0], quote_no: 'Q-TEST2', customer_id: 1, salesperson_id: 83, status: 'draft',
+      id: params[0], quote_no: 'Q-TEST2', customer_id: 1, scenario_id: 9, salesperson_id: 83, status: 'draft',
       currency: 'USD', items: JSON.stringify(validItems), total_amount: 1730, notes: null,
       system_total: 1730, suggested_price: 1730, diff_reason: null,
       created_at: '2026-01-01', updated_at: '2026-01-01',
     }] },
   ]);
   const ctx = mockCtx({ user: adminUser, db, body: {
-    customer_id: 1, items: validItems, system_total: 1730, suggested_price: 1730,
+    customer_id: 1, scenario_id: 9, items: validItems, system_total: 1730, suggested_price: 1730,
   } });
   await quotes.create(ctx);
   assert.equal(ctx.status, 201);
@@ -72,16 +75,17 @@ test('quotes.create - 建议价 = 总造价 无需差异原因 → 成功', asyn
 test('quotes.create - 建议价为 null（不填）无需差异原因 → 成功', async () => {
   const db = mockDb([
     { match: 'SELECT * FROM customers WHERE id = ?', return: customerRow() },
+    { match: 'SELECT id FROM scenarios WHERE id = ? AND customer_id = ?', return: [{ id: 9 }] },
     { match: 'INSERT INTO quotes', return: { insertId: 3 } },
     { match: 'SELECT * FROM quotes WHERE id = ?', return: (params) => [{
-      id: params[0], quote_no: 'Q-TEST3', customer_id: 1, salesperson_id: 83, status: 'draft',
+      id: params[0], quote_no: 'Q-TEST3', customer_id: 1, scenario_id: 9, salesperson_id: 83, status: 'draft',
       currency: 'USD', items: JSON.stringify(validItems), total_amount: 1730, notes: null,
       system_total: 1730, suggested_price: null, diff_reason: null,
       created_at: '2026-01-01', updated_at: '2026-01-01',
     }] },
   ]);
   const ctx = mockCtx({ user: adminUser, db, body: {
-    customer_id: 1, items: validItems, system_total: 1730,
+    customer_id: 1, scenario_id: 9, items: validItems, system_total: 1730,
   } });
   await quotes.create(ctx);
   assert.equal(ctx.status, 201);
@@ -91,9 +95,10 @@ test('quotes.create - 建议价为 null（不填）无需差异原因 → 成功
 test('quotes.create - 差异原因为空白字符串仍抛 400', async () => {
   const db = mockDb([
     { match: 'SELECT * FROM customers WHERE id = ?', return: customerRow() },
+    { match: 'SELECT id FROM scenarios WHERE id = ? AND customer_id = ?', return: [{ id: 9 }] },
   ]);
   const ctx = mockCtx({ user: adminUser, db, body: {
-    customer_id: 1, items: validItems, system_total: 4605, suggested_price: 5000, diff_reason: '   ',
+    customer_id: 1, scenario_id: 9, items: validItems, system_total: 4605, suggested_price: 5000, diff_reason: '   ',
   } });
   await expectThrow(() => quotes.create(ctx), 400, 'diff_reason_required');
 });
@@ -205,7 +210,7 @@ test('quotes.convert - 非 accepted 状态抛 409', async () => {
 
 function quoteRow(status) {
   return {
-    id: 1, quote_no: 'Q-1', customer_id: 1, salesperson_id: 83, status, currency: 'USD',
+    id: 1, quote_no: 'Q-1', customer_id: 1, scenario_id: 9, salesperson_id: 83, status, currency: 'USD',
     items: JSON.stringify(validItems), total_amount: 1730, notes: null, system_total: 1730,
     suggested_price: 1730, diff_reason: null, created_at: '2026-01-01', updated_at: '2026-01-01',
   };
@@ -240,6 +245,21 @@ test('quotes.update - 已下单报价修改：作废原订单并退回草稿', a
   const eventCall = db.calls.find((c) => c.sql.includes('INSERT INTO event_outbox') && c.params[1] === 'OrderVoided');
   assert.ok(eventCall, '应向财务下发作废事件');
   assert.equal(JSON.parse(eventCall.params[5]).order_id, 55);
+});
+
+test('quotes.create - 未选择用电场景抛 400', async () => {
+  const db = mockDb([
+    { match: 'SELECT * FROM customers WHERE id = ?', return: customerRow() },
+  ]);
+  const ctx = mockCtx({ user: adminUser, db, body: { customer_id: 1, items: validItems } });
+  await expectThrow(() => quotes.create(ctx), 400, 'scenario_required');
+});
+
+test('quotes.update - 历史报价未关联场景时修改需补选场景 → 400', async () => {
+  const row = { ...quoteRow('draft'), scenario_id: null };
+  const db = mockDb([{ match: 'SELECT * FROM quotes WHERE id = ?', return: [row] }]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db, body: { items: validItems } });
+  await expectThrow(() => quotes.update(ctx), 400, 'scenario_required');
 });
 
 test('quotes.update - 非草稿报价修改后退回草稿，不作废订单', async () => {

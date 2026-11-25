@@ -7,6 +7,24 @@ const { toUser, loadUser, insertUser } = require('../../lib/users');
 
 const ASSIGNABLE = new Set(ROLES);
 
+// 角色与所属上级的约束：
+// 销售人员只能归属销售部门经理；电气/结构工程师只能归属工程部经理或超级管理员
+const MANAGER_ROLES_BY_ROLE = {
+  salesperson: ['sales_manager'],
+  electrical_engineer: ['engineering_manager', 'super_admin'],
+  structural_engineer: ['engineering_manager', 'super_admin'],
+};
+
+async function resolveManagerId(db, ctx, role, managerId) {
+  const allowed = MANAGER_ROLES_BY_ROLE[role];
+  if (!allowed) return managerId;
+  if (!managerId) ctx.throw(400, 'manager_required');
+  const [rows] = await db.query('SELECT id, role FROM users WHERE id = ?', [managerId]);
+  if (!rows.length) ctx.throw(400, 'manager_not_found');
+  if (!allowed.includes(rows[0].role)) ctx.throw(400, 'invalid_manager_role');
+  return managerId;
+}
+
 module.exports = {
   async directory(ctx) {
     const [rows] = await ctx.app.db.query(
@@ -69,7 +87,9 @@ module.exports = {
     );
     if (exists.length) ctx.throw(409, 'account_exists');
     const hash = await bcrypt.hash(password, 10);
-    const managerId = body.manager_id ? Number(body.manager_id) : null;
+    const managerId = await resolveManagerId(
+      ctx.app.db, ctx, role, body.manager_id ? Number(body.manager_id) : null
+    );
     const created = await insertUser(ctx.app.db, {
       name, email, phone, passwordHash: hash, role, status: 'active', managerId,
     });
@@ -96,6 +116,7 @@ module.exports = {
     if (!ASSIGNABLE.has(next.role)) ctx.throw(400, 'invalid_role');
     if (!['active', 'disabled'].includes(next.status)) ctx.throw(400, 'invalid_status');
     if (!next.email && !next.phone) ctx.throw(400, 'email_or_phone_required');
+    next.manager_id = await resolveManagerId(ctx.app.db, ctx, next.role, next.manager_id);
     if (next.email) {
       const [emailTaken] = await ctx.app.db.query(
         'SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1', [next.email, id]

@@ -121,7 +121,7 @@
           <el-form-item :label="t('email')"><el-input v-model="form.email" /></el-form-item>
           <el-form-item :label="t('phone')"><el-input v-model="form.phone" /></el-form-item>
           <el-form-item :label="t('role')">
-            <el-select v-model="form.role" style="width: 100%">
+            <el-select v-model="form.role" style="width: 100%" @change="onRoleChange">
               <el-option v-for="item in roles" :key="item" :label="roleLabel(item)" :value="item" />
             </el-select>
           </el-form-item>
@@ -150,7 +150,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { get, patch, post } from '../../api/client';
@@ -200,11 +200,10 @@ const managerOptions = computed(() => {
   }
   return options;
 });
-watch(() => form.role, () => {
-  if (form.manager_id && !managerOptions.value.some((item) => item.id === Number(form.manager_id))) {
-    form.manager_id = null;
-  }
-});
+// 手动切换角色时清空已选择的负责人，避免沿用上一个角色的归属
+function onRoleChange() {
+  form.manager_id = null;
+}
 
 function roleLabel(role) {
   if (!role) return '-';

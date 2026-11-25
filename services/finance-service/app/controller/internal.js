@@ -49,6 +49,12 @@ module.exports = {
             round2(commissionAmount - depositCommission), 0, referral,
             payload.referral_name || null, 'initializing']
         );
+      } else if (event.event_type === EVENTS.ORDER_VOIDED) {
+        // 订单作废：台账保留记录，仅标记作废，不再计入汇总/提成/结算
+        await connection.query(
+          "UPDATE order_ledger SET status = 'void' WHERE order_id = ?",
+          [Number(payload.order_id)]
+        );
       } else if (event.event_type === EVENTS.PROJECT_ACCEPTED) {
         const acceptedAt = toDbDate(payload.accepted_at);
         await connection.query(

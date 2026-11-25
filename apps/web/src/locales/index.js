@@ -743,6 +743,13 @@ Object.assign(en, {
   customerEmailExists: 'This customer email already exists. Please use a different one.',
   selectScenario: 'Select a usage scenario',
   noScenarioHint: 'This customer has no usage scenario yet. Please create one in Customer 360 first.',
+  enum_void: 'Voided',
+  voidOrder: 'Void order',
+  voidOrderConfirm: 'Void this order? The order and its ledger record will be marked as voided (not deleted).',
+  voidReasonOptional: 'Void reason (optional)',
+  quoteEditVoidConfirm: 'This quote has already been converted to an order. Saving the changes will void the original order (not delete it) and return the quote to draft for re-approval. Continue?',
+  quoteEditVoided: 'Saved. The original order has been voided and the quote returned to draft. Please submit it for approval again.',
+  quoteReturnedToDraft: 'Saved. The quote has been returned to draft. Please submit it for approval again.',
 });
 Object.assign(zh, {
   reminder: '提示',
@@ -755,6 +762,13 @@ Object.assign(zh, {
   customerEmailExists: '该客户邮箱已存在，请更换后再保存。',
   selectScenario: '请选择用电场景',
   noScenarioHint: '该客户暂无用电场景，请先在客户 360 中创建场景后再建立勘测。',
+  enum_void: '已作废',
+  voidOrder: '作废',
+  voidOrderConfirm: '确定作废该订单？订单与对应台账将标记为已作废（不会删除）。',
+  voidReasonOptional: '作废原因（可选）',
+  quoteEditVoidConfirm: '该报价已下单。保存修改将作废原订单（不删除），并把报价退回草稿重新提交审批。是否继续？',
+  quoteEditVoided: '已保存。原订单已作废，报价已退回草稿，请重新提交审批。',
+  quoteReturnedToDraft: '已保存。报价已退回草稿，请重新提交审批。',
 });
 Object.assign(km, {
   reminder: 'ការជូនដំណឹង',
@@ -767,6 +781,13 @@ Object.assign(km, {
   customerEmailExists: 'អ៊ីមែលអតិថិជននេះមានរួចហើយ។ សូមប្រើអ៊ីមែលផ្សេង។',
   selectScenario: 'សូមជ្រើសរើសសេណារីយ៉ូការប្រើប្រាស់',
   noScenarioHint: 'អតិថិជននេះមិនទាន់មានសេណារីយ៉ូការប្រើប្រាស់ទេ។ សូមបង្កើតនៅក្នុង Customer 360 ជាមុន។',
+  enum_void: 'បានធ្វើឱ្យគ្មានសុពលភាព',
+  voidOrder: 'ធ្វើឱ្យគ្មានសុពលភាព',
+  voidOrderConfirm: 'ធ្វើឱ្យការបញ្ជាទិញនេះគ្មានសុពលភាព? កំណត់ត្រាត្រូវបានរក្សាទុក ហើយសម្គាល់ថាគ្មានសុពលភាព។',
+  voidReasonOptional: 'មូលហេតុ (ស្រេចចិត្ត)',
+  quoteEditVoidConfirm: 'សម្រង់តម្លៃនេះបានបង្កើតការបញ្ជាទិញរួចហើយ។ ការរក្សាទុកនឹងធ្វើឱ្យការបញ្ជាទិញដើមគ្មានសុពលភាព ហើយត្រឡប់សម្រង់តម្លៃទៅសេចក្តីព្រាងដើម្បីអនុម័តឡើងវិញ។ បន្ត?',
+  quoteEditVoided: 'បានរក្សាទុក។ ការបញ្ជាទិញដើមគ្មានសុពលភាព ហើយសម្រង់តម្លៃត្រឡប់ទៅសេចក្តីព្រាង។',
+  quoteReturnedToDraft: 'បានរក្សាទុក។ សម្រង់តម្លៃត្រឡប់ទៅសេចក្តីព្រាង សូមដាក់ស្នើអនុម័តម្តងទៀត។',
 });
 
 const messages = {};

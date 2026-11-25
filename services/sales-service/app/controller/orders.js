@@ -1,6 +1,8 @@
 'use strict';
 
 const crypto = require('crypto');
+const { withTransaction, enqueueEvent } = require('@solar/service-kit');
+const { EVENTS } = require('@solar/contracts');
 const { salesScopeFor, scopeClause, num, parseJson } = require('../../lib/scope');
 const { notifyOrderCreated } = require('../../lib/notify');
 
@@ -231,6 +233,42 @@ module.exports = {
     await ctx.app.db.query('DELETE FROM order_items WHERE id = ? AND order_id = ?', [itemId, orderId]);
     await recalcOrderAmount(ctx.app.db, orderId);
     ctx.body = { id: itemId, deleted: true };
+  },
+
+  // 作废订单：销售经理/超级管理员操作，保留订单记录，同步作废财务台账（不物理删除）
+  async voidOrder(ctx) {
+    const id = Number(ctx.params.id);
+    const reason = String((ctx.request.body || {}).void_reason || '').trim();
+    const order = await withTransaction(ctx.app.db, async (connection) => {
+      const [rows] = await connection.query('SELECT * FROM orders WHERE id = ? FOR UPDATE', [id]);
+      if (!rows.length) ctx.throw(404, 'order_not_found');
+      const current = rows[0];
+      if (current.status === 'void') ctx.throw(409, 'order_already_void');
+      await connection.query(
+        `UPDATE orders SET status = 'void', voided_at = NOW(), voided_by = ?, voided_by_name = ?, void_reason = ?
+         WHERE id = ?`,
+        [Number(ctx.state.user.id), ctx.state.user.name || null, reason || null, id]
+      );
+      await enqueueEvent(connection, {
+        type: EVENTS.ORDER_VOIDED,
+        aggregateId: id,
+        customerId: Number(current.customer_id),
+        actorId: ctx.state.user.id,
+        requestId: ctx.state.requestId,
+        destinations: ['finance'],
+        payload: {
+          order_id: id,
+          order_no: current.order_no,
+          void_reason: reason || null,
+          voided_by: Number(ctx.state.user.id),
+          voided_by_name: ctx.state.user.name || null,
+          voided_at: new Date().toISOString(),
+        },
+      });
+      const [fresh] = await connection.query('SELECT * FROM orders WHERE id = ?', [id]);
+      return fresh[0];
+    });
+    ctx.body = { order: toOrder(order) };
   },
 
   // 删除订单：仅未受理（initializing / pending_assignment）的订单可删，避免破坏财务数据

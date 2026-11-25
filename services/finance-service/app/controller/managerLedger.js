@@ -85,14 +85,15 @@ module.exports = {
       const [[orderRow]] = await ctx.app.db.query(
         `SELECT COUNT(*) AS order_count, COALESCE(SUM(order_amount), 0) AS order_amount
          FROM order_ledger
-         WHERE salesperson_id IN (${inClause})
+         WHERE salesperson_id IN (${inClause}) AND status <> 'void'
            AND DATE_FORMAT(COALESCE(accepted_at, created_at), '%Y-%m') = ?`,
         [...teamIds, period]
       );
       const [[paymentRow]] = await ctx.app.db.query(
         `SELECT SUM(CASE WHEN p.direction = 'in' THEN p.amount ELSE -p.amount END) AS net_amount
          FROM payments p JOIN order_ledger l ON l.order_id = p.order_id
-         WHERE l.salesperson_id IN (${inClause}) AND DATE_FORMAT(p.received_at, '%Y-%m') = ?`,
+         WHERE l.salesperson_id IN (${inClause}) AND l.status <> 'void'
+           AND DATE_FORMAT(p.received_at, '%Y-%m') = ?`,
         [...teamIds, period]
       );
       let received = paymentRow && paymentRow.net_amount !== null ? num(paymentRow.net_amount) : null;
@@ -101,7 +102,7 @@ module.exports = {
         const [[ledgerRow]] = await ctx.app.db.query(
           `SELECT COALESCE(SUM(received_amount), 0) AS received
            FROM order_ledger
-           WHERE salesperson_id IN (${inClause})
+           WHERE salesperson_id IN (${inClause}) AND status <> 'void'
              AND DATE_FORMAT(COALESCE(accepted_at, created_at), '%Y-%m') = ?`,
           [...teamIds, period]
         );

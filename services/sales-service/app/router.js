@@ -73,6 +73,7 @@ module.exports = (app) => {
   router.get('/pv/api/workbench/orders', auth, staff, orders.list);
   router.get('/pv/api/workbench/orders/:id', auth, staff, orders.detail);
   router.patch('/pv/api/workbench/orders/:id', auth, managers, orders.updateCommission);
+  router.post('/pv/api/workbench/orders/:id/void', auth, managers, orders.voidOrder);
   router.post('/pv/api/workbench/orders/from-config', auth, sales, orders.createFromConfig);
   router.patch('/pv/api/workbench/orders/:id/items/:itemId', auth, sales, orders.updateItem);
   router.delete('/pv/api/workbench/orders/:id/items/:itemId', auth, sales, orders.removeItem);

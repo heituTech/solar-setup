@@ -1,3 +1,4 @@
-# 迁移脚本必须保持 LF，migrate.js 用 sha256 校验文件内容，
-# 行尾被转成 CRLF 会导致 "Migration checksum changed"。
-*.sql text eol=lf
+# 统一按 LF 存储，避免：
+# 1) Windows autocrlf 把 .sql 转成 CRLF，导致 migrate.js 的 sha256 校验失配
+# 2) 编辑器/工具回写 CRLF 污染仓库
+* text=auto eol=lf

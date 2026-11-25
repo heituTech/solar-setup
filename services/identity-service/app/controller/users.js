@@ -87,12 +87,20 @@ module.exports = {
     if (Number(ctx.state.user.id) === id && body.status === 'disabled') ctx.throw(400, 'cannot_disable_self');
     const next = {
       name: body.name !== undefined ? String(body.name).trim() : current.name,
+      email: body.email !== undefined ? (String(body.email).trim().toLowerCase() || null) : current.email,
+      phone: body.phone !== undefined ? (String(body.phone).trim() || null) : current.phone,
       role: body.role !== undefined ? String(body.role) : current.role,
       status: body.status !== undefined ? String(body.status) : current.status,
       manager_id: body.manager_id !== undefined ? (body.manager_id ? Number(body.manager_id) : null) : current.manager_id,
     };
     if (!ASSIGNABLE.has(next.role)) ctx.throw(400, 'invalid_role');
     if (!['active', 'disabled'].includes(next.status)) ctx.throw(400, 'invalid_status');
+    if (!next.email && !next.phone) ctx.throw(400, 'email_or_phone_required');
+    const [duplicated] = await ctx.app.db.query(
+      'SELECT id FROM users WHERE id <> ? AND ((email IS NOT NULL AND email = ?) OR (phone IS NOT NULL AND phone = ?)) LIMIT 1',
+      [id, next.email, next.phone]
+    );
+    if (duplicated.length) ctx.throw(409, 'account_exists');
     let passwordHash = current.password_hash;
     if (body.password) {
       if (String(body.password).length < 8) ctx.throw(400, 'password_too_short');
@@ -100,8 +108,8 @@ module.exports = {
     }
     await withTransaction(ctx.app.db, async (connection) => {
       await connection.query(
-        'UPDATE users SET name = ?, role = ?, status = ?, manager_id = ?, password_hash = ? WHERE id = ?',
-        [next.name, next.role, next.status, next.manager_id, passwordHash, id]
+        'UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ?, manager_id = ?, password_hash = ? WHERE id = ?',
+        [next.name, next.email, next.phone, next.role, next.status, next.manager_id, passwordHash, id]
       );
       await enqueueEvent(connection, {
         type: EVENTS.USER_CHANGED,

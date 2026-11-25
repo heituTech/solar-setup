@@ -14,6 +14,7 @@ function toSurvey(row) {
     ...row,
     id: Number(row.id),
     customer_id: Number(row.customer_id),
+    scenario_id: row.scenario_id ? Number(row.scenario_id) : null,
     created_by: Number(row.created_by),
     reviewed_by: row.reviewed_by ? Number(row.reviewed_by) : null,
     roof_area: row.roof_area === null ? null : num(row.roof_area),
@@ -31,13 +32,14 @@ module.exports = {
     const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
     const q = String(ctx.query.q || '').trim();
     let where = `FROM surveys s
-                 LEFT JOIN customers c ON c.id = s.customer_id WHERE 1 = 1`;
+                 LEFT JOIN customers c ON c.id = s.customer_id
+                 LEFT JOIN scenarios sc ON sc.id = s.scenario_id WHERE 1 = 1`;
     where += scopeClause('c.owner_id', salesScopeFor(ctx.state.user), params);
     if (ctx.query.status) { where += ' AND s.status = ?'; params.push(String(ctx.query.status)); }
     if (q) { where += ' AND (c.name LIKE ? OR s.address LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
     const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total ${where}`, params);
     const [rows] = await ctx.app.db.query(
-      `SELECT s.*, c.name AS customer_name ${where} ORDER BY s.id DESC LIMIT ? OFFSET ?`,
+      `SELECT s.*, c.name AS customer_name, sc.scenario_no AS scenario_no ${where} ORDER BY s.id DESC LIMIT ? OFFSET ?`,
       params.concat([pageSize, (page - 1) * pageSize])
     );
     ctx.body = { surveys: rows.map(toSurvey), total: Number(countRows[0].total), page, page_size: pageSize };
@@ -50,10 +52,15 @@ module.exports = {
     if (!customers.length) ctx.throw(404, 'customer_not_found');
     const scope = salesScopeFor(ctx.state.user);
     if (scope !== null && !scope.includes(Number(customers[0].owner_id))) ctx.throw(403, 'forbidden');
+    // 勘测必须对应客户已有的用电场景
+    const scenarioId = Number(body.scenario_id);
+    if (!scenarioId) ctx.throw(400, 'scenario_required');
+    const [scenarios] = await ctx.app.db.query('SELECT id FROM scenarios WHERE id = ? AND customer_id = ?', [scenarioId, customerId]);
+    if (!scenarios.length) ctx.throw(400, 'scenario_not_found');
     const [result] = await ctx.app.db.query(
-      `INSERT INTO surveys (customer_id, address, roof_type, roof_area, monthly_consumption, payload, status, created_by, created_by_name)
-       VALUES (?,?,?,?,?,?,?,?,?)`,
-      [customerId, body.address || customers[0].address || null, body.roof_type || null,
+      `INSERT INTO surveys (customer_id, scenario_id, address, roof_type, roof_area, monthly_consumption, payload, status, created_by, created_by_name)
+       VALUES (?,?,?,?,?,?,?,?,?,?)`,
+      [customerId, scenarioId, body.address || customers[0].address || null, body.roof_type || null,
         body.roof_area === undefined ? null : Number(body.roof_area),
         body.monthly_consumption === undefined ? null : Number(body.monthly_consumption),
         JSON.stringify(body.payload || {}), 'draft', Number(ctx.state.user.id), ctx.state.user.name || null]

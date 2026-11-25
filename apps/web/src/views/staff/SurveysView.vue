@@ -20,6 +20,9 @@
       </div>
       <el-table :data="surveys" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="130" />
+        <el-table-column :label="t('scenarios')" width="160">
+          <template #default="{ row }">{{ row.scenario_no || '-' }}</template>
+        </el-table-column>
         <el-table-column prop="address" :label="t('address')" min-width="160" />
         <el-table-column prop="roof_type" :label="t('roofType')" width="120" />
         <el-table-column prop="roof_area" :label="t('roofArea')" width="120" />
@@ -56,9 +59,20 @@
       <el-form :model="form" label-position="top">
         <div class="form-grid">
           <el-form-item class="span-2" :label="t('selectCustomer')">
-            <el-select v-model="form.customer_id" filterable style="width: 100%">
+            <el-select v-model="form.customer_id" filterable style="width: 100%" @change="onCustomerChange">
               <el-option v-for="item in customers" :key="item.id" :value="item.id" :label="`${item.name} · ${item.phone || ''}`" />
             </el-select>
+          </el-form-item>
+          <el-form-item class="span-2" :label="t('scenarios')">
+            <el-select
+              v-model="form.scenario_id"
+              :disabled="!form.customer_id || !scenarios.length"
+              :placeholder="t('selectScenario')"
+              style="width: 100%"
+            >
+              <el-option v-for="item in scenarios" :key="item.id" :value="item.id" :label="item.scenario_no" />
+            </el-select>
+            <div v-if="form.customer_id && !scenarios.length" class="muted">{{ t('noScenarioHint') }}</div>
           </el-form-item>
           <el-form-item class="span-2" :label="t('address')"><el-input v-model="form.address" /></el-form-item>
           <el-form-item :label="t('roofType')">
@@ -94,6 +108,7 @@ const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const surveys = ref([]);
 const customers = ref([]);
+const scenarios = ref([]);
 const page = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
@@ -102,7 +117,7 @@ const loading = ref(false);
 const saving = ref(false);
 const dialog = ref(false);
 const form = reactive({
-  customer_id: null, address: '', roof_type: 'rooftop', roof_area: null, monthly_consumption: null, note: '',
+  customer_id: null, scenario_id: null, address: '', roof_type: 'rooftop', roof_area: null, monthly_consumption: null, note: '',
 });
 
 const canEdit = computed(() => ['super_admin', 'sales_manager', 'salesperson'].includes(auth.role));
@@ -144,16 +159,33 @@ function resetFilters() {
 }
 
 function openCreate() {
-  Object.assign(form, { customer_id: null, address: '', roof_type: 'rooftop', roof_area: null, monthly_consumption: null, note: '' });
+  Object.assign(form, { customer_id: null, scenario_id: null, address: '', roof_type: 'rooftop', roof_area: null, monthly_consumption: null, note: '' });
+  scenarios.value = [];
   dialog.value = true;
+}
+
+// 选择客户后加载该客户已有的用电场景，勘测必须对应其中一个场景
+async function onCustomerChange(customerId) {
+  form.scenario_id = null;
+  scenarios.value = [];
+  if (!customerId) return;
+  try {
+    const data = await get(`/pv/api/workbench/customers/${customerId}/scenarios`);
+    scenarios.value = data.scenarios || [];
+    if (scenarios.value.length === 1) form.scenario_id = scenarios.value[0].id;
+  } catch (error) {
+    ElMessage.error(error.message);
+  }
 }
 
 async function save() {
   if (!form.customer_id) return ElMessage.warning(t('selectCustomer'));
+  if (!form.scenario_id) return ElMessage.warning(t('selectScenario'));
   saving.value = true;
   try {
     await post('/pv/api/workbench/surveys', {
       customer_id: form.customer_id,
+      scenario_id: form.scenario_id,
       address: form.address,
       roof_type: form.roof_type,
       roof_area: form.roof_area,

@@ -193,7 +193,6 @@ module.exports = {
           customer_id: Number(customer.id),
           customer_name: customer.name,
           customer_phone: customer.phone || null,
-          customer_type: customer.customer_type || 'retail',
           order_type: band.order_type,
           product_config: productConfig || null,
           discount_approver: quote.notes || null,

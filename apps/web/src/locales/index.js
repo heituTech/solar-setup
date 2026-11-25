@@ -813,6 +813,7 @@ Object.assign(en, {
   resurvey: 'Request re-survey',
   surveyTimeRequired: 'Departure time and finish time are required.',
   managerRequired: 'Please select a valid owner for the selected role.',
+  invalidManagerRole: 'The selected owner is not allowed for this role: salespersons must belong to a sales manager; engineers must belong to an engineering manager or super admin.',
 });
 Object.assign(zh, {
   selectQuote: '选择报价',
@@ -827,6 +828,7 @@ Object.assign(zh, {
   resurvey: '申请重新踏勘',
   surveyTimeRequired: '请填写出发时间和完成时间。',
   managerRequired: '请为所选角色指定有效的所属上级。',
+  invalidManagerRole: '所选所属上级不符合角色要求：销售人员只能归属销售部门经理；电气/结构工程师只能归属工程部经理或超级管理员。',
 });
 Object.assign(km, {
   selectQuote: 'ជ្រើសរើសសម្រង់តម្លៃ',
@@ -841,6 +843,7 @@ Object.assign(km, {
   resurvey: 'ស្នើស្ទង់ទីតាំងឡើងវិញ',
   surveyTimeRequired: 'សូមបំពេញពេលចេញដំណើរ និងពេលបញ្ចប់។',
   managerRequired: 'សូមជ្រើសរើសអ្នកគ្រប់គ្រងត្រឹមត្រូវសម្រាប់តួនាទីនេះ។',
+  invalidManagerRole: 'អ្នកគ្រប់គ្រងដែលបានជ្រើសមិនត្រឹមត្រូវសម្រាប់តួនាទីនេះ៖ អ្នកលក់ត្រូវឡើងជាមួយអ្នកគ្រប់គ្រងលក់; វិស្វករត្រូវឡើងជាមួយអ្នកគ្រប់គ្រងវិស្វកម្ម ឬអ្នកគ្រប់គ្រងជាន់ខ្ពស់។',
 });
 
 const messages = {};

@@ -192,7 +192,13 @@ const MANAGER_ROLES_BY_ROLE = {
 };
 const managerOptions = computed(() => {
   const allowed = MANAGER_ROLES_BY_ROLE[form.role] || ['super_admin', 'sales_manager'];
-  return directory.value.filter((item) => allowed.includes(item.role));
+  const options = directory.value.filter((item) => allowed.includes(item.role));
+  // 兜底：当前所属人不在目录中时仍保留原值，避免编辑时被清空
+  if (form.manager_id && !options.some((item) => item.id === Number(form.manager_id))) {
+    const found = users.value.find((item) => item.id === Number(form.manager_id));
+    if (found) options.push({ id: found.id, name: found.name, role: found.role });
+  }
+  return options;
 });
 watch(() => form.role, () => {
   if (form.manager_id && !managerOptions.value.some((item) => item.id === Number(form.manager_id))) {
@@ -307,6 +313,8 @@ function changeApprovalPage(next) {
 
 function openCreate() {
   Object.assign(form, { id: null, name: '', email: '', phone: '', role: 'salesperson', manager_id: null, status: 'active', password: '' });
+  // 刷新员工目录，确保刚新建的工程部经理等上级可选
+  loadDirectory();
   dialog.value = true;
 }
 
@@ -315,6 +323,7 @@ function openEdit(row) {
     id: row.id, name: row.name, email: row.email || '', phone: row.phone || '',
     role: row.role, manager_id: row.manager_id || null, status: row.status, password: '',
   });
+  loadDirectory();
   dialog.value = true;
 }
 
@@ -334,9 +343,15 @@ async function save() {
     else await post('/pv/api/admin/users', payload);
     ElMessage.success(t('operationSuccess'));
     dialog.value = false;
-    await reloadUsers();
+    await Promise.all([reloadUsers(), loadDirectory()]);
   } catch (error) {
-    const alertKey = { email_exists: 'emailExists', phone_exists: 'phoneExists', email_or_phone_required: 'emailOrPhoneRequired' }[error.code];
+    const alertKey = {
+      email_exists: 'emailExists',
+      phone_exists: 'phoneExists',
+      email_or_phone_required: 'emailOrPhoneRequired',
+      manager_required: 'managerRequired',
+      invalid_manager_role: 'invalidManagerRole',
+    }[error.code];
     if (alertKey) {
       ElMessageBox.alert(t(alertKey), t('reminder'), { type: 'warning', confirmButtonText: t('confirm') }).catch(() => {});
     } else {

@@ -341,7 +341,17 @@ async function save() {
     dialog.value = false;
     await reload();
   } catch (error) {
-    ElMessage.error(error.message);
+    // 名称、手机号、邮箱重复时弹出明确的提示框，方便用户直接修改
+    const alertKey = {
+      customer_name_exists: 'customerNameExists',
+      customer_phone_exists: 'customerPhoneExists',
+      customer_email_exists: 'customerEmailExists',
+    }[error.code];
+    if (alertKey) {
+      ElMessageBox.alert(t(alertKey), t('reminder'), { type: 'warning', confirmButtonText: t('confirm') }).catch(() => {});
+    } else {
+      ElMessage.error(error.message);
+    }
   } finally {
     saving.value = false;
   }

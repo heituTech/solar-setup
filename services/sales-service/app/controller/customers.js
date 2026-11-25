@@ -22,6 +22,22 @@ function canChangeOwner(user) {
   return OWNER_ROLES.has(user.role);
 }
 
+// 客户名称、手机号、邮箱在全库范围内必须唯一，编辑时排除自身
+async function assertUniqueCustomer(ctx, { name, phone, email }, excludeId = 0) {
+  if (name) {
+    const [rows] = await ctx.app.db.query('SELECT id FROM customers WHERE name = ? AND id <> ? LIMIT 1', [name, excludeId]);
+    if (rows.length) ctx.throw(409, 'customer_name_exists');
+  }
+  if (phone) {
+    const [rows] = await ctx.app.db.query('SELECT id FROM customers WHERE phone = ? AND id <> ? LIMIT 1', [phone, excludeId]);
+    if (rows.length) ctx.throw(409, 'customer_phone_exists');
+  }
+  if (email) {
+    const [rows] = await ctx.app.db.query('SELECT id FROM customers WHERE email = ? AND id <> ? LIMIT 1', [email, excludeId]);
+    if (rows.length) ctx.throw(409, 'customer_email_exists');
+  }
+}
+
 module.exports = {
   async list(ctx) {
     const params = [];
@@ -91,8 +107,11 @@ module.exports = {
   async create(ctx) {
     const body = ctx.request.body || {};
     const name = String(body.name || '').trim();
+    const phone = String(body.phone || '').trim();
+    const email = String(body.email || '').trim();
     if (!name) ctx.throw(400, 'name_required');
-    if (!body.phone && !body.email) ctx.throw(400, 'phone_or_email_required');
+    if (!phone && !email) ctx.throw(400, 'phone_or_email_required');
+    await assertUniqueCustomer(ctx, { name, phone, email });
     const selfId = Number(ctx.state.user.id);
     const requestedOwner = body.owner_id ? Number(body.owner_id) : null;
     if (requestedOwner && requestedOwner !== selfId && !canChangeOwner(ctx.state.user)) {
@@ -105,7 +124,7 @@ module.exports = {
     const [result] = await ctx.app.db.query(
       `INSERT INTO customers (name, phone, email, region, address, status, owner_id, owner_name, note, created_by, created_by_name)
        VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-      [name, body.phone || null, body.email || null, body.region || null, body.address || null,
+      [name, phone || null, email || null, body.region || null, body.address || null,
         body.status || 'lead', ownerId, ownerName || null, body.note || null, selfId, ctx.state.user.name || null]
     );
     const [rows] = await ctx.app.db.query('SELECT * FROM customers WHERE id = ?', [result.insertId]);
@@ -121,11 +140,22 @@ module.exports = {
     const scope = salesScopeFor(ctx.state.user);
     if (scope !== null && !scope.includes(Number(current.owner_id))) ctx.throw(403, 'forbidden');
     const body = ctx.request.body || {};
+    const nextName = body.name !== undefined ? String(body.name || '').trim() : String(current.name || '').trim();
+    const nextPhone = body.phone !== undefined ? String(body.phone || '').trim() : String(current.phone || '').trim();
+    const nextEmail = body.email !== undefined ? String(body.email || '').trim() : String(current.email || '').trim();
+    if (!nextName) ctx.throw(400, 'name_required');
+    if ((body.phone !== undefined || body.email !== undefined) && !nextPhone && !nextEmail) {
+      ctx.throw(400, 'phone_or_email_required');
+    }
+    await assertUniqueCustomer(ctx, { name: nextName, phone: nextPhone, email: nextEmail }, id);
     const allowed = ['name', 'phone', 'email', 'region', 'address', 'status', 'note'];
     const updates = [];
     const params = [];
     for (const field of allowed) {
-      if (body[field] !== undefined) { updates.push(`${field} = ?`); params.push(body[field]); }
+      if (body[field] === undefined) continue;
+      const value = { name: nextName, phone: nextPhone || null, email: nextEmail || null }[field];
+      updates.push(`${field} = ?`);
+      params.push(value === undefined ? body[field] : value);
     }
 
     const ownerTouched = body.owner_id !== undefined || body.owner_name !== undefined;

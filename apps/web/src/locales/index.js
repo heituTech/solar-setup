@@ -737,18 +737,30 @@ Object.assign(en, {
   emailExists: 'This email is already used by another account. Please use a different one.',
   phoneExists: 'This phone number is already used by another account. Please use a different one.',
   emailOrPhoneRequired: 'Please provide at least one of email or phone number.',
+  confirm: 'OK',
+  customerNameExists: 'This customer name already exists. Please use a different name.',
+  customerPhoneExists: 'This customer phone number already exists. Please use a different one.',
+  customerEmailExists: 'This customer email already exists. Please use a different one.',
 });
 Object.assign(zh, {
   reminder: '提示',
   emailExists: '该邮箱已被其他账号使用，请更换后再保存。',
   phoneExists: '该手机号已被其他账号使用，请更换后再保存。',
   emailOrPhoneRequired: '邮箱和手机号至少需要填写一项。',
+  confirm: '确定',
+  customerNameExists: '该客户名称已存在，请更换后再保存。',
+  customerPhoneExists: '该客户手机号已存在，请更换后再保存。',
+  customerEmailExists: '该客户邮箱已存在，请更换后再保存。',
 });
 Object.assign(km, {
   reminder: 'ការជូនដំណឹង',
   emailExists: 'អ៊ីមែលនេះត្រូវបានប្រើដោយគណនីផ្សេងរួចហើយ។',
   phoneExists: 'លេខទូរស័ព្ទនេះត្រូវបានប្រើដោយគណនីផ្សេងរួចហើយ។',
   emailOrPhoneRequired: 'សូមបញ្ចូលអ៊ីមែល ឬលេខទូរស័ព្ទយ៉ាងហោចណាស់មួយ។',
+  confirm: 'យល់ព្រម',
+  customerNameExists: 'ឈ្មោះអតិថិជននេះមានរួចហើយ។ សូមប្រើឈ្មោះផ្សេង។',
+  customerPhoneExists: 'លេខទូរស័ព្ទអតិថិជននេះមានរួចហើយ។ សូមប្រើលេខផ្សេង។',
+  customerEmailExists: 'អ៊ីមែលអតិថិជននេះមានរួចហើយ។ សូមប្រើអ៊ីមែលផ្សេង។',
 });
 
 const messages = {};

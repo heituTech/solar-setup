@@ -25,7 +25,7 @@ Object.assign(en, {
   caseSaved: 'Case saved', memberArea: 'Member area', myCases: 'My cases', accountInfo: 'Account',
   role_electrical_engineer: 'Electrical engineer', role_structural_engineer: 'Structural engineer',
   role_warehouse: 'Warehouse', role_accountant: 'Accountant', role_after_sales: 'After-sales',
-  customerType: 'Customer type', retail: 'Retail', engineering: 'Engineering', orderType: 'Order type',
+  retail: 'Retail', engineering: 'Engineering', orderType: 'Order type',
   productConfig: 'Product & configuration', dealDate: 'Deal date', deposit: 'Deposit',
   depositReceived: 'Deposit received', balance: 'Balance', balanceReceived: 'Balance received',
   paidCommission: 'Paid commission', pendingCommission: 'Pending commission', deliveryDate: 'Delivery date',
@@ -50,7 +50,7 @@ Object.assign(zh, {
   caseSaved: 'Case 已保存', memberArea: '会员中心', myCases: '我的 Case', accountInfo: '账号信息',
   role_electrical_engineer: '电气工程师', role_structural_engineer: '结构工程师',
   role_warehouse: '仓库', role_accountant: '财务', role_after_sales: '售后',
-  customerType: '客户类型', retail: '零售', engineering: '工程', orderType: '订单类型',
+  retail: '零售', engineering: '工程', orderType: '订单类型',
   productConfig: '产品与配置', dealDate: '成交日期', deposit: '定金',
   depositReceived: '定金到账', balance: '尾款', balanceReceived: '尾款到账',
   paidCommission: '已发提成', pendingCommission: '待发提成', deliveryDate: '交付日期',
@@ -586,7 +586,7 @@ Object.assign(km, {
   caseSaved: 'ករណីបានរក្សាទុក', memberArea: 'តំបន់សមាជិក', myCases: 'ករណីរបស់ខ្ញុំ',
   accountInfo: 'ព័ត៌មានគណនី', role_electrical_engineer: 'វិស្វករអគ្គិសនី',
   role_structural_engineer: 'វិស្វកររចនាសម្ព័ន្ធ', role_warehouse: 'ឃ្លាំង', role_accountant: 'គណនេយ្យករ',
-  role_after_sales: 'សេវាក្រោយលក់', customerType: 'ប្រភេទអតិថិជន', retail: 'លក់រាយ',
+  role_after_sales: 'សេវាក្រោយលក់', retail: 'លក់រាយ',
   engineering: 'វិស្វកម្ម', orderType: 'ប្រភេទការបញ្ជាទិញ', productConfig: 'ផលិតផល និងការកំណត់រចនាសម្ព័ន្ធ',
   dealDate: 'កាលបរិច្ឆេទប្រតិបត្តិការ', deposit: 'ប្រាក់កក់', depositReceived: 'ប្រាក់កក់បានទទួល',
   balance: 'ប្រាក់សល់', balanceReceived: 'ប្រាក់សល់បានទទួល', paidCommission: 'កម្រៃជើងសារដែលបានបើក',
@@ -741,6 +741,8 @@ Object.assign(en, {
   customerNameExists: 'This customer name already exists. Please use a different name.',
   customerPhoneExists: 'This customer phone number already exists. Please use a different one.',
   customerEmailExists: 'This customer email already exists. Please use a different one.',
+  selectScenario: 'Select a usage scenario',
+  noScenarioHint: 'This customer has no usage scenario yet. Please create one in Customer 360 first.',
 });
 Object.assign(zh, {
   reminder: '提示',
@@ -751,6 +753,8 @@ Object.assign(zh, {
   customerNameExists: '该客户名称已存在，请更换后再保存。',
   customerPhoneExists: '该客户手机号已存在，请更换后再保存。',
   customerEmailExists: '该客户邮箱已存在，请更换后再保存。',
+  selectScenario: '请选择用电场景',
+  noScenarioHint: '该客户暂无用电场景，请先在客户 360 中创建场景后再建立勘测。',
 });
 Object.assign(km, {
   reminder: 'ការជូនដំណឹង',
@@ -761,6 +765,8 @@ Object.assign(km, {
   customerNameExists: 'ឈ្មោះអតិថិជននេះមានរួចហើយ។ សូមប្រើឈ្មោះផ្សេង។',
   customerPhoneExists: 'លេខទូរស័ព្ទអតិថិជននេះមានរួចហើយ។ សូមប្រើលេខផ្សេង។',
   customerEmailExists: 'អ៊ីមែលអតិថិជននេះមានរួចហើយ។ សូមប្រើអ៊ីមែលផ្សេង។',
+  selectScenario: 'សូមជ្រើសរើសសេណារីយ៉ូការប្រើប្រាស់',
+  noScenarioHint: 'អតិថិជននេះមិនទាន់មានសេណារីយ៉ូការប្រើប្រាស់ទេ។ សូមបង្កើតនៅក្នុង Customer 360 ជាមុន។',
 });
 
 const messages = {};

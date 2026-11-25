@@ -50,9 +50,6 @@
         </el-table-column>
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="130" />
         <el-table-column prop="customer_phone" :label="t('phone')" width="140" />
-        <el-table-column :label="t('customerType')" width="110">
-          <template #default="{ row }">{{ row.customer_type === 'engineering' ? t('engineering') : t('retail') }}</template>
-        </el-table-column>
         <el-table-column :label="t('orderType')" width="110">
           <template #default="{ row }">{{ row.order_type === 'engineering' ? t('engineering') : t('retail') }}</template>
         </el-table-column>

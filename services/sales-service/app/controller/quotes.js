@@ -103,7 +103,8 @@ module.exports = {
     const [rows] = await ctx.app.db.query('SELECT * FROM quotes WHERE id = ?', [id]);
     if (!rows.length) ctx.throw(404, 'quote_not_found');
     const quote = rows[0];
-    if (quote.status !== 'draft') ctx.throw(409, 'quote_not_draft');
+    // 审批中的报价不可修改，避免与审批结果冲突
+    if (quote.status === 'pending_review') ctx.throw(409, 'quote_pending_review');
     const scope = salesScopeFor(ctx.state.user);
     if (scope !== null && !scope.includes(Number(quote.salesperson_id))) ctx.throw(403, 'forbidden');
     const body = ctx.request.body || {};
@@ -113,14 +114,49 @@ module.exports = {
     const suggestedPrice = body.suggested_price !== undefined ? body.suggested_price : quote.suggested_price;
     const diffReason = body.diff_reason !== undefined ? body.diff_reason : quote.diff_reason;
     assertSuggestedPrice(systemTotal, suggestedPrice, diffReason);
-    await ctx.app.db.query(
-      `UPDATE quotes SET items = ?, total_amount = ?, notes = ?, currency = ?,
-        system_total = ?, suggested_price = ?, diff_reason = ? WHERE id = ?`,
-      [JSON.stringify(items), totalOf(items), body.notes !== undefined ? body.notes : quote.notes,
-        body.currency || quote.currency, systemTotal, suggestedPrice, diffReason, id]
-    );
-    const [fresh] = await ctx.app.db.query('SELECT * FROM quotes WHERE id = ?', [id]);
-    ctx.body = { quote: toQuote(fresh[0]) };
+    const result = await withTransaction(ctx.app.db, async (connection) => {
+      let voidedOrder = null;
+      // 已下单的报价被修改：作废原订单（保留记录），再退回草稿重新走审批
+      if (quote.status === 'converted') {
+        const [orders] = await connection.query(
+          "SELECT id, order_no, customer_id FROM orders WHERE quote_id = ? AND status <> 'void' FOR UPDATE", [id]
+        );
+        for (const order of orders) {
+          await connection.query(
+            `UPDATE orders SET status = 'void', voided_at = NOW(), voided_by = ?, voided_by_name = ?, void_reason = ?
+             WHERE id = ?`,
+            [Number(ctx.state.user.id), ctx.state.user.name || null, '报价修改，原订单作废', Number(order.id)]
+          );
+          await enqueueEvent(connection, {
+            type: EVENTS.ORDER_VOIDED,
+            aggregateId: Number(order.id),
+            customerId: Number(order.customer_id),
+            actorId: ctx.state.user.id,
+            requestId: ctx.state.requestId,
+            destinations: ['finance'],
+            payload: {
+              order_id: Number(order.id),
+              order_no: order.order_no,
+              void_reason: '报价修改，原订单作废',
+              voided_by: Number(ctx.state.user.id),
+              voided_by_name: ctx.state.user.name || null,
+              voided_at: new Date().toISOString(),
+            },
+          });
+          if (!voidedOrder) voidedOrder = { id: Number(order.id), order_no: order.order_no };
+        }
+      }
+      // 任何修改都会使原审批失效，统一退回草稿，由销售人员重新提交审批
+      await connection.query(
+        `UPDATE quotes SET items = ?, total_amount = ?, notes = ?, currency = ?,
+          system_total = ?, suggested_price = ?, diff_reason = ?, status = 'draft' WHERE id = ?`,
+        [JSON.stringify(items), totalOf(items), body.notes !== undefined ? body.notes : quote.notes,
+          body.currency || quote.currency, systemTotal, suggestedPrice, diffReason, id]
+      );
+      const [fresh] = await connection.query('SELECT * FROM quotes WHERE id = ?', [id]);
+      return { fresh: fresh[0], voidedOrder };
+    });
+    ctx.body = { quote: toQuote(result.fresh), voided_order: result.voidedOrder };
   },
 
   async submit(ctx) {

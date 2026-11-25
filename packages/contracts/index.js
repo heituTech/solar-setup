@@ -9,6 +9,7 @@ const SALES_ROLES = Object.freeze(['super_admin', 'sales_manager', 'salesperson'
 const EVENTS = Object.freeze({
   USER_CHANGED: 'UserChanged',
   ORDER_CONVERTED: 'OrderConverted',
+  ORDER_VOIDED: 'OrderVoided',
   SURVEY_REVIEWED: 'SurveyReviewed',
   PROJECT_ACCEPTED: 'ProjectAccepted',
   PROJECT_PROGRESS_CHANGED: 'ProjectProgressChanged',
@@ -24,7 +25,7 @@ const DESTINATIONS = Object.freeze({
   delivery: 'delivery',
   finance: 'finance',
 });
-const ORDER_STATUSES = Object.freeze(['initializing', 'pending_assignment', 'in_delivery', 'accepted', 'cancelled']);
+const ORDER_STATUSES = Object.freeze(['initializing', 'pending_assignment', 'in_delivery', 'accepted', 'cancelled', 'void']);
 const QUOTE_STATUSES = Object.freeze(['draft', 'pending_review', 'approved', 'accepted', 'converted', 'rejected']);
 
 function httpError(status, code, details) {

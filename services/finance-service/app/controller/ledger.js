@@ -32,6 +32,8 @@ module.exports = {
     const params = [];
     let where = 'WHERE 1 = 1';
     where += scopeClause('l.salesperson_id', salesScopeFor(ctx.state.user), params);
+    // 已作废订单保留台账记录，但不计入汇总
+    where += " AND l.status <> 'void'";
     const [[totals]] = await ctx.app.db.query(
       `SELECT COUNT(*) AS orders,
               COALESCE(SUM(l.order_amount), 0) AS order_amount,

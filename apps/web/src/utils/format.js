@@ -1,7 +1,7 @@
 const STATUS_TYPES = {
   lead: 'info', qualified: 'warning', won: 'success', lost: 'danger',
   draft: 'info', pending_review: 'warning', approved: 'success', accepted: 'success', converted: 'success', rejected: 'danger',
-  initializing: 'info', pending_assignment: 'warning', in_delivery: 'warning', cancelled: 'danger',
+  initializing: 'info', pending_assignment: 'warning', in_delivery: 'warning', cancelled: 'danger', void: 'danger',
   submitted: 'warning', reviewed: 'success', invalid: 'danger',
   pending: 'info', in_stock: 'warning', delivered: 'warning', installed: 'success',
   open: 'danger', in_progress: 'warning', resolved: 'success', closed: 'info',

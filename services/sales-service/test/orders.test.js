@@ -238,3 +238,49 @@ test('orders.removeItem - 删除订单项并重算总额', async () => {
   await orders.removeItem(ctx);
   assert.deepEqual(ctx.body, { id: 5, deleted: true });
 });
+
+// ===================== voidOrder（作废订单）=====================
+
+test('orders.voidOrder - 订单不存在抛 404', async () => {
+  const db = mockDb([{ match: 'SELECT * FROM orders WHERE id = ? FOR UPDATE', return: [] }]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 999 }, db });
+  await expectThrow(() => orders.voidOrder(ctx), 404, 'order_not_found');
+});
+
+test('orders.voidOrder - 已作废订单不可重复作废 → 409', async () => {
+  const db = mockDb([{
+    match: 'SELECT * FROM orders WHERE id = ? FOR UPDATE',
+    return: [{ id: 1, order_no: 'SO-1', customer_id: 1, status: 'void' }],
+  }]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db });
+  await expectThrow(() => orders.voidOrder(ctx), 409, 'order_already_void');
+});
+
+test('orders.voidOrder - 标记作废并通知财务台账', async () => {
+  let voided = false;
+  const db = mockDb([
+    { match: 'SELECT * FROM orders WHERE id = ? FOR UPDATE', return: () => [{
+      id: 1, order_no: 'SO-1', customer_id: 1, salesperson_id: 83, amount: 5000,
+      received_amount: 0, commission_rate: 0.05, status: voided ? 'void' : 'accepted',
+      project_id: null, quote_id: 1, created_at: '2026-01-01', updated_at: '2026-01-01',
+    }] },
+    { match: 'UPDATE orders SET status', return: () => { voided = true; return [{ affectedRows: 1 }]; } },
+    { match: 'INSERT INTO event_outbox', return: { insertId: 1 } },
+    { match: 'SELECT * FROM orders WHERE id = ?', return: [{
+      id: 1, order_no: 'SO-1', customer_id: 1, salesperson_id: 83, amount: 5000,
+      received_amount: 0, commission_rate: 0.05, status: 'void', void_reason: '客户取消',
+      project_id: null, quote_id: 1, created_at: '2026-01-01', updated_at: '2026-01-01',
+    }] },
+  ]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db, body: { void_reason: '客户取消' } });
+  await orders.voidOrder(ctx);
+
+  assert.equal(ctx.body.order.status, 'void');
+  const updateCall = db.calls.find((c) => c.sql.includes('UPDATE orders SET status'));
+  assert.equal(updateCall.params[2], '客户取消');
+  assert.equal(updateCall.params[3], 1);
+
+  const eventCall = db.calls.find((c) => c.sql.includes('INSERT INTO event_outbox') && c.params[1] === 'OrderVoided');
+  assert.ok(eventCall, '应向财务下发作废事件');
+  assert.equal(JSON.parse(eventCall.params[5]).order_no, 'SO-1');
+});

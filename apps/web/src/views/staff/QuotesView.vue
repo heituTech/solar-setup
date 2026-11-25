@@ -45,9 +45,10 @@
         <el-table-column :label="t('date')" width="160">
           <template #default="{ row }">{{ dt(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column :label="t('actions')" width="320">
+        <el-table-column :label="t('actions')" width="380">
           <template #default="{ row }">
             <el-button link @click="viewDetail(row)">{{ t('detail') }}</el-button>
+            <el-button v-if="canSell && row.status !== 'pending_review'" link type="primary" :disabled="saving" @click="openEdit(row)">{{ t('edit') }}</el-button>
             <el-button v-if="row.status === 'draft' && canSell" link type="primary" :disabled="saving" @click="submit(row)">{{ t('submitReview') }}</el-button>
             <template v-if="row.status === 'pending_review' && isManager">
               <el-button link type="success" :disabled="saving" @click="approve(row, 'approved')">{{ t('approve') }}</el-button>
@@ -61,10 +62,10 @@
       <el-pagination style="margin-top:12px; justify-content:flex-end" background layout="total, prev, pager, next, jumper" :total="total" :page-size="pageSize" :current-page="page" @current-change="onPage" />
     </div>
 
-    <el-dialog v-model="dialog" :title="t('newQuote')" width="720px">
+    <el-dialog v-model="dialog" :title="form.id ? t('edit') : t('newQuote')" width="720px">
       <el-form :model="form" label-position="top">
         <el-form-item :label="t('selectCustomer')">
-          <el-select v-model="form.customer_id" filterable style="width: 100%">
+          <el-select v-model="form.customer_id" filterable :disabled="!!form.id" style="width: 100%">
             <el-option v-for="item in customers" :key="item.id" :value="item.id" :label="`${item.name} · ${item.phone || ''}`" />
           </el-select>
         </el-form-item>
@@ -143,7 +144,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { get, post } from '../../api/client';
+import { get, post, patch } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, money, statusType } from '../../utils/format';
 import { useStatusLabel } from '../../utils/status';
@@ -163,7 +164,7 @@ const dialog = ref(false);
 const drawer = ref(false);
 const currentQuote = ref(null);
 const form = reactive({
-  customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
+  id: null, status: '', customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
   system_total: null, suggested_price: null, diff_reason: '',
 });
 
@@ -214,9 +215,24 @@ function resetFilters() {
 
 function openCreate() {
   Object.assign(form, {
-    customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
+    id: null, status: '', customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
     system_total: null, suggested_price: null, diff_reason: '',
   });
+  dialog.value = true;
+}
+
+function openEdit(row) {
+  Object.assign(form, {
+    id: row.id,
+    status: row.status,
+    customer_id: row.customer_id,
+    items: (row.items || []).map((item) => ({ name: item.name, qty: Number(item.qty || 1), unit_price: Number(item.unit_price || 0) })),
+    notes: row.notes || '',
+    system_total: row.system_total,
+    suggested_price: row.suggested_price,
+    diff_reason: row.diff_reason || '',
+  });
+  if (!form.items.length) form.items = [{ name: '', qty: 1, unit_price: 0 }];
   dialog.value = true;
 }
 
@@ -230,13 +246,32 @@ async function save() {
   const items = form.items.filter((item) => item.name && item.unit_price > 0);
   if (!items.length) return ElMessage.warning(t('items'));
   if (showDiffReason.value && !form.diff_reason.trim()) return ElMessage.warning(t('diffReasonRequired'));
+  // 已下单的报价修改时需明确告知：原订单将被作废，报价退回草稿重新审批
+  if (form.id && form.status === 'converted') {
+    try {
+      await ElMessageBox.confirm(t('quoteEditVoidConfirm'), t('reminder'), {
+        type: 'warning', confirmButtonText: t('confirm'), cancelButtonText: t('cancel'),
+      });
+    } catch {
+      return;
+    }
+  }
   saving.value = true;
   try {
-    await post('/pv/api/workbench/quotes', {
-      customer_id: form.customer_id, items, notes: form.notes,
+    const payload = {
+      items, notes: form.notes,
       system_total: form.system_total, suggested_price: form.suggested_price, diff_reason: form.diff_reason,
-    });
-    ElMessage.success(t('operationSuccess'));
+    };
+    if (form.id) {
+      const prevStatus = form.status;
+      const data = await patch(`/pv/api/workbench/quotes/${form.id}`, payload);
+      if (data.voided_order) ElMessage.success(t('quoteEditVoided'));
+      else if (prevStatus === 'draft') ElMessage.success(t('operationSuccess'));
+      else ElMessage.success(t('quoteReturnedToDraft'));
+    } else {
+      await post('/pv/api/workbench/quotes', { customer_id: form.customer_id, ...payload });
+      ElMessage.success(t('operationSuccess'));
+    }
     dialog.value = false;
     await reload();
   } catch (error) {

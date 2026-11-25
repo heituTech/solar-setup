@@ -200,3 +200,58 @@ test('quotes.convert - 非 accepted 状态抛 409', async () => {
   const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db });
   await expectThrow(() => quotes.convert(ctx), 409, 'quote_not_accepted');
 });
+
+// ===================== update（修改报价）=====================
+
+function quoteRow(status) {
+  return {
+    id: 1, quote_no: 'Q-1', customer_id: 1, salesperson_id: 83, status, currency: 'USD',
+    items: JSON.stringify(validItems), total_amount: 1730, notes: null, system_total: 1730,
+    suggested_price: 1730, diff_reason: null, created_at: '2026-01-01', updated_at: '2026-01-01',
+  };
+}
+
+test('quotes.update - 审批中的报价不可修改 → 409', async () => {
+  const db = mockDb([{ match: 'SELECT * FROM quotes WHERE id = ?', return: [quoteRow('pending_review')] }]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db, body: { items: validItems } });
+  await expectThrow(() => quotes.update(ctx), 409, 'quote_pending_review');
+});
+
+test('quotes.update - 已下单报价修改：作废原订单并退回草稿', async () => {
+  let updated = false;
+  const db = mockDb([
+    { match: 'SELECT * FROM quotes WHERE id = ?', return: () => [quoteRow(updated ? 'draft' : 'converted')] },
+    { match: 'SELECT id, order_no, customer_id FROM orders WHERE quote_id = ?', return: [{ id: 55, order_no: 'SO-OLD', customer_id: 1 }] },
+    { match: 'UPDATE orders SET status', return: [{ affectedRows: 1 }] },
+    { match: 'INSERT INTO event_outbox', return: { insertId: 1 } },
+    { match: 'UPDATE quotes SET items', return: () => { updated = true; return [{ affectedRows: 1 }]; } },
+  ]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db, body: { items: validItems } });
+  await quotes.update(ctx);
+
+  assert.equal(ctx.body.quote.status, 'draft');
+  assert.deepEqual(ctx.body.voided_order, { id: 55, order_no: 'SO-OLD' });
+
+  const voidCall = db.calls.find((c) => c.sql.includes('UPDATE orders SET status'));
+  assert.ok(voidCall, '应作废原订单');
+  assert.equal(voidCall.params[2], '报价修改，原订单作废');
+  assert.equal(voidCall.params[3], 55);
+
+  const eventCall = db.calls.find((c) => c.sql.includes('INSERT INTO event_outbox') && c.params[1] === 'OrderVoided');
+  assert.ok(eventCall, '应向财务下发作废事件');
+  assert.equal(JSON.parse(eventCall.params[5]).order_id, 55);
+});
+
+test('quotes.update - 非草稿报价修改后退回草稿，不作废订单', async () => {
+  let updated = false;
+  const db = mockDb([
+    { match: 'SELECT * FROM quotes WHERE id = ?', return: () => [quoteRow(updated ? 'draft' : 'rejected')] },
+    { match: 'UPDATE quotes SET items', return: () => { updated = true; return [{ affectedRows: 1 }]; } },
+  ]);
+  const ctx = mockCtx({ user: adminUser, params: { id: 1 }, db, body: { items: validItems } });
+  await quotes.update(ctx);
+
+  assert.equal(ctx.body.quote.status, 'draft');
+  assert.equal(ctx.body.voided_order, null);
+  assert.equal(db.calls.some((c) => c.sql.includes('UPDATE orders SET status')), false);
+});

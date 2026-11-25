@@ -10,7 +10,7 @@
         <el-input v-model="filters.q" :placeholder="t('filterKeyword')" clearable style="width:220px" @keyup.enter="reload" />
         <el-select v-model="filters.status" clearable :placeholder="t('status')" style="width:150px">
           <el-option :label="t('filterAll')" value="" />
-          <el-option v-for="s in ['initializing','in_delivery','accepted']" :key="s" :label="statusLabel(s)" :value="s" />
+          <el-option v-for="s in ['initializing','in_delivery','accepted','void']" :key="s" :label="statusLabel(s)" :value="s" />
         </el-select>
         <el-button type="primary" :loading="loading" @click="reload">{{ t('filterSearch') }}</el-button>
         <el-button @click="resetFilters">{{ t('filterReset') }}</el-button>
@@ -50,12 +50,12 @@
               @click="openCommission(row)"
             >{{ t('commissionRate') }}</el-button>
             <el-button
-              v-if="isManager && row.status !== 'accepted'"
+              v-if="isManager && row.status !== 'void'"
               link
               type="danger"
               :disabled="loading || saving"
-              @click="remove(row)"
-            >{{ t('delete') }}</el-button>
+              @click="voidOrder(row)"
+            >{{ t('voidOrder') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -215,7 +215,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { get, post, patch, del } from '../../api/client';
+import { get, post, patch } from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
 import { dt, money, statusType } from '../../utils/format';
 import { useStatusLabel } from '../../utils/status';
@@ -315,15 +315,23 @@ async function saveCommission() {
   }
 }
 
-async function remove(row) {
+// 作废订单（不删除）：需经理二次确认并填写作废原因，财务台账同步标记作废
+async function voidOrder(row) {
+  let reason = '';
   try {
-    await ElMessageBox.confirm(t('confirmDelete'), t('delete'), { type: 'warning', confirmButtonText: t('delete'), cancelButtonText: t('cancel') });
+    const { value } = await ElMessageBox.prompt(t('voidOrderConfirm'), t('voidOrder'), {
+      type: 'warning',
+      inputPlaceholder: t('voidReasonOptional'),
+      confirmButtonText: t('confirm'),
+      cancelButtonText: t('cancel'),
+    });
+    reason = value || '';
   } catch {
     return;
   }
   saving.value = true;
   try {
-    await del(`/pv/api/workbench/orders/${row.id}`);
+    await post(`/pv/api/workbench/orders/${row.id}/void`, { void_reason: reason });
     ElMessage.success(t('operationSuccess'));
     await reload();
   } catch (error) {

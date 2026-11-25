@@ -13,13 +13,24 @@ function toUser(row) {
     manager_id: row.manager_id ? Number(row.manager_id) : null,
     referral_code: row.referral_code || null,
     salesperson_ids: row.salesperson_ids || [],
+    position_id: row.position_id ? Number(row.position_id) : null,
+    position_name: row.position_name || null,
+    position_level: row.position_level === null || row.position_level === undefined ? null : Number(row.position_level),
+    department_code: row.department_code || null,
+    department_name: row.department_name || null,
     created_at: row.created_at || null,
   };
 }
 
 async function loadUser(db, id) {
   const [rows] = await db.query(
-    'SELECT id,user_no,name,email,phone,role,status,manager_id,referral_code FROM users WHERE id = ?',
+    `SELECT u.id,u.user_no,u.name,u.email,u.phone,u.role,u.status,u.manager_id,u.referral_code,
+            u.position_id,p.name AS position_name,p.level AS position_level,
+            d.code AS department_code,d.name AS department_name
+     FROM users u
+     LEFT JOIN org_positions p ON p.id = u.position_id
+     LEFT JOIN org_departments d ON d.id = p.department_id
+     WHERE u.id = ?`,
     [id]
   );
   if (!rows.length) return null;
@@ -49,9 +60,9 @@ async function insertUser(db, fields) {
     const userNo = await nextUserNo(db);
     try {
       const [result] = await db.query(
-        'INSERT INTO users (user_no, name, email, phone, password_hash, role, status, manager_id) VALUES (?,?,?,?,?,?,?,?)',
+        'INSERT INTO users (user_no, name, email, phone, password_hash, role, status, manager_id, position_id) VALUES (?,?,?,?,?,?,?,?,?)',
         [userNo, fields.name, fields.email || null, fields.phone || null, fields.passwordHash,
-          fields.role, fields.status || 'active', fields.managerId || null]
+          fields.role, fields.status || 'active', fields.managerId || null, fields.positionId || null]
       );
       return { id: result.insertId, user_no: userNo };
     } catch (error) {

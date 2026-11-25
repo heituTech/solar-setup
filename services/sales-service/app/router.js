@@ -17,8 +17,9 @@ const internal = require('./controller/internal');
 module.exports = (app) => {
   const { router } = app;
   const auth = app.auth;
-  const staff = requireRoles('super_admin', 'sales_manager', 'engineering_manager', 'salesperson',
-    'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager');
+  const staff = requireRoles('super_admin', 'sales_manager', 'engineering_manager', 'finance_manager',
+    'hr_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant',
+    'after_sales', 'after_sales_manager');
   const sales = requireRoles('super_admin', 'sales_manager', 'salesperson');
   const managers = requireRoles('super_admin', 'sales_manager');
   const engineers = requireRoles('super_admin', 'electrical_engineer', 'structural_engineer');
@@ -33,6 +34,7 @@ module.exports = (app) => {
   router.get('/pv/skill', misc.skill);
 
   router.get('/pv/api/workbench/summary', auth, sales, workbench.summary);
+  router.get('/pv/api/workbench/overview', auth, staff, workbench.overview);
 
   router.get('/pv/api/workbench/customers', auth, sales, customers.list);
   router.get('/pv/api/workbench/customers/:id', auth, sales, customers.detail);

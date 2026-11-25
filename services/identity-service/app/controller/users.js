@@ -15,6 +15,33 @@ const MANAGER_ROLES_BY_ROLE = {
   structural_engineer: ['engineering_manager', 'super_admin'],
 };
 
+// 校验职位可用且与角色匹配；管理岗唯一任职
+async function resolvePosition(db, ctx, role, positionId, excludeUserId = null) {
+  if (!positionId) return null;
+  const [rows] = await db.query('SELECT * FROM org_positions WHERE id = ? AND active = 1', [Number(positionId)]);
+  if (!rows.length) ctx.throw(400, 'position_not_found');
+  const position = rows[0];
+  if (position.role_key && position.role_key !== role) ctx.throw(400, 'position_role_mismatch');
+  if (position.single_holder) {
+    const params = [Number(positionId)];
+    let sql = "SELECT id FROM users WHERE position_id = ? AND status = 'active'";
+    if (excludeUserId) { sql += ' AND id <> ?'; params.push(Number(excludeUserId)); }
+    const [holders] = await db.query(`${sql} LIMIT 1`, params);
+    if (holders.length) ctx.throw(409, 'position_occupied');
+  }
+  return position;
+}
+
+// 职位所属上级 = 上级职位在岗人员；职位空缺时为空
+async function managerForPosition(db, position) {
+  if (!position || !position.parent_id) return null;
+  const [rows] = await db.query(
+    "SELECT id FROM users WHERE position_id = ? AND status = 'active' ORDER BY id LIMIT 1",
+    [Number(position.parent_id)]
+  );
+  return rows.length ? Number(rows[0].id) : null;
+}
+
 async function resolveManagerId(db, ctx, role, managerId) {
   const allowed = MANAGER_ROLES_BY_ROLE[role];
   if (!allowed) return managerId;
@@ -64,7 +91,13 @@ module.exports = {
     const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total FROM users u${where}`, params);
     const offset = (page - 1) * pageSize;
     const [rows] = await ctx.app.db.query(
-      `SELECT u.id,u.user_no,u.name,u.email,u.phone,u.role,u.status,u.manager_id,u.created_at FROM users u${where} ORDER BY u.id DESC LIMIT ? OFFSET ?`,
+      `SELECT u.id,u.user_no,u.name,u.email,u.phone,u.role,u.status,u.manager_id,u.created_at,
+              u.position_id,p.name AS position_name,p.level AS position_level,
+              d.code AS department_code,d.name AS department_name
+       FROM users u
+       LEFT JOIN org_positions p ON p.id = u.position_id
+       LEFT JOIN org_departments d ON d.id = p.department_id
+       ${where} ORDER BY u.id DESC LIMIT ? OFFSET ?`,
       [...params, pageSize, offset]
     );
     ctx.body = { users: rows.map(toUser), total: Number(countRows[0].total), page, page_size: pageSize };
@@ -87,11 +120,14 @@ module.exports = {
     );
     if (exists.length) ctx.throw(409, 'account_exists');
     const hash = await bcrypt.hash(password, 10);
-    const managerId = await resolveManagerId(
-      ctx.app.db, ctx, role, body.manager_id ? Number(body.manager_id) : null
-    );
+    const positionId = body.position_id ? Number(body.position_id) : null;
+    const position = await resolvePosition(ctx.app.db, ctx, role, positionId);
+    // 有职位时由组织架构自动确定所属负责人，否则沿用角色约束
+    const managerId = position
+      ? await managerForPosition(ctx.app.db, position)
+      : await resolveManagerId(ctx.app.db, ctx, role, body.manager_id ? Number(body.manager_id) : null);
     const created = await insertUser(ctx.app.db, {
-      name, email, phone, passwordHash: hash, role, status: 'active', managerId,
+      name, email, phone, passwordHash: hash, role, status: 'active', managerId, positionId,
     });
     const user = await loadUser(ctx.app.db, created.id);
     ctx.status = 201;
@@ -112,11 +148,17 @@ module.exports = {
       role: body.role !== undefined ? String(body.role) : current.role,
       status: body.status !== undefined ? String(body.status) : current.status,
       manager_id: body.manager_id !== undefined ? (body.manager_id ? Number(body.manager_id) : null) : current.manager_id,
+      position_id: body.position_id !== undefined
+        ? (body.position_id ? Number(body.position_id) : null)
+        : (current.position_id ? Number(current.position_id) : null),
     };
     if (!ASSIGNABLE.has(next.role)) ctx.throw(400, 'invalid_role');
     if (!['active', 'disabled'].includes(next.status)) ctx.throw(400, 'invalid_status');
     if (!next.email && !next.phone) ctx.throw(400, 'email_or_phone_required');
-    next.manager_id = await resolveManagerId(ctx.app.db, ctx, next.role, next.manager_id);
+    const position = await resolvePosition(ctx.app.db, ctx, next.role, next.position_id, id);
+    next.manager_id = position
+      ? await managerForPosition(ctx.app.db, position)
+      : await resolveManagerId(ctx.app.db, ctx, next.role, next.manager_id);
     if (next.email) {
       const [emailTaken] = await ctx.app.db.query(
         'SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1', [next.email, id]
@@ -136,8 +178,10 @@ module.exports = {
     }
     await withTransaction(ctx.app.db, async (connection) => {
       await connection.query(
-        'UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ?, manager_id = ?, password_hash = ? WHERE id = ?',
-        [next.name, next.email, next.phone, next.role, next.status, next.manager_id, passwordHash, id]
+        `UPDATE users SET name = ?, email = ?, phone = ?, role = ?, status = ?, manager_id = ?,
+          position_id = ?, password_hash = ? WHERE id = ?`,
+        [next.name, next.email, next.phone, next.role, next.status, next.manager_id,
+          next.position_id, passwordHash, id]
       );
       await enqueueEvent(connection, {
         type: EVENTS.USER_CHANGED,

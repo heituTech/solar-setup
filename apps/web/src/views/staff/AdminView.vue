@@ -33,6 +33,9 @@
             <el-table-column :label="t('role')" width="150">
               <template #default="{ row }">{{ roleLabel(row.role) }}</template>
             </el-table-column>
+            <el-table-column :label="t('position')" width="160">
+              <template #default="{ row }">{{ row.position_name || t('vacancy') }}</template>
+            </el-table-column>
             <el-table-column :label="t('owner')" width="130">
               <template #default="{ row }">{{ managerName(row.manager_id) }}</template>
             </el-table-column>
@@ -112,6 +115,38 @@
           />
         </div>
       </el-tab-pane>
+
+      <el-tab-pane :label="t('orgStructure')" name="org">
+        <div class="page-toolbar">
+          <h3>{{ t('orgStructure') }}</h3>
+          <div class="toolbar-actions">
+            <el-button @click="loadOrg" :loading="loadingOrg">{{ t('refresh') }}</el-button>
+          </div>
+        </div>
+        <div class="panel" v-for="dept in org.departments || []" :key="dept.id" style="margin-bottom:12px">
+          <div class="panel-title"><h3>{{ dept.name }}</h3></div>
+          <el-table :data="dept.positions" :empty-text="t('noData')">
+            <el-table-column prop="name" :label="t('position')" min-width="160" />
+            <el-table-column :label="t('positionLevel')" width="130">
+              <template #default="{ row }">{{ levelLabel(row.level) }}</template>
+            </el-table-column>
+            <el-table-column :label="t('currentHolder')" min-width="200">
+              <template #default="{ row }">
+                <template v-if="row.holders.length">
+                  <el-tag v-for="holder in row.holders" :key="holder.id" style="margin-right:6px">{{ holder.name }}</el-tag>
+                </template>
+                <el-tag v-else type="info">{{ t('vacancy') }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('actions')" width="200">
+              <template #default="{ row }">
+                <el-button v-if="isAdmin" link type="primary" @click="openAssign(row, dept.name)">{{ t('assign') }}</el-button>
+                <el-button v-if="isAdmin && row.holders.length" link type="danger" @click="vacate(row)">{{ t('vacate') }}</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-tab-pane>
     </el-tabs>
 
     <el-dialog v-model="dialog" :title="form.id ? t('edit') : t('create')" width="620px">
@@ -125,10 +160,21 @@
               <el-option v-for="item in roles" :key="item" :label="roleLabel(item)" :value="item" />
             </el-select>
           </el-form-item>
+          <el-form-item :label="t('position')">
+            <el-select v-model="form.position_id" clearable style="width: 100%" @change="onPositionChange">
+              <el-option
+                v-for="item in positionOptions"
+                :key="item.id"
+                :label="`${item.name} · ${item.department_name}`"
+                :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item :label="t('owner')">
-            <el-select v-model="form.manager_id" clearable style="width: 100%">
+            <el-select v-model="form.manager_id" clearable :disabled="!!form.position_id" style="width: 100%">
               <el-option v-for="item in managerOptions" :key="item.id" :label="`${item.name} · ${roleLabel(item.role)}`" :value="item.id" />
             </el-select>
+            <div v-if="form.position_id" class="muted">{{ t('managerByPosition') }}</div>
           </el-form-item>
           <el-form-item :label="t('status')">
             <el-select v-model="form.status" style="width: 100%">
@@ -144,6 +190,23 @@
       <template #footer>
         <el-button @click="dialog = false">{{ t('cancel') }}</el-button>
         <el-button type="primary" :loading="saving" @click="save">{{ t('save') }}</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="assignDialog" :title="t('assign')" width="480px">
+      <el-form label-position="top">
+        <el-form-item :label="t('position')">
+          <span>{{ assignPosition.name }} · {{ assignPosition.department_name }}</span>
+        </el-form-item>
+        <el-form-item :label="t('users')">
+          <el-select v-model="assignForm.user_id" filterable style="width: 100%">
+            <el-option v-for="item in assignCandidates" :key="item.id" :label="`${item.name} · ${roleLabel(item.role)}`" :value="item.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="assignDialog = false">{{ t('cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="saveAssign">{{ t('save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -179,8 +242,13 @@ const userFilters = reactive({ q: '', role: '', status: '' });
 const approvalFilters = reactive({ q: '', status: '' });
 const userStatusOptions = ['active', 'disabled'];
 const approvalStatusOptions = ['pending', 'approved', 'rejected'];
-const roles = ['super_admin', 'sales_manager', 'engineering_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager', 'member'];
-const form = reactive({ id: null, name: '', email: '', phone: '', role: 'salesperson', manager_id: null, status: 'active', password: '' });
+const roles = ['super_admin', 'sales_manager', 'engineering_manager', 'finance_manager', 'hr_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager', 'member'];
+const form = reactive({ id: null, name: '', email: '', phone: '', role: 'salesperson', manager_id: null, position_id: null, status: 'active', password: '' });
+const org = ref({ departments: [] });
+const loadingOrg = ref(false);
+const assignDialog = ref(false);
+const assignPosition = reactive({ id: null, name: '', department_name: '', role_key: null });
+const assignForm = reactive({ user_id: null });
 
 const isAdmin = computed(() => auth.role === 'super_admin');
 const canDecide = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
@@ -200,9 +268,34 @@ const managerOptions = computed(() => {
   }
   return options;
 });
-// 手动切换角色时清空已选择的负责人，避免沿用上一个角色的归属
+// 手动切换角色时清空已选择的负责人与职位，避免沿用上一个角色的归属
 function onRoleChange() {
   form.manager_id = null;
+  form.position_id = null;
+}
+
+const allPositions = computed(() => (org.value.departments || []).flatMap((dept) => (
+  dept.positions.map((position) => ({ ...position, department_name: dept.name }))
+)));
+const positionOptions = computed(() => allPositions.value.filter(
+  (position) => !position.role_key || position.role_key === form.role
+));
+const assignCandidates = computed(() => directory.value.filter(
+  (item) => !assignPosition.role_key || item.role === assignPosition.role_key
+));
+const levelLabelMap = { 1: 'level_company', 2: 'level_department', 3: 'level_staff' };
+function levelLabel(level) {
+  return t(levelLabelMap[level] || 'level_staff');
+}
+// 职位所属负责人由上级职位在岗人员自动确定
+function positionManagerId(positionId) {
+  const position = allPositions.value.find((item) => item.id === Number(positionId));
+  if (!position || !position.parent_id) return null;
+  const parent = allPositions.value.find((item) => item.id === Number(position.parent_id));
+  return parent && parent.holders.length ? parent.holders[0].id : null;
+}
+function onPositionChange(positionId) {
+  form.manager_id = positionManagerId(positionId);
 }
 
 function roleLabel(role) {
@@ -280,6 +373,62 @@ async function loadDirectory() {
   }
 }
 
+async function loadOrg() {
+  loadingOrg.value = true;
+  try {
+    org.value = await get('/pv/api/org/structure');
+  } catch (error) {
+    ElMessage.error(error.message);
+  } finally {
+    loadingOrg.value = false;
+  }
+}
+
+function openAssign(position, departmentName) {
+  Object.assign(assignPosition, {
+    id: position.id, name: position.name,
+    department_name: departmentName || '', role_key: position.role_key || null,
+  });
+  assignForm.user_id = position.holders.length ? position.holders[0].id : null;
+  assignDialog.value = true;
+  loadDirectory();
+}
+
+async function saveAssign() {
+  if (!assignForm.user_id) return ElMessage.warning(t('users'));
+  saving.value = true;
+  try {
+    await post(`/pv/api/org/positions/${assignPosition.id}/assign`, { user_id: assignForm.user_id });
+    ElMessage.success(t('operationSuccess'));
+    assignDialog.value = false;
+    await Promise.all([loadOrg(), reloadUsers(), loadDirectory()]);
+  } catch (error) {
+    ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function vacate(position) {
+  try {
+    await ElMessageBox.confirm(t('vacateConfirm'), t('vacate'), {
+      type: 'warning', confirmButtonText: t('confirm'), cancelButtonText: t('cancel'),
+    });
+  } catch {
+    return;
+  }
+  saving.value = true;
+  try {
+    await post(`/pv/api/org/positions/${position.id}/vacate`, {});
+    ElMessage.success(t('operationSuccess'));
+    await Promise.all([loadOrg(), reloadUsers(), loadDirectory()]);
+  } catch (error) {
+    ElMessage.error(error.message);
+  } finally {
+    saving.value = false;
+  }
+}
+
 function reloadUsers() {
   usersPage.value = 1;
   return loadUsers();
@@ -311,18 +460,24 @@ function changeApprovalPage(next) {
 }
 
 function openCreate() {
-  Object.assign(form, { id: null, name: '', email: '', phone: '', role: 'salesperson', manager_id: null, status: 'active', password: '' });
-  // 刷新员工目录，确保刚新建的工程部经理等上级可选
+  Object.assign(form, {
+    id: null, name: '', email: '', phone: '', role: 'salesperson', manager_id: null,
+    position_id: null, status: 'active', password: '',
+  });
+  // 刷新员工目录与组织架构，确保刚新建的工程部经理等上级可选
   loadDirectory();
+  loadOrg();
   dialog.value = true;
 }
 
 function openEdit(row) {
   Object.assign(form, {
     id: row.id, name: row.name, email: row.email || '', phone: row.phone || '',
-    role: row.role, manager_id: row.manager_id || null, status: row.status, password: '',
+    role: row.role, manager_id: row.manager_id || null, position_id: row.position_id || null,
+    status: row.status, password: '',
   });
   loadDirectory();
+  loadOrg();
   dialog.value = true;
 }
 
@@ -330,19 +485,21 @@ async function save() {
   if (!form.name) return ElMessage.warning(t('name'));
   if (!form.id && !form.email && !form.phone) return ElMessage.warning(`${t('email')} / ${t('phone')}`);
   if (!form.id && String(form.password).length < 8) return ElMessage.warning(t('password'));
-  if (MANAGER_ROLES_BY_ROLE[form.role] && !form.manager_id) return ElMessage.warning(t('managerRequired'));
+  if (!form.position_id && MANAGER_ROLES_BY_ROLE[form.role] && !form.manager_id) {
+    return ElMessage.warning(t('managerRequired'));
+  }
   saving.value = true;
   try {
     const payload = {
       name: form.name, email: form.email, phone: form.phone, role: form.role,
-      manager_id: form.manager_id || null, status: form.status,
+      manager_id: form.manager_id || null, position_id: form.position_id || null, status: form.status,
     };
     if (form.password) payload.password = form.password;
     if (form.id) await patch(`/pv/api/admin/users/${form.id}`, payload);
     else await post('/pv/api/admin/users', payload);
     ElMessage.success(t('operationSuccess'));
     dialog.value = false;
-    await Promise.all([reloadUsers(), loadDirectory()]);
+    await Promise.all([reloadUsers(), loadDirectory(), loadOrg()]);
   } catch (error) {
     const alertKey = {
       email_exists: 'emailExists',
@@ -381,6 +538,6 @@ async function decide(row, decision) {
 }
 
 onMounted(async () => {
-  await Promise.all([loadUsers(), loadApprovals(), loadDirectory()]);
+  await Promise.all([loadUsers(), loadApprovals(), loadDirectory(), loadOrg()]);
 });
 </script>

@@ -243,7 +243,7 @@ const progressForm = reactive({ stage: 'start', note: '' });
 const deviceForm = reactive({ category: 'inverter', model: '', name: '', serial_no: '', quantity: 1 });
 
 const isManager = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
-const showPrices = computed(() => ['super_admin', 'sales_manager', 'salesperson'].includes(auth.role));
+const showPrices = computed(() => ['super_admin', 'sales_manager', 'salesperson', 'accountant'].includes(auth.role));
 const canAssign = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
 const canProgress = computed(() => ['super_admin', 'electrical_engineer', 'structural_engineer', 'warehouse', 'after_sales'].includes(auth.role));
 const canAccept = computed(() => ['super_admin', 'electrical_engineer', 'structural_engineer'].includes(auth.role));

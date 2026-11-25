@@ -96,11 +96,18 @@ module.exports = {
     if (!ASSIGNABLE.has(next.role)) ctx.throw(400, 'invalid_role');
     if (!['active', 'disabled'].includes(next.status)) ctx.throw(400, 'invalid_status');
     if (!next.email && !next.phone) ctx.throw(400, 'email_or_phone_required');
-    const [duplicated] = await ctx.app.db.query(
-      'SELECT id FROM users WHERE id <> ? AND ((email IS NOT NULL AND email = ?) OR (phone IS NOT NULL AND phone = ?)) LIMIT 1',
-      [id, next.email, next.phone]
-    );
-    if (duplicated.length) ctx.throw(409, 'account_exists');
+    if (next.email) {
+      const [emailTaken] = await ctx.app.db.query(
+        'SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1', [next.email, id]
+      );
+      if (emailTaken.length) ctx.throw(409, 'email_exists');
+    }
+    if (next.phone) {
+      const [phoneTaken] = await ctx.app.db.query(
+        'SELECT id FROM users WHERE phone = ? AND id <> ? LIMIT 1', [next.phone, id]
+      );
+      if (phoneTaken.length) ctx.throw(409, 'phone_exists');
+    }
     let passwordHash = current.password_hash;
     if (body.password) {
       if (String(body.password).length < 8) ctx.throw(400, 'password_too_short');

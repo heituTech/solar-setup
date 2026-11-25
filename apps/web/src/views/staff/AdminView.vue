@@ -321,7 +321,12 @@ async function save() {
     dialog.value = false;
     await reloadUsers();
   } catch (error) {
-    ElMessage.error(error.message);
+    const alertKey = { email_exists: 'emailExists', phone_exists: 'phoneExists', email_or_phone_required: 'emailOrPhoneRequired' }[error.code];
+    if (alertKey) {
+      ElMessageBox.alert(t(alertKey), t('reminder'), { type: 'warning', confirmButtonText: t('confirm') }).catch(() => {});
+    } else {
+      ElMessage.error(error.message);
+    }
   } finally {
     saving.value = false;
   }

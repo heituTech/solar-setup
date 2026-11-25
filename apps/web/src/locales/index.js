@@ -732,6 +732,25 @@ Object.assign(en, { enum_sent: 'Sent', enum_failed: 'Failed' });
 Object.assign(zh, { enum_sent: '已发送', enum_failed: '失败' });
 Object.assign(km, { enum_sent: 'បានផ្ញើ', enum_failed: 'បរាជ័យ' });
 
+Object.assign(en, {
+  reminder: 'Notice',
+  emailExists: 'This email is already used by another account. Please use a different one.',
+  phoneExists: 'This phone number is already used by another account. Please use a different one.',
+  emailOrPhoneRequired: 'Please provide at least one of email or phone number.',
+});
+Object.assign(zh, {
+  reminder: '提示',
+  emailExists: '该邮箱已被其他账号使用，请更换后再保存。',
+  phoneExists: '该手机号已被其他账号使用，请更换后再保存。',
+  emailOrPhoneRequired: '邮箱和手机号至少需要填写一项。',
+});
+Object.assign(km, {
+  reminder: 'ការជូនដំណឹង',
+  emailExists: 'អ៊ីមែលនេះត្រូវបានប្រើដោយគណនីផ្សេងរួចហើយ។',
+  phoneExists: 'លេខទូរស័ព្ទនេះត្រូវបានប្រើដោយគណនីផ្សេងរួចហើយ។',
+  emailOrPhoneRequired: 'សូមបញ្ចូលអ៊ីមែល ឬលេខទូរស័ព្ទយ៉ាងហោចណាស់មួយ។',
+});
+
 const messages = {};
 for (const lang of Object.keys(legacy)) messages[lang] = { ...en, ...(lang === 'zh' ? zh : lang === 'km' ? km : {}), ...legacy[lang] };
 if (!messages.en) messages.en = en;

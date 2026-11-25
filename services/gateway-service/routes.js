@@ -28,8 +28,10 @@ const TABLE = [
   ['/pv/api/workbench/adjustments', 'finance'],
   ['/pv/api/workbench/compensation-config', 'finance'],
   ['/pv/api/workbench/commission-rules', 'finance'],
+  ['/pv/api/workbench/manager-commission-rules', 'finance'],
   ['/pv/api/workbench/settlements', 'finance'],
   ['/pv/api/workbench/ledger', 'finance'],
+  ['/pv/api/workbench/manager-ledger', 'finance'],
 
   ['/pv/api/hrms', 'hrms'],
 

@@ -14,3 +14,7 @@ keys/
 database/local/
 services/*/logs/
 services/*/run/
+.trae/
+.trae-html-share-packages/
+.vscode/
+.DS_Store

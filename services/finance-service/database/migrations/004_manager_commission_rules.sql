@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS manager_commission_rule_versions (
+  effective_period CHAR(7) NOT NULL,
+  tier1_max DECIMAL(14,2) NOT NULL DEFAULT 50000.00,
+  tier1_rate DECIMAL(6,4) NOT NULL DEFAULT 0.0100,
+  tier2_max DECIMAL(14,2) NOT NULL DEFAULT 200000.00,
+  tier2_rate DECIMAL(6,4) NOT NULL DEFAULT 0.0120,
+  tier3_rate DECIMAL(6,4) NOT NULL DEFAULT 0.0150,
+  base_salary DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  team_threshold DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  team_bonus DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  note VARCHAR(500) NULL,
+  created_by BIGINT UNSIGNED NULL,
+  updated_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (effective_period)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO manager_commission_rule_versions (effective_period, note)
+VALUES (DATE_FORMAT(CURDATE(), '%Y-%m'), 'default manager rule seed');

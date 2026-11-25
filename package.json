@@ -26,6 +26,8 @@
     "migrate:hrms": "npm run migrate --workspace @solar/hrms-service",
     "test": "npm run test --workspaces --if-present",
     "setup:env": "node scripts/setup-local-env.js",
+    "db:start": "powershell -ExecutionPolicy Bypass -File scripts/start-mysql.ps1",
+    "db:stop": "powershell -ExecutionPolicy Bypass -File scripts/stop-mysql.ps1",
     "seed:admin": "npm run seed --workspace @solar/identity-service",
     "start:identity": "npm run start --workspace @solar/identity-service",
     "start:gateway": "npm run start --workspace @solar/gateway-service",

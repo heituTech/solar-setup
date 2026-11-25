@@ -6,6 +6,8 @@ const ledger = require('./controller/ledger');
 const payments = require('./controller/payments');
 const commissions = require('./controller/commissions');
 const commissionRules = require('./controller/commissionRules');
+const managerCommissionRules = require('./controller/managerCommissionRules');
+const managerLedger = require('./controller/managerLedger');
 const settlements = require('./controller/settlements');
 const internal = require('./controller/internal');
 const exportController = require('./controller/export');
@@ -38,6 +40,16 @@ module.exports = (app) => {
   router.get('/pv/api/workbench/commission-rules', auth, superAdmin, commissionRules.list);
   router.get('/pv/api/workbench/commission-rules/resolve', auth, superAdmin, commissionRules.resolve);
   router.put('/pv/api/workbench/commission-rules/:period', auth, superAdmin, commissionRules.save);
+
+  // 销售经理提成规则：按月份版本维护，仅超级管理员可读写
+  router.get('/pv/api/workbench/manager-commission-rules', auth, superAdmin, managerCommissionRules.list);
+  router.get('/pv/api/workbench/manager-commission-rules/resolve', auth, superAdmin, managerCommissionRules.resolve);
+  router.put('/pv/api/workbench/manager-commission-rules/:period', auth, superAdmin, managerCommissionRules.save);
+
+  // 销售经理台账：超级管理员全量，销售经理仅本人
+  const managerLedgerViewer = requireRoles('super_admin', 'sales_manager');
+  router.get('/pv/api/workbench/manager-ledger', auth, managerLedgerViewer, managerLedger.list);
+  router.post('/pv/api/workbench/manager-ledger/generate', auth, superAdmin, managerLedger.generate);
 
   router.get('/pv/api/workbench/settlements', auth, staff, settlements.list);
   router.post('/pv/api/workbench/settlements', auth, finance, settlements.generate);

@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS manager_ledger (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  period CHAR(7) NOT NULL,
+  manager_id BIGINT UNSIGNED NOT NULL,
+  manager_name VARCHAR(120) NULL,
+  team_size INT NOT NULL DEFAULT 0,
+  order_count INT NOT NULL DEFAULT 0,
+  order_amount DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  received_amount DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  commission_rate DECIMAL(6,4) NOT NULL DEFAULT 0.0000,
+  commission_amount DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  bonus_amount DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  base_salary DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  total_payable DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  rule_period CHAR(7) NULL,
+  generated_by BIGINT UNSIGNED NULL,
+  generated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_manager_period (period, manager_id),
+  KEY idx_manager_ledger_manager (manager_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

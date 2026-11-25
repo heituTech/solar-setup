@@ -24,6 +24,8 @@ const menus = computed(() => {
   let primary = { path: '/home', meta: { key: 'home' } };
   if (SALES_ROLES.includes(auth.role)) {
     primary = { path: '/workbench', meta: { key: 'overview', requiresRoles: SALES_ROLES } };
+  } else if (auth.role === 'engineering_manager') {
+    primary = { path: '/workbench/surveys', meta: { key: 'surveys' } };
   } else if (FIELD_ROLES.includes(auth.role)) {
     primary = { path: '/workbench/tickets', meta: { key: 'tickets' } };
   }

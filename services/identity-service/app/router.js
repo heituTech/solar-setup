@@ -12,8 +12,8 @@ module.exports = (app) => {
   const { router } = app;
   const authMiddleware = app.auth;
   const internalGuard = verifyInternal({ services: ['sales', 'delivery', 'finance', 'hrms'] });
-  const staff = requireRoles('super_admin', 'sales_manager', 'salesperson', 'electrical_engineer',
-    'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager');
+  const staff = requireRoles('super_admin', 'sales_manager', 'engineering_manager', 'salesperson',
+    'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager');
   const admin = requireRoles('super_admin');
 
   router.get('/health', health.health);

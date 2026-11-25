@@ -127,7 +127,7 @@
           </el-form-item>
           <el-form-item :label="t('owner')">
             <el-select v-model="form.manager_id" clearable style="width: 100%">
-              <el-option v-for="item in managers" :key="item.id" :label="item.name" :value="item.id" />
+              <el-option v-for="item in managerOptions" :key="item.id" :label="`${item.name} · ${roleLabel(item.role)}`" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item :label="t('status')">
@@ -150,7 +150,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { get, patch, post } from '../../api/client';
@@ -179,12 +179,26 @@ const userFilters = reactive({ q: '', role: '', status: '' });
 const approvalFilters = reactive({ q: '', status: '' });
 const userStatusOptions = ['active', 'disabled'];
 const approvalStatusOptions = ['pending', 'approved', 'rejected'];
-const roles = ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager', 'member'];
+const roles = ['super_admin', 'sales_manager', 'engineering_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager', 'member'];
 const form = reactive({ id: null, name: '', email: '', phone: '', role: 'salesperson', manager_id: null, status: 'active', password: '' });
 
 const isAdmin = computed(() => auth.role === 'super_admin');
 const canDecide = computed(() => ['super_admin', 'sales_manager'].includes(auth.role));
-const managers = computed(() => directory.value.filter((item) => ['super_admin', 'sales_manager'].includes(item.role)));
+// 员工所属上级约束：销售人员只能归属销售部门经理；工程师只能归属工程部经理或超级管理员
+const MANAGER_ROLES_BY_ROLE = {
+  salesperson: ['sales_manager'],
+  electrical_engineer: ['engineering_manager', 'super_admin'],
+  structural_engineer: ['engineering_manager', 'super_admin'],
+};
+const managerOptions = computed(() => {
+  const allowed = MANAGER_ROLES_BY_ROLE[form.role] || ['super_admin', 'sales_manager'];
+  return directory.value.filter((item) => allowed.includes(item.role));
+});
+watch(() => form.role, () => {
+  if (form.manager_id && !managerOptions.value.some((item) => item.id === Number(form.manager_id))) {
+    form.manager_id = null;
+  }
+});
 
 function roleLabel(role) {
   if (!role) return '-';
@@ -308,6 +322,7 @@ async function save() {
   if (!form.name) return ElMessage.warning(t('name'));
   if (!form.id && !form.email && !form.phone) return ElMessage.warning(`${t('email')} / ${t('phone')}`);
   if (!form.id && String(form.password).length < 8) return ElMessage.warning(t('password'));
+  if (MANAGER_ROLES_BY_ROLE[form.role] && !form.manager_id) return ElMessage.warning(t('managerRequired'));
   saving.value = true;
   try {
     const payload = {

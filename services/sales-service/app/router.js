@@ -17,11 +17,12 @@ const internal = require('./controller/internal');
 module.exports = (app) => {
   const { router } = app;
   const auth = app.auth;
-  const staff = requireRoles('super_admin', 'sales_manager', 'salesperson', 'electrical_engineer',
-    'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager');
+  const staff = requireRoles('super_admin', 'sales_manager', 'engineering_manager', 'salesperson',
+    'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager');
   const sales = requireRoles('super_admin', 'sales_manager', 'salesperson');
   const managers = requireRoles('super_admin', 'sales_manager');
   const engineers = requireRoles('super_admin', 'electrical_engineer', 'structural_engineer');
+  const engineeringManagers = requireRoles('super_admin', 'engineering_manager');
   const internalGuard = verifyInternal({ services: ['identity', 'delivery', 'finance'] });
 
   router.get('/health', health.health);
@@ -57,9 +58,11 @@ module.exports = (app) => {
   router.get('/pv/api/workbench/surveys', auth, staff, surveys.list);
   router.post('/pv/api/workbench/surveys', auth, sales, surveys.create);
   router.post('/pv/api/workbench/surveys/:id/submit', auth, sales, surveys.submit);
-  router.post('/pv/api/workbench/surveys/:id/review', auth, engineers, surveys.review);
+  router.post('/pv/api/workbench/surveys/:id/review', auth, managers, surveys.review);
+  router.post('/pv/api/workbench/surveys/:id/assign-engineer', auth, engineeringManagers, surveys.assignEngineer);
   router.post('/pv/api/workbench/surveys/:id/construction-cost', auth, engineers, surveys.fillConstructionCost);
-  router.post('/pv/api/workbench/surveys/:id/link-order', auth, sales, surveys.linkOrder);
+  router.post('/pv/api/workbench/surveys/:id/request-completion', auth, engineers, surveys.requestCompletion);
+  router.post('/pv/api/workbench/surveys/:id/resurvey', auth, sales, surveys.resurvey);
   router.delete('/pv/api/workbench/surveys/:id', auth, sales, surveys.remove);
 
   router.get('/pv/api/workbench/quotes', auth, sales, quotes.list);

@@ -4,7 +4,7 @@ export const routerArrays = [
   { path: '/home', meta: { key: 'home' } },
   { path: '/workbench', meta: { key: 'overview', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
   { path: '/workbench/customers', meta: { key: 'customers', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
-  { path: '/workbench/surveys', meta: { key: 'surveys', requiresRoles: ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales_manager'] } },
+  { path: '/workbench/surveys', meta: { key: 'surveys', requiresRoles: ['super_admin', 'sales_manager', 'engineering_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales_manager'] } },
   { path: '/workbench/quotes', meta: { key: 'quotes', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
   { path: '/workbench/orders', meta: { key: 'orders', requiresRoles: ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales_manager', 'accountant'] } },
   { path: '/workbench/tickets', meta: { key: 'tickets', requiresRoles: ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales', 'after_sales_manager'] } },

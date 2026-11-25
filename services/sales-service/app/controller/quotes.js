@@ -32,6 +32,7 @@ function toQuote(row) {
     ...row,
     id: Number(row.id),
     customer_id: Number(row.customer_id),
+    scenario_id: row.scenario_id ? Number(row.scenario_id) : null,
     salesperson_id: Number(row.salesperson_id),
     items,
     total_amount: num(row.total_amount),
@@ -51,6 +52,20 @@ function assertSuggestedPrice(systemTotal, suggestedPrice, diffReason) {
   }
 }
 
+// 校验用电场景属于该客户；required 为 true 时缺少场景直接报错
+async function resolveScenario(ctx, value, customerId, required) {
+  const scenarioId = value === undefined || value === null || value === '' ? null : Number(value);
+  if (!scenarioId) {
+    if (required) ctx.throw(400, 'scenario_required');
+    return null;
+  }
+  const [scenarios] = await ctx.app.db.query(
+    'SELECT id FROM scenarios WHERE id = ? AND customer_id = ?', [scenarioId, customerId]
+  );
+  if (!scenarios.length) ctx.throw(400, 'scenario_not_found');
+  return scenarioId;
+}
+
 function reference(prefix) {
   return `${prefix}-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
 }
@@ -62,14 +77,15 @@ module.exports = {
     const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
     const q = String(ctx.query.q || '').trim();
     let where = `FROM quotes q
-                 LEFT JOIN customers c ON c.id = q.customer_id WHERE 1 = 1`;
+                 LEFT JOIN customers c ON c.id = q.customer_id
+                 LEFT JOIN scenarios sc ON sc.id = q.scenario_id WHERE 1 = 1`;
     where += scopeClause('q.salesperson_id', salesScopeFor(ctx.state.user), params);
     if (ctx.query.status) { where += ' AND q.status = ?'; params.push(String(ctx.query.status)); }
     if (ctx.query.customer_id) { where += ' AND q.customer_id = ?'; params.push(Number(ctx.query.customer_id)); }
     if (q) { where += ' AND (q.quote_no LIKE ? OR c.name LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
     const [countRows] = await ctx.app.db.query(`SELECT COUNT(*) AS total ${where}`, params);
     const [rows] = await ctx.app.db.query(
-      `SELECT q.*, c.name AS customer_name ${where} ORDER BY q.id DESC LIMIT ? OFFSET ?`,
+      `SELECT q.*, c.name AS customer_name, sc.scenario_no AS scenario_no ${where} ORDER BY q.id DESC LIMIT ? OFFSET ?`,
       params.concat([pageSize, (page - 1) * pageSize])
     );
     ctx.body = { quotes: rows.map(toQuote), total: Number(countRows[0].total), page, page_size: pageSize };
@@ -84,12 +100,14 @@ module.exports = {
     if (!customers.length) ctx.throw(404, 'customer_not_found');
     const scope = salesScopeFor(ctx.state.user);
     if (scope !== null && !scope.includes(Number(customers[0].owner_id))) ctx.throw(403, 'forbidden');
+    // 报价必须对应客户的某个用电场景
+    const scenarioId = await resolveScenario(ctx, body.scenario_id, customerId, true);
     assertSuggestedPrice(body.system_total, body.suggested_price, body.diff_reason);
     const [result] = await ctx.app.db.query(
-      `INSERT INTO quotes (quote_no, customer_id, salesperson_id, status, currency, items, total_amount, notes,
+      `INSERT INTO quotes (quote_no, customer_id, scenario_id, salesperson_id, status, currency, items, total_amount, notes,
         system_total, suggested_price, diff_reason)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-      [reference('Q'), customerId, Number(ctx.state.user.id), 'draft', body.currency || 'USD',
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [reference('Q'), customerId, scenarioId, Number(ctx.state.user.id), 'draft', body.currency || 'USD',
         JSON.stringify(items), totalOf(items), body.notes || null,
         body.system_total ?? null, body.suggested_price ?? null, body.diff_reason || null]
     );
@@ -114,6 +132,13 @@ module.exports = {
     const suggestedPrice = body.suggested_price !== undefined ? body.suggested_price : quote.suggested_price;
     const diffReason = body.diff_reason !== undefined ? body.diff_reason : quote.diff_reason;
     assertSuggestedPrice(systemTotal, suggestedPrice, diffReason);
+    // 历史报价可能未关联场景，修改时必须补选；已关联的可保持不变
+    let scenarioId = quote.scenario_id ? Number(quote.scenario_id) : null;
+    if (body.scenario_id !== undefined) {
+      scenarioId = await resolveScenario(ctx, body.scenario_id, quote.customer_id, true);
+    } else if (!scenarioId) {
+      ctx.throw(400, 'scenario_required');
+    }
     const result = await withTransaction(ctx.app.db, async (connection) => {
       let voidedOrder = null;
       // 已下单的报价被修改：作废原订单（保留记录），再退回草稿重新走审批
@@ -149,9 +174,9 @@ module.exports = {
       // 任何修改都会使原审批失效，统一退回草稿，由销售人员重新提交审批
       await connection.query(
         `UPDATE quotes SET items = ?, total_amount = ?, notes = ?, currency = ?,
-          system_total = ?, suggested_price = ?, diff_reason = ?, status = 'draft' WHERE id = ?`,
+          system_total = ?, suggested_price = ?, diff_reason = ?, scenario_id = ?, status = 'draft' WHERE id = ?`,
         [JSON.stringify(items), totalOf(items), body.notes !== undefined ? body.notes : quote.notes,
-          body.currency || quote.currency, systemTotal, suggestedPrice, diffReason, id]
+          body.currency || quote.currency, systemTotal, suggestedPrice, diffReason, scenarioId, id]
       );
       const [fresh] = await connection.query('SELECT * FROM quotes WHERE id = ?', [id]);
       return { fresh: fresh[0], voidedOrder };

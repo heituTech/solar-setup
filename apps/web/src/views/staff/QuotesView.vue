@@ -21,6 +21,9 @@
       <el-table :data="quotes" v-loading="loading" :empty-text="t('noData')">
         <el-table-column prop="quote_no" :label="t('quoteNumber')" width="190" />
         <el-table-column prop="customer_name" :label="t('customerName')" min-width="140" />
+        <el-table-column :label="t('scenarios')" width="140">
+          <template #default="{ row }">{{ row.scenario_no || '-' }}</template>
+        </el-table-column>
         <el-table-column :label="t('total')" width="140">
           <template #default="{ row }">{{ money(row.total_amount, row.currency) }}</template>
         </el-table-column>
@@ -65,9 +68,20 @@
     <el-dialog v-model="dialog" :title="form.id ? t('edit') : t('newQuote')" width="720px">
       <el-form :model="form" label-position="top">
         <el-form-item :label="t('selectCustomer')">
-          <el-select v-model="form.customer_id" filterable :disabled="!!form.id" style="width: 100%">
+          <el-select v-model="form.customer_id" filterable :disabled="!!form.id" style="width: 100%" @change="onCustomerChange">
             <el-option v-for="item in customers" :key="item.id" :value="item.id" :label="`${item.name} · ${item.phone || ''}`" />
           </el-select>
+        </el-form-item>
+        <el-form-item :label="t('scenarios')" required>
+          <el-select
+            v-model="form.scenario_id"
+            :disabled="!form.customer_id || !scenarios.length"
+            :placeholder="t('selectScenario')"
+            style="width: 100%"
+          >
+            <el-option v-for="item in scenarios" :key="item.id" :value="item.id" :label="item.scenario_no" />
+          </el-select>
+          <div v-if="form.customer_id && !scenarios.length" class="muted">{{ t('noScenarioHint') }}</div>
         </el-form-item>
         <div v-for="(item, index) in form.items" :key="index" class="item-row">
           <el-input v-model="item.name" :placeholder="t('product')" />
@@ -104,6 +118,7 @@
         <div class="detail-grid">
           <div class="detail-item"><span>{{ t('quoteNumber') }}</span>{{ currentQuote.quote_no }}</div>
           <div class="detail-item"><span>{{ t('customerName') }}</span>{{ currentQuote.customer_name }}</div>
+          <div class="detail-item"><span>{{ t('scenarios') }}</span>{{ currentQuote.scenario_no || '-' }}</div>
           <div class="detail-item"><span>{{ t('status') }}</span><el-tag :type="statusType(currentQuote.status)">{{ statusLabel(currentQuote.status) }}</el-tag></div>
           <div class="detail-item"><span>{{ t('date') }}</span>{{ dt(currentQuote.created_at) }}</div>
           <div class="detail-item"><span>{{ t('systemTotal') }}</span><strong>{{ currentQuote.system_total !== null ? money(currentQuote.system_total, currentQuote.currency) : '-' }}</strong></div>
@@ -154,6 +169,7 @@ const statusLabel = useStatusLabel();
 const auth = useAuthStore();
 const quotes = ref([]);
 const customers = ref([]);
+const scenarios = ref([]);
 const page = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
@@ -164,7 +180,7 @@ const dialog = ref(false);
 const drawer = ref(false);
 const currentQuote = ref(null);
 const form = reactive({
-  id: null, status: '', customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
+  id: null, status: '', customer_id: null, scenario_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
   system_total: null, suggested_price: null, diff_reason: '',
 });
 
@@ -215,9 +231,10 @@ function resetFilters() {
 
 function openCreate() {
   Object.assign(form, {
-    id: null, status: '', customer_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
+    id: null, status: '', customer_id: null, scenario_id: null, items: [{ name: '', qty: 1, unit_price: 0 }], notes: '',
     system_total: null, suggested_price: null, diff_reason: '',
   });
+  scenarios.value = [];
   dialog.value = true;
 }
 
@@ -226,6 +243,7 @@ function openEdit(row) {
     id: row.id,
     status: row.status,
     customer_id: row.customer_id,
+    scenario_id: row.scenario_id || null,
     items: (row.items || []).map((item) => ({ name: item.name, qty: Number(item.qty || 1), unit_price: Number(item.unit_price || 0) })),
     notes: row.notes || '',
     system_total: row.system_total,
@@ -233,7 +251,26 @@ function openEdit(row) {
     diff_reason: row.diff_reason || '',
   });
   if (!form.items.length) form.items = [{ name: '', qty: 1, unit_price: 0 }];
+  loadScenarios(row.customer_id);
   dialog.value = true;
+}
+
+// 报价必须关联客户已有的用电场景
+async function loadScenarios(customerId) {
+  scenarios.value = [];
+  if (!customerId) return;
+  try {
+    const data = await get(`/pv/api/workbench/customers/${customerId}/scenarios`);
+    scenarios.value = data.scenarios || [];
+    if (!form.scenario_id && scenarios.value.length === 1) form.scenario_id = scenarios.value[0].id;
+  } catch (error) {
+    ElMessage.error(error.message);
+  }
+}
+
+function onCustomerChange(customerId) {
+  form.scenario_id = null;
+  loadScenarios(customerId);
 }
 
 function viewDetail(row) {
@@ -243,6 +280,7 @@ function viewDetail(row) {
 
 async function save() {
   if (!form.customer_id) return ElMessage.warning(t('selectCustomer'));
+  if (!form.scenario_id) return ElMessage.warning(t('selectScenario'));
   const items = form.items.filter((item) => item.name && item.unit_price > 0);
   if (!items.length) return ElMessage.warning(t('items'));
   if (showDiffReason.value && !form.diff_reason.trim()) return ElMessage.warning(t('diffReasonRequired'));
@@ -259,6 +297,7 @@ async function save() {
   saving.value = true;
   try {
     const payload = {
+      scenario_id: form.scenario_id,
       items, notes: form.notes,
       system_total: form.system_total, suggested_price: form.suggested_price, diff_reason: form.diff_reason,
     };

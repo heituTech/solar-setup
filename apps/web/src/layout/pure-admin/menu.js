@@ -10,7 +10,7 @@ export const routerArrays = [
   { path: '/workbench/tickets', meta: { key: 'tickets', requiresRoles: ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales', 'after_sales_manager'] } },
   { path: '/workbench/catalog', meta: { key: 'catalog', requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
   { path: '/workbench/ledger', meta: { key: 'ledger', requiresRoles: ['super_admin', 'accountant'] } },
-  { path: '/workbench/settlements', meta: { key: 'settlements', requiresRoles: ['super_admin'] } },
+  { path: '/workbench/settlements', meta: { key: 'settlements', requiresRoles: ['super_admin', 'accountant'] } },
   { path: '/workbench/manager-ledger', meta: { key: 'managerLedger', requiresRoles: ['super_admin', 'sales_manager'] } },
   { path: '/workbench/hrms/performance', meta: { key: 'hrmsPerformance', requiresRoles: ['super_admin'] } },
   { path: '/workbench/hrms/rules', meta: { key: 'hrmsRules', requiresRoles: ['super_admin'] } },

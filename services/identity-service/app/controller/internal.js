@@ -23,7 +23,7 @@ module.exports = {
   async contacts(ctx) {
     // 供 HRMS 生成业绩报告时获取员工邮箱，仅返回内部员工
     const [rows] = await ctx.app.db.query(
-      "SELECT id, name, email, role, status FROM users WHERE role <> 'member' ORDER BY id"
+      "SELECT id, name, email, role, status, manager_id FROM users WHERE role <> 'member' ORDER BY id"
     );
     ctx.body = {
       users: rows.map((row) => ({
@@ -32,6 +32,7 @@ module.exports = {
         email: row.email || null,
         role: row.role,
         status: row.status,
+        manager_id: row.manager_id ? Number(row.manager_id) : null,
       })),
     };
   },

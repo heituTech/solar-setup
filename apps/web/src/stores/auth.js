@@ -6,6 +6,8 @@ export const useAuthStore = defineStore('auth', {
     token: getToken(),
     user: JSON.parse(localStorage.getItem('solar_user') || 'null'),
     loading: false,
+    // 正在进行中的会话校验 Promise，用于路由守卫等待
+    _validating: null,
   }),
   getters: {
     authenticated: (state) => Boolean(state.token && state.user),
@@ -25,12 +27,22 @@ export const useAuthStore = defineStore('auth', {
       finally { this.loading = false; }
     },
     async refresh() {
-      if (!this.token) return;
-      try {
-        const data = await get('/pv/api/auth/me');
-        this.user = data.user || data;
-        localStorage.setItem('solar_user', JSON.stringify(this.user));
-      } catch { this.logout(); }
+      if (!this.token) return false;
+      if (this._validating) return this._validating;
+      this._validating = (async () => {
+        try {
+          const data = await get('/pv/api/auth/me');
+          this.user = data.user || data;
+          localStorage.setItem('solar_user', JSON.stringify(this.user));
+          return true;
+        } catch {
+          this.logout();
+          return false;
+        } finally {
+          this._validating = null;
+        }
+      })();
+      return this._validating;
     },
     logout() {
       // 先通知服务端吊销当前 token（失败不影响本地登出）

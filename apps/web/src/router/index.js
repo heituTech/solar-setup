@@ -17,8 +17,10 @@ const routes = [
       { path: 'workbench/catalog', component: () => import('@/views/staff/CatalogView.vue'), meta: { title: '产品', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
       { path: 'workbench/ledger', component: () => import('@/views/staff/LedgerView.vue'), meta: { title: '台账', requiresAuth: true, requiresRoles: ['super_admin'] } },
       { path: 'workbench/settlements', component: () => import('@/views/staff/SettlementsView.vue'), meta: { title: '结算', requiresAuth: true, requiresRoles: ['super_admin'] } },
+      { path: 'workbench/manager-ledger', component: () => import('@/views/staff/ManagerLedgerView.vue'), meta: { title: '销售经理台账', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager'] } },
       { path: 'workbench/hrms/performance', component: () => import('@/views/hrms/PerformanceView.vue'), meta: { title: '业绩管理', requiresAuth: true, requiresRoles: ['super_admin'] } },
       { path: 'workbench/hrms/rules', component: () => import('@/views/hrms/CommissionRulesView.vue'), meta: { title: '提成规则', requiresAuth: true, requiresRoles: ['super_admin'] } },
+      { path: 'workbench/hrms/manager-rules', component: () => import('@/views/hrms/ManagerCommissionRulesView.vue'), meta: { title: '经理提成规则', requiresAuth: true, requiresRoles: ['super_admin'] } },
       { path: 'workbench/hrms/reports', component: () => import('@/views/hrms/ReportSettingsView.vue'), meta: { title: '报告与邮件', requiresAuth: true, requiresRoles: ['super_admin'] } },
       { path: 'workbench/admin', component: () => import('@/views/staff/AdminView.vue'), meta: { title: '管理', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager'] } },
       { path: 'workbench/health', component: () => import('@/views/staff/HealthView.vue'), meta: { title: '服务', requiresAuth: true, requiresRoles: ['super_admin'] } },
@@ -34,8 +36,16 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore();
+
+  // 只要本地存着 token，就在任何路由跳转前先向服务端确认它还有效
+  // 过期 / 无效的 token 会被 refresh 内部触发 logout 清除
+  if (auth.token) {
+    await auth.refresh();
+  }
+
+  // 此时 auth.authenticated 已经反映了真实有效的会话状态
   if (to.meta.requiresAuth && !auth.authenticated) {
     return { path: '/login', query: { redirect: to.fullPath } };
   }

@@ -8,15 +8,15 @@ const routes = [
     redirect: '/home',
     children: [
       { path: 'home', component: () => import('@/views/public/HomeView.vue'), meta: { title: '首页' } },
-      { path: 'workbench', component: () => import('@/views/staff/OverviewView.vue'), meta: { title: '概览', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
+      { path: 'workbench', component: () => import('@/views/staff/OverviewView.vue'), meta: { title: '概览', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'engineering_manager', 'finance_manager', 'hr_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager'] } },
       { path: 'workbench/customers', component: () => import('@/views/staff/CustomersView.vue'), meta: { title: '客户', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
       { path: 'workbench/surveys', component: () => import('@/views/staff/SurveysView.vue'), meta: { title: '勘测', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'engineering_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales_manager'] } },
       { path: 'workbench/quotes', component: () => import('@/views/staff/QuotesView.vue'), meta: { title: '报价', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
-      { path: 'workbench/orders', component: () => import('@/views/staff/OrdersView.vue'), meta: { title: '订单', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales_manager', 'accountant'] } },
+      { path: 'workbench/orders', component: () => import('@/views/staff/OrdersView.vue'), meta: { title: '订单', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'engineering_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales_manager', 'accountant'] } },
       { path: 'workbench/tickets', component: () => import('@/views/staff/TicketsView.vue'), meta: { title: '工单', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'after_sales', 'after_sales_manager'] } },
       { path: 'workbench/catalog', component: () => import('@/views/staff/CatalogView.vue'), meta: { title: '产品', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager', 'salesperson'] } },
-      { path: 'workbench/ledger', component: () => import('@/views/staff/LedgerView.vue'), meta: { title: '台账', requiresAuth: true, requiresRoles: ['super_admin', 'accountant'] } },
-      { path: 'workbench/settlements', component: () => import('@/views/staff/SettlementsView.vue'), meta: { title: '结算', requiresAuth: true, requiresRoles: ['super_admin', 'accountant'] } },
+      { path: 'workbench/ledger', component: () => import('@/views/staff/LedgerView.vue'), meta: { title: '台账', requiresAuth: true, requiresRoles: ['super_admin', 'finance_manager', 'accountant'] } },
+      { path: 'workbench/settlements', component: () => import('@/views/staff/SettlementsView.vue'), meta: { title: '结算', requiresAuth: true, requiresRoles: ['super_admin', 'finance_manager', 'accountant'] } },
       { path: 'workbench/manager-ledger', component: () => import('@/views/staff/ManagerLedgerView.vue'), meta: { title: '销售经理台账', requiresAuth: true, requiresRoles: ['super_admin', 'sales_manager'] } },
       { path: 'workbench/hrms/performance', component: () => import('@/views/hrms/PerformanceView.vue'), meta: { title: '业绩管理', requiresAuth: true, requiresRoles: ['super_admin'] } },
       { path: 'workbench/hrms/rules', component: () => import('@/views/hrms/CommissionRulesView.vue'), meta: { title: '提成规则', requiresAuth: true, requiresRoles: ['super_admin'] } },
@@ -56,8 +56,9 @@ router.beforeEach(async (to) => {
     return { path: '/home' };
   }
   if ((to.path === '/login' || to.path === '/register') && auth.authenticated) {
-    if (['super_admin', 'sales_manager', 'salesperson'].includes(auth.role)) return { path: '/workbench' };
-    if (auth.role === 'engineering_manager') return { path: '/workbench/surveys' };
+    if (['super_admin', 'sales_manager', 'engineering_manager', 'finance_manager', 'hr_manager', 'salesperson', 'accountant', 'warehouse'].includes(auth.role)) {
+      return { path: '/workbench' };
+    }
     if (['electrical_engineer', 'structural_engineer', 'after_sales', 'after_sales_manager'].includes(auth.role)) {
       return { path: '/workbench/tickets' };
     }

@@ -4,6 +4,7 @@ const { requireRoles, verifyInternal } = require('@solar/service-kit');
 const health = require('./controller/health');
 const auth = require('./controller/auth');
 const users = require('./controller/users');
+const org = require('./controller/org');
 const approvals = require('./controller/approvals');
 const notifications = require('./controller/notifications');
 const internal = require('./controller/internal');
@@ -12,8 +13,9 @@ module.exports = (app) => {
   const { router } = app;
   const authMiddleware = app.auth;
   const internalGuard = verifyInternal({ services: ['sales', 'delivery', 'finance', 'hrms'] });
-  const staff = requireRoles('super_admin', 'sales_manager', 'engineering_manager', 'salesperson',
-    'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager');
+  const staff = requireRoles('super_admin', 'sales_manager', 'engineering_manager', 'finance_manager',
+    'hr_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant',
+    'after_sales', 'after_sales_manager');
   const admin = requireRoles('super_admin');
 
   router.get('/health', health.health);
@@ -31,6 +33,12 @@ module.exports = (app) => {
   router.get('/pv/api/admin/users', authMiddleware, requireRoles('super_admin', 'sales_manager'), users.list);
   router.post('/pv/api/admin/users', authMiddleware, admin, users.create);
   router.patch('/pv/api/admin/users/:id', authMiddleware, admin, users.update);
+
+  // 组织架构与职位
+  router.get('/pv/api/org/structure', authMiddleware, staff, org.structure);
+  router.get('/pv/api/org/overview', authMiddleware, staff, org.overview);
+  router.post('/pv/api/org/positions/:id/assign', authMiddleware, admin, org.assign);
+  router.post('/pv/api/org/positions/:id/vacate', authMiddleware, admin, org.vacate);
 
   router.get('/pv/api/approvals', authMiddleware, staff, approvals.list);
   router.post('/pv/api/approvals', authMiddleware, requireRoles('salesperson', 'sales_manager'), approvals.create);

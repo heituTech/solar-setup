@@ -1,8 +1,9 @@
 'use strict';
 
 const ROLES = Object.freeze([
-  'super_admin', 'sales_manager', 'engineering_manager', 'salesperson', 'electrical_engineer',
-  'structural_engineer', 'warehouse', 'accountant', 'after_sales', 'after_sales_manager', 'member',
+  'super_admin', 'sales_manager', 'engineering_manager', 'finance_manager', 'hr_manager',
+  'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant',
+  'after_sales', 'after_sales_manager', 'member',
 ]);
 const STAFF_ROLES = Object.freeze(ROLES.filter((role) => role !== 'member'));
 const SALES_ROLES = Object.freeze(['super_admin', 'sales_manager', 'salesperson']);

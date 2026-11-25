@@ -17,15 +17,14 @@ const route = useRoute();
 
 const isCollapse = computed(() => !appStore.sidebar.opened);
 const device = computed(() => appStore.device);
-const SALES_ROLES = ['super_admin', 'sales_manager', 'salesperson'];
+const OVERVIEW_ROLES = ['super_admin', 'sales_manager', 'engineering_manager', 'finance_manager',
+  'hr_manager', 'salesperson', 'accountant', 'warehouse'];
 const FIELD_ROLES = ['electrical_engineer', 'structural_engineer', 'after_sales', 'after_sales_manager'];
 const menus = computed(() => {
-  // 首页与概览合并为同一入口：销售进概览，现场角色进工单，访客进首页
+  // 首页与概览合并为同一入口：管理与员工进概览，现场角色进工单，访客进首页
   let primary = { path: '/home', meta: { key: 'home' } };
-  if (SALES_ROLES.includes(auth.role)) {
-    primary = { path: '/workbench', meta: { key: 'overview', requiresRoles: SALES_ROLES } };
-  } else if (auth.role === 'engineering_manager') {
-    primary = { path: '/workbench/surveys', meta: { key: 'surveys' } };
+  if (OVERVIEW_ROLES.includes(auth.role)) {
+    primary = { path: '/workbench', meta: { key: 'overview', requiresRoles: OVERVIEW_ROLES } };
   } else if (FIELD_ROLES.includes(auth.role)) {
     primary = { path: '/workbench/tickets', meta: { key: 'tickets' } };
   }

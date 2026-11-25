@@ -15,9 +15,10 @@ const exportController = require('./controller/export');
 module.exports = (app) => {
   const { router } = app;
   const auth = app.auth;
-  const staff = requireRoles('super_admin', 'sales_manager', 'salesperson', 'electrical_engineer',
-    'structural_engineer', 'warehouse', 'accountant', 'after_sales');
-  const finance = requireRoles('super_admin', 'accountant');
+  const staff = requireRoles('super_admin', 'sales_manager', 'engineering_manager', 'finance_manager',
+    'hr_manager', 'salesperson', 'electrical_engineer', 'structural_engineer', 'warehouse', 'accountant',
+    'after_sales');
+  const finance = requireRoles('super_admin', 'accountant', 'finance_manager');
   const superAdmin = requireRoles('super_admin');
   const internalGuard = verifyInternal({ services: ['identity', 'sales', 'delivery', 'hrms'] });
 

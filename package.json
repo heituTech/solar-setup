@@ -5,6 +5,8 @@
   "description": "Solar configurator and full-chain business workbench",
   "workspaces": [
     "apps/web",
+    "apps/solar-erp",
+    "apps/erp-web",
     "services/*-service",
     "packages/*"
   ],
@@ -34,7 +36,13 @@
     "start:sales": "npm run start --workspace @solar/sales-service",
     "start:delivery": "npm run start --workspace @solar/delivery-service",
     "start:finance": "npm run start --workspace @solar/finance-service",
-    "start:hrms": "npm run start --workspace @solar/hrms-service"
+    "start:hrms": "npm run start --workspace @solar/hrms-service",
+    "erp:dev": "npm run dev --workspace @solar/erp",
+    "erp:web": "npm run dev --workspace @solar/erp-web",
+    "erp:dev:all": "concurrently -n erp-api,erp-web -c green,cyan \"npm run erp:dev\" \"npm run erp:web\"",
+    "erp:migrate": "npm run migrate --workspace @solar/erp",
+    "erp:seed": "npm run seed --workspace @solar/erp",
+    "erp:build": "npm run build --workspace @solar/erp-web"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

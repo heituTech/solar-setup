@@ -7,6 +7,10 @@ node_modules/
 .DS_Store
 data-cache/
 apps/web/dist/
+apps/erp-web/dist/
+apps/solar-erp/storage/
+apps/solar-erp/logs/
+apps/solar-erp/run/
 coverage/
 .playwright/
 test-results/
